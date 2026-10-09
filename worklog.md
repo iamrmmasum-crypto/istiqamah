@@ -297,3 +297,19 @@ Work Log:
 Stage Summary:
 - Final list: 11 habits (6 original + water + 5 schedule blocks − old bath)
 - No code changes; remote main unchanged at 97a9da5
+---
+Task ID: 18
+Agent: Z.ai Code (main)
+Task: Redesign hero card in advanced Gen-Z style ("design this card advanced way that choose a genz")
+
+Work Log:
+- Rewrote hero.tsx: always-dark "midnight" card (zinc-950, works in both themes) with 4 animated aurora blobs (emerald/teal/violet/amber, framer-motion float loops), faint grid overlay
+- Oversized font-black date ("Friday," white + "October 9" emerald→teal→amber gradient text), greeting pill with live dot (genzGreeting: midnight grind / gm / afternoon check-in / good evening)
+- Gen-Z vibe line per progress state: locked in / keep cooking / clean sweep W (vibeLine helper)
+- Glassy chips (Zap done, Target to-go, pulsing Flame streak "locked in" or "start your streak today"), gradient-stroke progress ring (SVG linearGradient) with spring pop on % change, "x/y LOCKED IN" caption
+- Lint clean; browser-verified desktop + iPhone 14 (ring stacks on top via flex-col-reverse) + dark mode; toggle test: 9%→18% ring animates, chips/vibe update live; state restored to 1/11 9%; no page errors
+- Committed + pushed 19dd183
+
+Stage Summary:
+- Hero is now the Gen-Z centerpiece: dark aurora card, oversized gradient typography, glassmorphism chips, animated gradient ring
+- Remote main = 19dd183
