@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useRef, useState } from "react"
+import { memo, useCallback, useEffect, useRef, useState } from "react"
 import { useReducedMotion } from "framer-motion"
 import type { SkyState } from "@/lib/sky"
 
@@ -316,7 +316,7 @@ const sstepJs = (a: number, b: number, x: number) => {
   return t * t * (3 - 2 * t)
 }
 
-export function SunsetSea({
+function SunsetSeaBase({
   className,
   sky,
 }: {
@@ -619,3 +619,9 @@ export function SunsetSea({
     </div>
   )
 }
+
+/**
+ * Memoized: the hero re-renders every second (live clock) but the sea only
+ * depends on `sky` (30 s cadence) and its own pointer/refs.
+ */
+export const SunsetSea = memo(SunsetSeaBase)

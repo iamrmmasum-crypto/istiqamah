@@ -1,10 +1,21 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useMemo, useRef } from "react"
 import { motion, useReducedMotion } from "framer-motion"
-import { Flame, Target, Zap } from "lucide-react"
-import { useMounted } from "@/hooks/use-mounted"
+import {
+  ArrowDown,
+  ArrowUp,
+  Clock3,
+  Flame,
+  Moon,
+  Sunrise,
+  Sunset,
+  Target,
+  Zap,
+} from "lucide-react"
+import { useClock } from "@/hooks/use-clock"
 import { useSky } from "@/hooks/use-sky"
+import { computeRiseSet, computeSky, formatTime12 } from "@/lib/sky"
 import { SunsetSea } from "@/components/habit-tracker/sunset-sea"
 
 interface HeroProps {
@@ -38,9 +49,9 @@ const chipClass =
   "inline-flex items-center gap-1.5 rounded-full border border-white/30 bg-white/15 px-3 py-1 text-xs font-semibold text-white backdrop-blur-md [text-shadow:0_1px_8px_rgba(40,10,40,0.4)]"
 
 export function Hero({ loading, done, total, activeStreak }: HeroProps) {
-  const mounted = useMounted()
   const reduced = useReducedMotion() ?? false
   const sky = useSky()
+  const now = useClock() // live wall clock — also the hydration-safe "mounted" flag
 
   const cardRef = useRef<HTMLElement | null>(null)
   const sheenRef = useRef<HTMLDivElement | null>(null)
@@ -102,13 +113,85 @@ export function Hero({ loading, done, total, activeStreak }: HeroProps) {
   const offset = circumference * (1 - pct / 100)
   const left = Math.max(0, total - done)
 
-  const now = new Date()
-  const weekday = mounted
+  const weekday = now
     ? now.toLocaleDateString("en-US", { weekday: "long" })
     : ""
-  const monthDay = mounted
+  const monthDay = now
     ? now.toLocaleDateString("en-US", { month: "long", day: "numeric" })
     : ""
+
+  // --- live clock digits (12-hour, ticking seconds) ---
+  const h24 = now ? now.getHours() : 0
+  const clock = now
+    ? {
+        h: String(h24 % 12 === 0 ? 12 : h24 % 12),
+        mm: String(now.getMinutes()).padStart(2, "0"),
+        ss: String(now.getSeconds()).padStart(2, "0"),
+        meridiem: h24 < 12 ? "AM" : "PM",
+        dateTime: now.toTimeString().slice(0, 8),
+      }
+    : null
+  const blink = reduced ? "" : "animate-[clock-blink_1s_ease-in-out_infinite]"
+
+  // --- sunrise/sunset/moonrise/moonset for today (Dhaka lat/lon) ---
+  const dayKey = now
+    ? `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}`
+    : ""
+  // anchor the moon phase to local midnight so rise/set chips stay put all day
+  const phaseNum = useMemo(() => {
+    if (!dayKey) return -1
+    const [y, m, d] = dayKey.split("-").map(Number)
+    return computeSky(new Date(y, m, d)).moonPhase
+  }, [dayKey])
+  const riseSet = useMemo(() => {
+    if (!dayKey) return null
+    const [y, m, d] = dayKey.split("-").map(Number)
+    return computeRiseSet(
+      new Date(y, m, d),
+      phaseNum === -1 ? undefined : phaseNum
+    )
+  }, [dayKey, phaseNum])
+
+  const skyChips = [
+    {
+      key: "sunrise",
+      label: "সূর্যোদয়",
+      value: riseSet?.sunrise,
+      title: "Sunrise",
+      icon: <Sunrise className="h-3.5 w-3.5 text-amber-200" aria-hidden="true" />,
+    },
+    {
+      key: "sunset",
+      label: "সূর্যাস্ত",
+      value: riseSet?.sunset,
+      title: "Sunset",
+      icon: <Sunset className="h-3.5 w-3.5 text-orange-300" aria-hidden="true" />,
+    },
+    {
+      key: "moonrise",
+      label: "চন্দ্রোদয়",
+      value: riseSet?.moonrise,
+      title: "Moonrise",
+      icon: (
+        <span className="inline-flex items-center" aria-hidden="true">
+          <Moon className="h-3.5 w-3.5 text-violet-200" />
+          <ArrowUp className="h-2.5 w-2.5 text-violet-200/80" />
+        </span>
+      ),
+    },
+    {
+      key: "moonset",
+      label: "চন্দ্রাস্ত",
+      value: riseSet?.moonset,
+      title: "Moonset",
+      icon: (
+        <span className="inline-flex items-center" aria-hidden="true">
+          <Moon className="h-3.5 w-3.5 text-violet-200" />
+          <ArrowDown className="h-2.5 w-2.5 text-violet-200/80" />
+        </span>
+      ),
+    },
+  ]
 
   return (
     <motion.div
@@ -124,8 +207,8 @@ export function Hero({ loading, done, total, activeStreak }: HeroProps) {
         aria-label="Today's overview"
         className="relative will-change-transform [transform-style:preserve-3d]"
       >
-        {/* live scene */}
-        <div className="relative min-h-[440px] overflow-hidden rounded-3xl shadow-[0_24px_70px_-18px_rgba(120,40,20,0.55)] ring-1 ring-white/40 sm:min-h-[400px] lg:min-h-[430px]">
+        {/* live scene — fills behind; the content below drives card height */}
+        <div className="absolute inset-0 overflow-hidden rounded-3xl shadow-[0_24px_70px_-18px_rgba(120,40,20,0.55)] ring-1 ring-white/40">
           <SunsetSea className="absolute inset-0 z-0" sky={sky} />
 
           {/* legibility scrims — part of the scene, not a theme */}
@@ -151,10 +234,10 @@ export function Hero({ loading, done, total, activeStreak }: HeroProps) {
           }}
         />
 
-        {/* floating content layer */}
-        <div className="absolute inset-0 z-20 flex flex-col justify-between p-5 [transform:translateZ(34px)] sm:p-8">
+        {/* floating content layer — in normal flow so the card grows with it */}
+        <div className="relative z-20 flex min-h-[440px] flex-col justify-between p-5 [transform:translateZ(34px)] sm:min-h-[400px] sm:p-8 lg:min-h-[430px]">
           {/* top row */}
-          <div className="flex items-start justify-between gap-3">
+          <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="flex flex-wrap items-center gap-2">
               <span
                 className={`inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-white/35 bg-white/20 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-white backdrop-blur-md [text-shadow:0_2px_16px_rgba(50,15,45,0.45)] sm:text-[11px] sm:tracking-[0.18em]`}
@@ -163,9 +246,9 @@ export function Hero({ loading, done, total, activeStreak }: HeroProps) {
                   aria-hidden="true"
                   className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-200"
                 />
-                {mounted ? genzGreeting(now.getHours()) : "welcome"}
+                {now ? genzGreeting(now.getHours()) : "welcome"}
               </span>
-              {mounted && sky && (
+              {sky && (
                 <span
                   className="hidden items-center gap-1.5 whitespace-nowrap rounded-full border border-white/30 bg-white/15 px-2.5 py-1 text-[11px] font-semibold text-white/95 backdrop-blur-md [text-shadow:0_1px_8px_rgba(40,10,40,0.4)] min-[400px]:inline-flex"
                   title={sky.phaseTitle}
@@ -181,7 +264,7 @@ export function Hero({ loading, done, total, activeStreak }: HeroProps) {
 
             {activeStreak > 0 ? (
               <motion.span
-                className={`inline-flex items-center gap-1.5 rounded-full border border-amber-200/50 bg-amber-400/25 px-3 py-1 text-xs font-bold text-amber-50 backdrop-blur-md ${textShadow}`}
+                className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-amber-200/50 bg-amber-400/25 px-3 py-1 text-xs font-bold text-amber-50 backdrop-blur-md ${textShadow}`}
                 animate={reduced ? undefined : { scale: [1, 1.06, 1] }}
                 transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
               >
@@ -190,7 +273,7 @@ export function Hero({ loading, done, total, activeStreak }: HeroProps) {
               </motion.span>
             ) : (
               <span
-                className={`inline-flex items-center gap-1.5 rounded-full border border-white/30 bg-white/15 px-3 py-1 text-xs font-semibold text-white/90 backdrop-blur-md ${textShadow}`}
+                className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-white/30 bg-white/15 px-3 py-1 text-xs font-semibold text-white/90 backdrop-blur-md ${textShadow}`}
               >
                 <Flame className="h-3.5 w-3.5" aria-hidden="true" />
                 start your streak today
@@ -205,13 +288,55 @@ export function Hero({ loading, done, total, activeStreak }: HeroProps) {
                 className={`mt-3 font-black leading-[0.95] tracking-tight text-white [text-shadow:0_2px_20px_rgba(60,20,50,0.5)]`}
               >
                 <span className="block text-3xl sm:text-5xl">
-                  {mounted ? weekday : "\u00A0"}
+                  {now ? weekday : "\u00A0"}
                   <span className="text-white/60">,</span>
                 </span>
                 <span className="block bg-gradient-to-r from-amber-100 via-amber-200 to-orange-300 bg-clip-text text-3xl text-transparent sm:text-5xl">
-                  {mounted ? monthDay : "\u00A0"}
+                  {now ? monthDay : "\u00A0"}
                 </span>
               </h1>
+
+              {/* live clock */}
+              <div
+                role="timer"
+                aria-label="Local time"
+                className="mt-3 flex items-center gap-2"
+              >
+                <Clock3
+                  className="h-4 w-4 text-amber-200/90 sm:h-5 sm:w-5"
+                  aria-hidden="true"
+                />
+                {clock ? (
+                  <time
+                    dateTime={clock.dateTime}
+                    className="flex items-baseline gap-1"
+                  >
+                    <span
+                      className={`font-black tabular-nums text-2xl leading-none tracking-tight text-white sm:text-4xl ${textShadow}`}
+                    >
+                      {clock.h}
+                      <span className={blink}>:</span>
+                      {clock.mm}
+                    </span>
+                    <span
+                      className={`font-black tabular-nums text-lg leading-none text-amber-200 sm:text-2xl ${textShadow}`}
+                    >
+                      <span className={blink}>:</span>
+                      {clock.ss}
+                    </span>
+                    <span className="ml-0.5 text-[10px] font-bold uppercase tracking-[0.18em] text-white/75 sm:text-[11px]">
+                      {clock.meridiem}
+                    </span>
+                  </time>
+                ) : (
+                  <span
+                    aria-hidden="true"
+                    className="font-black tabular-nums text-2xl leading-none tracking-tight text-transparent sm:text-4xl"
+                  >
+                    00:00<span className="text-lg sm:text-2xl">:00</span>
+                  </span>
+                )}
+              </div>
 
               <p
                 className={`mt-3 max-w-md text-sm font-medium text-white/95 sm:text-base ${textShadow}`}
@@ -223,16 +348,38 @@ export function Hero({ loading, done, total, activeStreak }: HeroProps) {
                 )}
               </p>
 
-              {!loading && total > 0 && (
+              {(!loading || riseSet) && (
                 <div className="mt-4 flex flex-wrap items-center gap-2">
-                  <span className={chipClass}>
-                    <Zap className="h-3.5 w-3.5 text-amber-200" aria-hidden="true" />
-                    {done} done
-                  </span>
-                  <span className={chipClass}>
-                    <Target className="h-3.5 w-3.5 text-teal-200" aria-hidden="true" />
-                    {left} to go
-                  </span>
+                  {!loading && total > 0 && (
+                    <>
+                      <span className={chipClass}>
+                        <Zap
+                          className="h-3.5 w-3.5 text-amber-200"
+                          aria-hidden="true"
+                        />
+                        {done} done
+                      </span>
+                      <span className={chipClass}>
+                        <Target
+                          className="h-3.5 w-3.5 text-teal-200"
+                          aria-hidden="true"
+                        />
+                        {left} to go
+                      </span>
+                    </>
+                  )}
+                  {riseSet &&
+                    skyChips.map((c) => (
+                      <span key={c.key} className={chipClass} title={c.title}>
+                        {c.icon}
+                        {c.label}
+                        <span className="font-bold tabular-nums">
+                          {c.value === null || c.value === undefined
+                            ? "—"
+                            : formatTime12(c.value)}
+                        </span>
+                      </span>
+                    ))}
                 </div>
               )}
             </div>

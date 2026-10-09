@@ -120,3 +120,14 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Live clock colon blink (hero). Disabled via reduced motion in JS. */
+@keyframes clock-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}

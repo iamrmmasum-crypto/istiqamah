@@ -360,3 +360,25 @@ Work Log:
 
 Stage Summary:
 - The hero sky is now a real clock: sun rises/sets, moon rises/sets with correct phase, অমাবস্যা/পূর্ণিমা render distinctly; previewable via ?hour= and ?phase=
+
+---
+Task ID: 22
+Agent: Z.ai Code (main)
+Task: Add a live clock to the hero card ("add clock")
+
+Work Log:
+- New src/hooks/use-clock.ts: 1 Hz wall clock built on useSyncExternalStore (hydration-safe placeholder, snapshot quantized to whole seconds; replaced useState-in-effect after react-hooks/set-state-in-effect error)
+- src/lib/sky.ts: computeRiseSet(date, phaseOverride?) — scans the day every 10 min and interpolates horizon crossings → sunrise/sunset/moonrise/moonset (decimal local hours); formatTime12() → "5:53 AM"; numeric check vs real Dhaka Oct 9 (sunrise ~05:57, sunset ~17:34 local) ✓
+- hero.tsx: big tabular digital clock under the date (Clock3 icon, white HH:MM + amber blinking :SS, AM/PM chip, <time dateTime> semantic, role="timer", blink disabled under reduced motion); useClock now also serves as the mounted proxy (useMounted removed from hero)
+- Rise/set chips row: সূর্যোদয় 🌅 / সূর্যাস্ত 🌇 / চন্দ্রোদয় 🌙↑ / চন্দ্রাস্ত 🌙↓ with lucide Sunrise/Sunset/Moon+Arrow icons, amber/orange/violet tones, tooltips, "—" fallback
+- Moon phase anchored to local midnight (computeSky at dayKey midnight) so rise/set chips stay stable all day (drifted ±20 min when anchored to current instant)
+- Fixed mobile overflow: content layer switched from absolute inset-0 to relative in-flow (card now grows with content); scene (canvas+scrims) moved to absolute inset-0 behind; streak pills whitespace-nowrap + top row flex-wrap
+- sunset-sea.tsx wrapped in memo so the 1 Hz hero re-render never touches the WebGL canvas
+- globals.css: clock-blink keyframes (1s opacity pulse)
+- React Compiler fix: riseSet useMemo rebuilds the date from dayKey string inside the memo so deps [dayKey, phaseNum] match inferred deps
+- Verified in Agent Browser: clock ticks (2:43:03→2:43:05, dateTime=14:43:05), animation-name=clock-blink active, desktop+iPhone 14 layouts clean, toggle 9%→18%→9% restored (user state 1/11 + streak 1 intact), ?hour=6:10 sunrise & ?hour=23:30 অমাবস্যা night scenes with clock still real, rise/set identical across scene hours, footer bottom==scrollHeight, no console/page errors, lint clean
+- Commit on main (local); push still pending credentials
+
+Stage Summary:
+- Hero now shows live ticking time + today's সূর্যোদয়/সূর্যাস্ত/চন্দ্রোদয়/চন্দ্রাস্ত (device-local, Dhaka coords) — "সময় ও তারিখ" fully realized on the card
+- Files: src/hooks/use-clock.ts (new), src/lib/sky.ts, src/components/habit-tracker/hero.tsx, sunset-sea.tsx, src/app/globals.css

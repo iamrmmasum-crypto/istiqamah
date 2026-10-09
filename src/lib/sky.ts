@@ -194,3 +194,70 @@ export function computeSky(date: Date, phaseOverride?: number): SkyState {
     phaseTitle: info.title,
   }
 }
+
+export interface RiseSet {
+  /** decimal local hours (5.9 ≈ 5:54 AM), null = no crossing that day */
+  sunrise: number | null
+  sunset: number | null
+  moonrise: number | null
+  moonset: number | null
+}
+
+/** Linear zero-crossing between two altitude samples. */
+function crossTime(h0: number, a0: number, h1: number, a1: number): number {
+  return h0 + (h1 - h0) * (-a0 / (a1 - a0))
+}
+
+/**
+ * Sunrise/sunset & moonrise/moonset for the calendar day of `date`
+ * (Dhaka lat/lon, device-local hours). Scans the sky every 10 minutes and
+ * interpolates the horizon crossings — accurate to ~1 minute.
+ * At 23.8°N the sun always rises/sets once; the moon can miss a crossing
+ * only in the rare day-edge cases, which report null.
+ */
+export function computeRiseSet(date: Date, phaseOverride?: number): RiseSet {
+  const out: RiseSet = {
+    sunrise: null,
+    sunset: null,
+    moonrise: null,
+    moonset: null,
+  }
+  const y = date.getFullYear()
+  const m = date.getMonth()
+  const d = date.getDate()
+
+  let prevSun: number | null = null
+  let prevMoon: number | null = null
+
+  for (let min = 10; min <= 1440; min += 10) {
+    const s = computeSky(new Date(y, m, d, 0, min), phaseOverride)
+    const h = min / 60
+    const h0 = h - 1 / 6
+
+    if (prevSun !== null) {
+      if (out.sunrise === null && prevSun < 0 && s.sunAlt >= 0)
+        out.sunrise = crossTime(h0, prevSun, h, s.sunAlt)
+      if (out.sunset === null && prevSun >= 0 && s.sunAlt < 0)
+        out.sunset = crossTime(h0, prevSun, h, s.sunAlt)
+    }
+    if (prevMoon !== null) {
+      if (out.moonrise === null && prevMoon < 0 && s.moonAlt >= 0)
+        out.moonrise = crossTime(h0, prevMoon, h, s.moonAlt)
+      if (out.moonset === null && prevMoon >= 0 && s.moonAlt < 0)
+        out.moonset = crossTime(h0, prevMoon, h, s.moonAlt)
+    }
+    prevSun = s.sunAlt
+    prevMoon = s.moonAlt
+  }
+  return out
+}
+
+/** Decimal local hours → "5:53 AM" (12-hour clock). */
+export function formatTime12(hours: number): string {
+  const total = Math.round(hours * 60)
+  const h24 = Math.floor(total / 60) % 24
+  const mm = String(total % 60).padStart(2, "0")
+  const ampm = h24 < 12 ? "AM" : "PM"
+  const h12 = h24 % 12 === 0 ? 12 : h24 % 12
+  return `${h12}:${mm} ${ampm}`
+}
