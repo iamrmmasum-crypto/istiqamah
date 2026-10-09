@@ -330,3 +330,17 @@ Stage Summary:
 - Hero is now a 3D card over a live sunset sea with real sky reflections and a pointer-following wake; theme-independent (works in light + dark, no forced dark styling)
 - Files: sunset-sea.tsx (new), hero.tsx (rewritten); page.tsx unchanged (same Hero props)
 - Remote main still at 97a9da5-era history? No — local has 19dd183..97a7acf unpushed; push blocked pending credentials
+---
+Task ID: 20
+Agent: Z.ai Code (main)
+Task: Fix "water not flowing like wind" — sea looked static/fixed
+
+Work Log:
+- Rewrote waveH: added cross swell travelling with the wind (sin(wx*1.9 - t*1.7)), gust patches (moving noise 0.6+0.55*n scales chop amplitude) and elongated wind streaks (stretched noise scrolling -x); raised phase speeds (1.25→1.35, 1.7→1.9, 2.2→2.6, 2.8→3.4)
+- Glitter sparkle field now advects (p.x*22 - t*1.1, p.y*22 + t*2.0) so sparkles flow down the sun path; cloud drift 0.015→0.028 / 0.010→0.018
+- Reduced-motion: previously rendered one static frame (likely why user saw "fixed" water if OS reduce-motion on) — now animates at 0.45x calm speed; wake/tilt still disabled under reduced motion
+- Browser A/B verified: two frames 1.5s apart show displaced crests, reshaped gust patches, reformed glitter; no console errors; lint clean
+
+Stage Summary:
+- Sea visibly flows like wind-blown water; motion present in all cases including OS reduce-motion (calm mode)
+- Commit on main (local); push still pending credentials
