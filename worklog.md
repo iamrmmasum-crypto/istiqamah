@@ -160,3 +160,26 @@ Stage Summary:
 - New backup feature: header download icon → istiqamah-backup-YYYY-MM-DD.csv
 - Rollback path documented in .env comments (restore SQLite line + provider)
 - SECURITY note: connection string was shared in chat — user may rotate password in Neon console
+
+---
+Task ID: 9
+Agent: Z.ai Code (main)
+Task: Complete user-requested Neon CLI setup steps (skills, mcp, link, config init, neon.ts, deploy) using provided Neon API key
+
+Work Log:
+- Diagnosed sandbox network: DNS returns NXDOMAIN for api.neon.tech (control plane blocked) but console.neon.tech + DB endpoints resolve
+- Neon CLI hung on `projects list` because new org-based accounts need an org context → interactive picker hung with no TTY
+- Found org slug in user's console URL (org-patient-rice-93598701); `neon projects list --org-id <slug>` works, stdin closed
+- neon skills -y → needed an agent; ran with --agent claude-code → installed 8 Neon skills (skills-lock.json)
+- neon mcp -y --agent claude-code → wrote ~/.claude.json (outside repo), minted MCP key neon-cli-mcp-20261009T113007Z-59d9 (id 3413970)
+- neon link --project-id falling-credit-43504622 --branch production -y → created .neon (gitignored by neon), rewrote .env DATABASE_URL (dropped pgbouncer params) → restored proven runtime URL, added explanatory comment
+- neon config init → created neon.ts starter + installed @neon/config@1.8.6, @neon/env@1.5.3
+- Overwrote neon.ts with user's exact spec (empty defineConfig)
+- neon deploy → "No changes — branch production already matches policy", services: Postgres (rewrote .env again → restored again; noted pattern in .env comment)
+- Verified: no secrets in tracked files, lint clean, app healthy (6 habits), committed + pushed to GitHub (74b8421)
+
+Stage Summary:
+- All 7 user-requested Neon steps completed (login replaced by API key auth due to headless sandbox)
+- Org slug org-patient-rice-93598701; project falling-credit-43504622; branch production (br-rough-dew-b3q7he4r)
+- Neon MCP key minted by CLI lives in ~/.claude.json; user's original key used via env var only, never stored in repo
+- Reminder: user shared API key + GitHub token in chat — rotation advised
