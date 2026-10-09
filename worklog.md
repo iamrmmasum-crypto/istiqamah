@@ -243,3 +243,16 @@ Work Log:
 Stage Summary:
 - Weeks now run Friday → Thursday everywhere (weekly chart, heatmap); today's bar starts exactly at app creation day
 - Remote main updated
+---
+Task ID: 14
+Agent: Z.ai Code (main)
+Task: Confirm per-habit "stats start from the date the habit is added" behavior (user asked "ok?")
+
+Work Log:
+- No code change needed — per-habit createdAt clamping was implemented in Task 10 (commit 5ef9bad: createdKey/rateWindow/completionRate)
+- Live demo in browser: created "Test habit" at 12:53 UTC → badge showed "0% · 1d" (window = its own creation day, not 30d); toggled on → Consistency "14% since Oct 9 · 1 check-ins" (1/7); deleted test habit via Options → Delete → confirm
+- Verified restored state: 6 habits, 0/6, "0% since Oct 9 · 0 check-ins"; no page errors; browser closed
+
+Stage Summary:
+- Confirmed: every habit (now and in the future) is measured only from its own creation date forward, capped at 30 days; window label grows 1d → 30d automatically
+- No repo changes; remote main unchanged at 97a9da5
