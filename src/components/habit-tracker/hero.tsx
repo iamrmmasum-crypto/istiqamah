@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react"
 import { motion, useReducedMotion } from "framer-motion"
 import { Flame, Target, Zap } from "lucide-react"
 import { useMounted } from "@/hooks/use-mounted"
+import { useSky } from "@/hooks/use-sky"
 import { SunsetSea } from "@/components/habit-tracker/sunset-sea"
 
 interface HeroProps {
@@ -39,6 +40,7 @@ const chipClass =
 export function Hero({ loading, done, total, activeStreak }: HeroProps) {
   const mounted = useMounted()
   const reduced = useReducedMotion() ?? false
+  const sky = useSky()
 
   const cardRef = useRef<HTMLElement | null>(null)
   const sheenRef = useRef<HTMLDivElement | null>(null)
@@ -124,7 +126,7 @@ export function Hero({ loading, done, total, activeStreak }: HeroProps) {
       >
         {/* live scene */}
         <div className="relative min-h-[440px] overflow-hidden rounded-3xl shadow-[0_24px_70px_-18px_rgba(120,40,20,0.55)] ring-1 ring-white/40 sm:min-h-[400px] lg:min-h-[430px]">
-          <SunsetSea className="absolute inset-0 z-0" />
+          <SunsetSea className="absolute inset-0 z-0" sky={sky} />
 
           {/* legibility scrims — part of the scene, not a theme */}
           <div
@@ -153,15 +155,29 @@ export function Hero({ loading, done, total, activeStreak }: HeroProps) {
         <div className="absolute inset-0 z-20 flex flex-col justify-between p-5 [transform:translateZ(34px)] sm:p-8">
           {/* top row */}
           <div className="flex items-start justify-between gap-3">
-            <span
-              className={`inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-white/35 bg-white/20 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-white backdrop-blur-md [text-shadow:0_2px_16px_rgba(50,15,45,0.45)] sm:text-[11px] sm:tracking-[0.18em]`}
-            >
+            <div className="flex flex-wrap items-center gap-2">
               <span
-                aria-hidden="true"
-                className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-200"
-              />
-              {mounted ? genzGreeting(now.getHours()) : "welcome"}
-            </span>
+                className={`inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-white/35 bg-white/20 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-white backdrop-blur-md [text-shadow:0_2px_16px_rgba(50,15,45,0.45)] sm:text-[11px] sm:tracking-[0.18em]`}
+              >
+                <span
+                  aria-hidden="true"
+                  className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-200"
+                />
+                {mounted ? genzGreeting(now.getHours()) : "welcome"}
+              </span>
+              {mounted && sky && (
+                <span
+                  className="hidden items-center gap-1.5 whitespace-nowrap rounded-full border border-white/30 bg-white/15 px-2.5 py-1 text-[11px] font-semibold text-white/95 backdrop-blur-md [text-shadow:0_1px_8px_rgba(40,10,40,0.4)] min-[400px]:inline-flex"
+                  title={sky.phaseTitle}
+                >
+                  <span aria-hidden="true" className="text-xs leading-none">
+                    {sky.phaseEmoji}
+                  </span>
+                  {sky.phaseLabel}
+                  <span className="sr-only">{sky.phaseTitle}</span>
+                </span>
+              )}
+            </div>
 
             {activeStreak > 0 ? (
               <motion.span

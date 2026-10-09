@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react"
 import { useReducedMotion } from "framer-motion"
+import type { SkyState } from "@/lib/sky"
 
 /**
  * Live sunset sea rendered with a WebGL fragment shader.
@@ -42,6 +43,16 @@ uniform vec4 uTrail[TRAIL];  // xy = world pos, z = birth time, w = strength
 uniform vec3 uPointer;       // xy = world pos, z = active flag
 uniform float uHorizon;      // world-space y of the horizon line
 uniform float uSunX;         // world-space x of the sun
+uniform float uSunY;         // world-space y of the sun (0 = horizon)
+uniform float uDay;          // 0 = deep night, 1 = full day
+uniform float uWarm;         // twilight warmth band at the horizon
+uniform float uRising;       // 1 = morning side (sunrise), 0 = sunset
+uniform vec3 uMoon;          // xy = world pos of moon, z = visible
+uniform float uMoonF;        // illuminated fraction 0..1
+uniform float uMoonWax;      // 1 = waxing (lit side right), 0 = waning
+uniform float uLumX;         // brightest body x for the sea light path
+uniform float uLumWarm;      // 1 = warm sun path, 0 = silver moon path
+uniform float uLumStr;       // path strength
 
 float hash(vec2 p) {
   return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
@@ -70,36 +81,81 @@ float fbm(vec2 p) {
 }
 
 // Sky color. sp.y is height above the horizon.
+// Palette follows the real sun: night deep-indigo, twilight warm,
+// day soft azure with a peach horizon.
 vec3 skyColor(vec2 sp) {
   float t = clamp(sp.y / 0.9, 0.0, 1.0);
 
-  vec3 low = vec3(1.00, 0.55, 0.26);
-  vec3 mid = vec3(0.72, 0.28, 0.48);
-  vec3 top = vec3(0.12, 0.10, 0.27);
+  vec3 nTop = vec3(0.045, 0.050, 0.120);
+  vec3 nMid = vec3(0.120, 0.100, 0.240);
+  vec3 nLow = vec3(0.280, 0.150, 0.260);
+  vec3 dTop = vec3(0.220, 0.500, 0.840);
+  vec3 dMid = vec3(0.560, 0.760, 0.930);
+  vec3 dLow = vec3(0.990, 0.840, 0.660);
+  vec3 top = mix(nTop, dTop, uDay);
+  vec3 mid = mix(nMid, dMid, uDay);
+  vec3 low = mix(nLow, dLow, uDay);
   vec3 col = mix(low, mid, smoothstep(0.03, 0.40, t));
   col = mix(col, top, smoothstep(0.36, 0.92, t));
 
-  // faint early stars, twinkling
+  // twilight warmth hugging the horizon (sunrise pinker, sunset goldener)
+  float hw = exp(-t * 2.4) * uWarm;
+  vec3 tLow = mix(vec3(1.0, 0.55, 0.26), vec3(1.0, 0.48, 0.42), uRising);
+  vec3 tMid = mix(vec3(0.72, 0.28, 0.48), vec3(0.86, 0.36, 0.52), uRising);
+  col = mix(col, tLow, hw * 0.85);
+  col = mix(col, tMid, exp(-t * 1.2) * uWarm * 0.5);
+
+  // stars, twinkling, fade out in daylight
   vec2 cell = floor(sp * vec2(110.0, 60.0));
   float star = pow(hash(cell), 42.0);
   float tw = 0.55 + 0.45 * sin(uTime * 1.8 + hash(cell + 3.7) * 40.0);
-  col += vec3(1.0, 0.95, 0.9) * star * tw * smoothstep(0.48, 0.85, t) * 0.9;
+  col += vec3(1.0, 0.95, 0.9) * star * tw * smoothstep(0.30, 0.80, t)
+       * (1.0 - uDay) * 1.1;
 
-  // sun + glow
-  vec2 sun = vec2(uSunX, 0.10);
+  // moon: phase-shaded disc + silver glow (fades out in daylight)
+  if (uMoon.z > 0.5) {
+    vec2 mq = sp - uMoon.xy;
+    float md = length(mq);
+    float mVis = 1.0 - uDay * 0.9;
+    float glow = exp(-md * 4.5) * 0.5 * (0.35 + 0.65 * uMoonF) * mVis;
+    col += vec3(0.75, 0.82, 1.0) * glow;
+    float R = 0.042;
+    vec2 q = mq / R;
+    float r2 = dot(q, q);
+    if (r2 < 1.0) {
+      float wax = uMoonWax > 0.5 ? 1.0 : -1.0;
+      float a = 1.0 - 2.0 * uMoonF;
+      float lit = step(a, q.x * wax);
+      float crater = 0.94 + 0.06 * noise(q * 5.0 + 7.0);
+      vec3 bright = vec3(0.93, 0.94, 0.98) * crater;
+      // dark side melts into the sky (earthshine look) instead of a hard disc
+      vec3 dark = col * 0.72;
+      col = mix(col, mix(dark, bright, lit),
+                smoothstep(1.0, 0.85, r2) * mVis);
+    }
+  }
+
+  // sun: real position; sinks below the horizon and disappears
+  vec2 sun = vec2(uSunX, uSunY);
   float d = length(sp - sun);
-  col += vec3(1.0, 0.70, 0.36) * (exp(-d * 6.5) * 0.85 + exp(-d * 24.0) * 0.6);
+  float fade = smoothstep(-0.045, 0.0, uSunY);
+  col += vec3(1.0, 0.70, 0.36)
+       * (exp(-d * 6.5) * 0.85 + exp(-d * 24.0) * 0.6)
+       * fade * (0.35 + 0.65 * uWarm + 0.35 * uDay);
   float disc = smoothstep(0.052, 0.040, d);
-  col = mix(col, vec3(1.0, 0.94, 0.80), disc * 0.96);
+  col = mix(col, mix(vec3(1.0, 0.94, 0.80), vec3(1.0, 0.98, 0.92), uDay),
+            disc * fade);
 
   // warm drifting cloud band near the horizon
   float cl = fbm(vec2(sp.x * 1.6 + uTime * 0.028, sp.y * 3.4 - 0.6));
   float band = smoothstep(0.05, 0.22, sp.y) * smoothstep(0.95, 0.34, sp.y);
-  col = mix(col, vec3(1.0, 0.68, 0.56), smoothstep(0.50, 0.78, cl) * band * 0.55);
+  vec3 cloudWarm = mix(vec3(1.0, 0.68, 0.56), vec3(1.0, 0.93, 0.86), uDay);
+  col = mix(col, cloudWarm, smoothstep(0.50, 0.78, cl) * band * 0.55);
 
-  // violet high clouds
+  // high clouds
   float cl2 = fbm(vec2(sp.x * 0.7 - uTime * 0.018 + 9.2, sp.y * 1.7 + 4.0));
-  col = mix(col, vec3(0.38, 0.24, 0.46),
+  vec3 cloudHigh = mix(vec3(0.38, 0.24, 0.46), vec3(1.0), uDay);
+  col = mix(col, cloudHigh,
     smoothstep(0.60, 0.84, cl2) * smoothstep(0.30, 0.85, sp.y) * 0.42);
 
   return col;
@@ -174,19 +230,20 @@ vec3 seaColor(vec2 p, float depth, float t) {
   vec2 rp = vec2(p.x - g.x * bend, mirror - g.y * bend * 0.9);
   vec3 refl = skyColor(vec2(rp.x, uHorizon + rp.y));
 
-  // Water body color (deep teal, hazier towards the horizon).
-  vec3 deep = vec3(0.020, 0.070, 0.120);
-  vec3 far = vec3(0.05, 0.14, 0.20);
+  // Water body color: deep navy at night, turquoise by day, teal in between.
+  vec3 deep = mix(vec3(0.012, 0.035, 0.065), vec3(0.020, 0.110, 0.160), uDay);
+  vec3 far = mix(vec3(0.030, 0.070, 0.120), vec3(0.060, 0.240, 0.300), uDay);
   vec3 base = mix(deep, far, smoothstep(0.35, 0.0, depth));
 
   // Grazing angle: mirror-like near the horizon, translucent up close.
   float fres = mix(0.08, 0.98, exp(-depth * 5.5));
   vec3 col = mix(base, refl, clamp(fres + g.y * 0.25, 0.0, 1.0));
 
-  // Sun glitter path.
-  float sunPath = exp(-abs(p.x - uSunX) / (0.05 + depth * 0.55));
+  // Luminous path: golden under the sun, silver under the moon.
+  float pathW = exp(-abs(p.x - uLumX) / (0.05 + depth * 0.55));
   float sparkle = pow(noise(vec2(p.x * 22.0 - t * 1.1, p.y * 22.0 + t * 2.0)), 4.0);
-  col += vec3(1.0, 0.60, 0.26) * sunPath * (0.20 + sparkle * 1.5)
+  vec3 lumCol = mix(vec3(0.72, 0.80, 1.0), vec3(1.0, 0.60, 0.26), uLumWarm);
+  col += lumCol * pathW * (0.20 + sparkle * 1.5) * uLumStr
        * smoothstep(0.0, 0.05, depth);
 
   // Foam on crests + glowing wake highlights.
@@ -194,8 +251,10 @@ vec3 seaColor(vec2 p, float depth, float t) {
   float rH = rippleH(p, t) + bowH(p, t);
   col += vec3(0.72, 0.82, 0.88) * max(rH, 0.0) * 1.35;
 
-  // Horizon haze.
-  col += vec3(1.0, 0.62, 0.34) * exp(-depth * 32.0) * 0.35;
+  // Horizon haze (warm at twilight, soft white in daylight).
+  float hazeStr = max(uWarm, uDay * 0.5);
+  col += mix(vec3(1.0, 0.62, 0.34), vec3(1.0, 0.95, 0.90), uDay)
+       * exp(-depth * 32.0) * 0.35 * hazeStr;
 
   return col;
 }
@@ -249,7 +308,21 @@ function compileShader(
   return shader
 }
 
-export function SunsetSea({ className }: { className?: string }) {
+const clampV = (v: number, lo: number, hi: number) =>
+  Math.min(hi, Math.max(lo, v))
+
+const sstepJs = (a: number, b: number, x: number) => {
+  const t = clampV((x - a) / (b - a), 0, 1)
+  return t * t * (3 - 2 * t)
+}
+
+export function SunsetSea({
+  className,
+  sky,
+}: {
+  className?: string
+  sky: SkyState | null
+}) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const t0Ref = useRef(0)
   const pointerRef = useRef({ x: 0, y: 0, active: 0 })
@@ -258,6 +331,12 @@ export function SunsetSea({ className }: { className?: string }) {
   const lastInjRef = useRef<{ x: number; y: number } | null>(null)
   const [failed, setFailed] = useState(false)
   const reduced = useReducedMotion() ?? false
+  const skyRef = useRef<SkyState | null>(null)
+  const aspectRef = useRef(2)
+
+  useEffect(() => {
+    skyRef.current = sky
+  }, [sky])
 
   const pushTrail = useCallback((x: number, y: number, t: number, w: number) => {
     const trail = trailRef.current
@@ -371,6 +450,16 @@ export function SunsetSea({ className }: { className?: string }) {
     const uPointer = gl.getUniformLocation(prog, "uPointer")
     const uHorizon = gl.getUniformLocation(prog, "uHorizon")
     const uSunX = gl.getUniformLocation(prog, "uSunX")
+    const uSunY = gl.getUniformLocation(prog, "uSunY")
+    const uDay = gl.getUniformLocation(prog, "uDay")
+    const uWarm = gl.getUniformLocation(prog, "uWarm")
+    const uRising = gl.getUniformLocation(prog, "uRising")
+    const uMoon = gl.getUniformLocation(prog, "uMoon")
+    const uMoonF = gl.getUniformLocation(prog, "uMoonF")
+    const uMoonWax = gl.getUniformLocation(prog, "uMoonWax")
+    const uLumX = gl.getUniformLocation(prog, "uLumX")
+    const uLumWarm = gl.getUniformLocation(prog, "uLumWarm")
+    const uLumStr = gl.getUniformLocation(prog, "uLumStr")
 
     gl.uniform1f(uHorizon, 0)
 
@@ -387,9 +476,7 @@ export function SunsetSea({ className }: { className?: string }) {
         gl.viewport(0, 0, W, H)
       }
       gl.uniform2f(uRes, W, H)
-      // Keep the sun on-screen across aspect ratios.
-      const sunX = 0.3 * (w / h)
-      gl.uniform1f(uSunX, Math.max(-1.2, Math.min(1.2, sunX)))
+      aspectRef.current = w / h
     }
     resize()
 
@@ -412,10 +499,70 @@ export function SunsetSea({ className }: { className?: string }) {
     document.addEventListener("visibilitychange", onVis)
 
     const draw = (t: number) => {
+      // Map the real sky state to scene uniforms; fall back to a classic
+      // sunset for the first frames (before the sky hook reports).
+      const aspect = aspectRef.current
+      const halfW = aspect / 2
+      const lim = Math.max(0.05, halfW - 0.25)
+
+      let sunX = 0
+      let sunY = 0.1
+      let day = 0
+      let warm = 1
+      let rising = 0
+      let moonX = 0
+      let moonY = 0.3
+      let moonOn = 0
+      let moonF = 0.5
+      let wax = 1
+      let lumX = 0
+      let lumWarm = 1
+      let lumStr = 0.9
+
+      const s = skyRef.current
+      if (s) {
+        sunX = clampV(s.sunX * halfW * 0.62, -lim, lim)
+        sunY = clampV(s.sunAlt / 70, -0.35, 1.0) * 0.4
+        day = s.dayFactor
+        warm = s.warm
+        rising = s.rising ? 1 : 0
+        moonX = clampV(s.moonX * halfW * 0.62, -lim, lim)
+        moonY = clampV(s.moonAlt / 70, -0.35, 1.0) * 0.4
+        moonOn = s.moonUp ? 1 : 0
+        moonF = s.moonIllum
+        wax = s.waxing ? 1 : 0
+
+        const sunStr = sstepJs(-6, -1, s.sunAlt) * 0.95
+        const moonStr =
+          sstepJs(-1, 4, s.moonAlt) *
+          (0.35 + 0.65 * s.moonIllum) *
+          (1 - s.dayFactor * 0.5)
+        if (sunStr >= moonStr) {
+          lumX = sunX
+          lumWarm = 1
+          lumStr = sunStr
+        } else {
+          lumX = moonX
+          lumWarm = 0
+          lumStr = moonStr
+        }
+      }
+
       gl.uniform1f(uTime, t)
       gl.uniform4fv(uTrail, trailRef.current)
       const p = pointerRef.current
       gl.uniform3f(uPointer, p.x, p.y, p.active)
+      gl.uniform1f(uSunX, sunX)
+      gl.uniform1f(uSunY, sunY)
+      gl.uniform1f(uDay, day)
+      gl.uniform1f(uWarm, warm)
+      gl.uniform1f(uRising, rising)
+      gl.uniform3f(uMoon, moonX, moonY, moonOn)
+      gl.uniform1f(uMoonF, moonF)
+      gl.uniform1f(uMoonWax, wax)
+      gl.uniform1f(uLumX, lumX)
+      gl.uniform1f(uLumWarm, lumWarm)
+      gl.uniform1f(uLumStr, lumStr)
       gl.drawArrays(gl.TRIANGLES, 0, 3)
     }
 
