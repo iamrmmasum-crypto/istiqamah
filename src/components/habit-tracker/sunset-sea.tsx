@@ -93,12 +93,12 @@ vec3 skyColor(vec2 sp) {
   col = mix(col, vec3(1.0, 0.94, 0.80), disc * 0.96);
 
   // warm drifting cloud band near the horizon
-  float cl = fbm(vec2(sp.x * 1.6 + uTime * 0.015, sp.y * 3.4 - 0.6));
+  float cl = fbm(vec2(sp.x * 1.6 + uTime * 0.028, sp.y * 3.4 - 0.6));
   float band = smoothstep(0.05, 0.22, sp.y) * smoothstep(0.95, 0.34, sp.y);
   col = mix(col, vec3(1.0, 0.68, 0.56), smoothstep(0.50, 0.78, cl) * band * 0.55);
 
   // violet high clouds
-  float cl2 = fbm(vec2(sp.x * 0.7 - uTime * 0.010 + 9.2, sp.y * 1.7 + 4.0));
+  float cl2 = fbm(vec2(sp.x * 0.7 - uTime * 0.018 + 9.2, sp.y * 1.7 + 4.0));
   col = mix(col, vec3(0.38, 0.24, 0.46),
     smoothstep(0.60, 0.84, cl2) * smoothstep(0.30, 0.85, sp.y) * 0.42);
 
@@ -106,17 +106,27 @@ vec3 skyColor(vec2 sp) {
 }
 
 // Perspective-compressed wave field (world units).
-// Swell crests run mostly horizontal (moving toward the viewer),
-// with fine chop crossing them.
+// Wind-driven: crests travel with the wind, gust patches of chop race across
+// the surface, and elongated streaks scroll along it.
 float waveH(vec2 p, float depth, float t) {
   float persp = 1.0 / (depth + 0.30);
   float wy = persp * 1.6;
   float wx = p.x * persp * 2.6;
-  float h = 0.040 * sin(wy * 1.7 - t * 1.25 + wx * 0.30);
-  h += 0.026 * sin(wy * 3.1 + t * 1.7 + wx * 0.55 + 1.7);
-  h += 0.014 * sin(wx * 4.3 + wy * 5.3 - t * 2.2 + 4.0);
-  h += 0.008 * sin(wx * 9.1 - wy * 9.7 + t * 3.1);
-  h += (noise(vec2(wx * 2.0, wy * 2.6 + t * 0.25)) - 0.5) * 0.03;
+
+  // wind gusts: moving patches that roughen/calmer the surface
+  float gust = 0.60 + 0.55 * noise(vec2(wx * 0.35 - t * 0.40, wy * 0.8 - t * 0.22));
+
+  float h = 0.038 * sin(wy * 1.7 - t * 1.35 + wx * 0.30);
+  h += 0.024 * sin(wy * 3.1 + t * 1.9 + wx * 0.55 + 1.7);
+  h += 0.020 * sin(wx * 1.9 - wy * 0.6 - t * 1.7 + 2.4);
+  h += 0.011 * sin(wx * 4.3 + wy * 5.3 - t * 2.6 + 4.0);
+  h += 0.007 * sin(wx * 9.1 - wy * 9.7 + t * 3.4);
+
+  // chop rides on the swell, modulated by gusts
+  h += (noise(vec2(wx * 2.0 - t * 0.85, wy * 2.6 + t * 0.5)) - 0.5) * 0.034 * gust;
+  // elongated wind streaks scrolling across
+  h += (noise(vec2(wx * 0.7 - t * 1.05, wy * 2.9 + t * 0.35)) - 0.5) * 0.030 * gust;
+
   return h * smoothstep(0.0, 0.06, depth);
 }
 
@@ -175,7 +185,7 @@ vec3 seaColor(vec2 p, float depth, float t) {
 
   // Sun glitter path.
   float sunPath = exp(-abs(p.x - uSunX) / (0.05 + depth * 0.55));
-  float sparkle = pow(noise(vec2(p.x * 24.0, p.y * 24.0 + t * 1.4)), 4.0);
+  float sparkle = pow(noise(vec2(p.x * 22.0 - t * 1.1, p.y * 22.0 + t * 2.0)), 4.0);
   col += vec3(1.0, 0.60, 0.26) * sunPath * (0.20 + sparkle * 1.5)
        * smoothstep(0.0, 0.05, depth);
 
@@ -413,17 +423,14 @@ export function SunsetSea({ className }: { className?: string }) {
     t0Ref.current = t0
     let raf = 0
 
-    if (reduced) {
-      // Static but fully rendered frame.
-      draw(6.0)
-    } else {
-      const loop = () => {
-        raf = requestAnimationFrame(loop)
-        if (!tabVisible || !inView) return
-        draw((performance.now() - t0) / 1000)
-      }
+    // Reduced motion: keep the sea alive but calm (0.45x), skip wake/tilt.
+    const speed = reduced ? 0.45 : 1.0
+    const loop = () => {
       raf = requestAnimationFrame(loop)
+      if (!tabVisible || !inView) return
+      draw(((performance.now() - t0) / 1000) * speed)
     }
+    raf = requestAnimationFrame(loop)
 
     const onContextLost = (e: Event) => {
       e.preventDefault()
