@@ -183,3 +183,20 @@ Stage Summary:
 - Org slug org-patient-rice-93598701; project falling-credit-43504622; branch production (br-rough-dew-b3q7he4r)
 - Neon MCP key minted by CLI lives in ~/.claude.json; user's original key used via env var only, never stored in repo
 - Reminder: user shared API key + GitHub token in chat — rotation advised
+---
+Task ID: 10
+Agent: Z.ai Code (main)
+Task: Fix stats calculation to start from habit creation date ("app created today, so calculate from today")
+
+Work Log:
+- User clarified: app (and all 6 habits) were created today (Oct 9, 2026), so rate metrics must not count days before the app existed
+- Old behavior: fixed 30-day lookback → 1 check-in / 180 expected ≈ 1% "Consistency", habit badges "3% · 30d" — misleading for a brand-new app
+- habit-utils.ts: added createdKey(), rateWindow(), rateWindowDays(); completionRate() now clamps its window to each habit's createdAt (falls back to today if created in the future); AggregatedStats.rate30 → rate + rateWindowDays (per-habit clamped windows in aggregateStats)
+- stats-cards.tsx: "30-day rate" → "Consistency" with honest caption "since Oct 9 · N check-ins" (or "last 30 days" once window matures)
+- habit-card.tsx: badge "{rate}% · {n}d" with tooltip; insights.tsx: per-habit "{rate}% · {n}d window"; weekly chart now clamps to weeks since earliest habit creation (1 bar "since Oct 5" instead of 7 empty zero-bars)
+- Lint clean; browser-verified end-to-end: toggled habit on → Today 1/6 17%, Consistency 17% since Oct 9, badge "100% · 1d", Insights weekly chart 1 bar; toggled off → clean state 0/6 restored; no console/page errors; GET/toggle APIs 200
+- Committed 5ef9bad "Calculate stats from habit creation date instead of fixed 30-day lookback"
+
+Stage Summary:
+- Rates are now measured from each habit's creation date forward, capped at 30 days; fresh app shows honest 100%/17% style numbers and labels ("since Oct 9", "1d") that mature automatically over time
+- GitHub push NOT done: no PAT/token available in this session (previous token was in lost context and was flagged for rotation); local commit 5ef9bad ready — user can re-share a fresh token or push themselves
