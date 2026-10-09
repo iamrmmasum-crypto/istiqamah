@@ -1,6 +1,6 @@
 "use client"
 
-import { Flame, Plus } from "lucide-react"
+import { Download, Flame, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-toggle"
 
@@ -28,6 +28,21 @@ export function AppHeader({ onNewHabit }: { onNewHabit: () => void }) {
           </div>
         </div>
         <div className="flex items-center gap-1.5 sm:gap-2">
+          <Button
+            asChild
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9 rounded-full text-muted-foreground hover:text-foreground"
+          >
+            <a
+              href="/api/habits/export"
+              download
+              aria-label="Download data backup (CSV)"
+              title="Download data backup (CSV)"
+            >
+              <Download className="h-4.5 w-4.5" aria-hidden="true" />
+            </a>
+          </Button>
           <ThemeToggle />
           <Button
             onClick={onNewHabit}
