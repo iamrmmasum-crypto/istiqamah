@@ -200,3 +200,17 @@ Work Log:
 Stage Summary:
 - Rates are now measured from each habit's creation date forward, capped at 30 days; fresh app shows honest 100%/17% style numbers and labels ("since Oct 9", "1d") that mature automatically over time
 - GitHub push NOT done: no PAT/token available in this session (previous token was in lost context and was flagged for rotation); local commit 5ef9bad ready — user can re-share a fresh token or push themselves
+---
+Task ID: 11
+Agent: Z.ai Code (main)
+Task: Push pending commits to GitHub using user-provided fresh token
+
+Work Log:
+- Remote main was still at 74b8421 (Task 10 commit 5ef9bad + checkpoint 4fc637c were local-only)
+- User supplied fresh PAT; pushed via one-off URL (token NOT written to .git/config or any file)
+- Verified: ls-remote shows refs/heads/main = 4fc637c (push landed); git config clean of ghp_ strings
+- Advised user to revoke/rotate the token since it was pasted in chat
+
+Stage Summary:
+- GitHub main now includes "Calculate stats from habit creation date instead of fixed 30-day lookback" (5ef9bad)
+- No secrets persisted in repo or git config
