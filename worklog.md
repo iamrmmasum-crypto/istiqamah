@@ -228,3 +228,18 @@ Work Log:
 Stage Summary:
 - Caption anchors to the true start date (creation day); bar labels remain calendar weeks with full range in tooltip
 - Remote main = 9a2099b
+---
+Task ID: 13
+Agent: Z.ai Code (main)
+Task: Change week start from Monday to Friday (user is Muslim, Islamic week starts Jumu'ah)
+
+Work Log:
+- startOfWeek() in habit-utils.ts now returns the FRIDAY of the week (Fri–Thu weeks); verified by unit test: all 7 weekdays map back to correct Friday
+- Heatmap rows relabeled F/S/M/W (Friday-first grid) — shares the same startOfWeek so grid columns follow the Islamic week automatically
+- insights.tsx: weekly chart vars renamed (weekStart), description now "Total check-ins per week (Fri–Thu)"
+- Lint clean; browser-verified: bar labeled "Oct 9" (today = Friday = week start, perfectly matching app creation date), tooltip "Oct 9 – Oct 15", heatmap F/S/M/W rows; toggle on→off clean state 0/6 restored; no page errors
+- Committed + pushed (token reuse, never stored)
+
+Stage Summary:
+- Weeks now run Friday → Thursday everywhere (weekly chart, heatmap); today's bar starts exactly at app creation day
+- Remote main updated
