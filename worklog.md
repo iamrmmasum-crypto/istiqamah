@@ -270,3 +270,17 @@ Work Log:
 Stage Summary:
 - User's habit list now 7: sleep, wake-up, shower, meditation, no porn, newspaper, 💧 3L water
 - Remote main unchanged at 97a9da5
+---
+Task ID: 16
+Agent: Z.ai Code (main)
+Task: Add user's 5 daily-schedule habits (study/eat/bath/nap blocks)
+
+Work Log:
+- Created via POST /api/habits (all 201): 8.📚 সকাল ৬-৯ পড়াশোনা (violet), 9.🥗 সকাল ৯-১০ খাওয়া ও বিশ্রাম (amber), 10.📝 সকাল ১০-১২ পড়াশোনা (emerald), 11.🚿 দুপুর ১২-১ গোসল (teal), 12.🛏️ দুপুর ২-৪ ঘুম (rose) — sortOrder auto 8→12, all created today 13:14 UTC with Bengali descriptions
+- Noticed: user toggled water habit (#7) themselves — 1 entry exists
+- UI verified: Today 1/12 (8%), streak 1, "11 left"; All habits shows 12 cards; all 5 new ones badge "0% · 1d" (per-habit creation-date window); no page errors
+
+Stage Summary:
+- Habit list now 12 (6 original + water + 5 schedule blocks)
+- Possible duplicate flagged to user: #3 "প্রতিদিন গোসল করা" overlaps new #11 scheduled bath — left untouched, user decides
+- No code changes; remote main unchanged at 97a9da5
