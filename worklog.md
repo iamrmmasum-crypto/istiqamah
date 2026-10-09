@@ -344,3 +344,19 @@ Work Log:
 Stage Summary:
 - Sea visibly flows like wind-blown water; motion present in all cases including OS reduce-motion (calm mode)
 - Commit on main (local); push still pending credentials
+---
+Task ID: 21
+Agent: Z.ai Code (main)
+Task: Scene follows real date/time — চাঁদ ওঠা, সূর্য ওঠা, অমাবস্যা, পূর্ণিমা (user request)
+
+Work Log:
+- Created src/lib/sky.ts (no-API astronomy): solar declination/RA, GMST-based hour angle (fixed earlier ~1h-late approximation), altitude at Dhaka 23.81N/90.41E; moon phase via synodic cycle from JD epoch → illum %, waxing/waning, Bengali labels (অমাবস্যা 🌑 / পূর্ণিমা 🌕 / শুক্লপক্ষ / কৃষ্ণপক্ষ); moon position from elongation
+- Verified numerically for today: 06:00 sun +0.7° (real sunrise 05:53), noon 59.7° (theory 59.8°), set by 17:47 ✓; full moon high at midnight, new moon below horizon ✓; real phase today = কৃষ্ণপক্ষ 3%
+- use-sky hook (30 s refresh) with demo params ?hour=H[:MM] / ?phase=0..1
+- Shader: night↔day palettes by real sun altitude, twilight band (pink sunrise / golden sunset), day-fading stars, phase-shaded moon disc (craters, earthshine dark side melting into sky, daylight fade), sea light path auto-swaps gold sun ↔ silver moon, day water turquoise / night navy
+- Hero: moon-phase chip next to greeting pill
+- Browser-verified: sunrise, noon, sunset, পূর্ণিমা night (moon + silver path), অমাবস্যা night (pitch dark), live default (post-sunset twilight); lint clean, no errors
+- Commit on main (local); push still pending credentials
+
+Stage Summary:
+- The hero sky is now a real clock: sun rises/sets, moon rises/sets with correct phase, অমাবস্যা/পূর্ণিমা render distinctly; previewable via ?hour= and ?phase=
