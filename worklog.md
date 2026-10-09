@@ -313,3 +313,20 @@ Work Log:
 Stage Summary:
 - Hero is now the Gen-Z centerpiece: dark aurora card, oversized gradient typography, glassmorphism chips, animated gradient ring
 - Remote main = 19dd183
+---
+Task ID: 19
+Agent: Z.ai Code (main)
+Task: Replace dark aurora hero with a 3D card over a live sunset sea (user: "already have dark mode so dark card not need .. A 3D card over a live sunset sea, real reflections and a wake that follows the pointer")
+
+Work Log:
+- New src/components/habit-tracker/sunset-sea.tsx: WebGL1 fragment-shader scene — sunset sky gradient + sun/glow + drifting fbm clouds + twinkling early stars; sea mirrors the sky about the horizon (real reflections compressed by grazing angle, bent per-pixel by wave normals), fresnel falloff toward viewer, deep-teal water body, sun glitter path, crest foam, horizon haze, vignette + grain
+- Pointer wake: every pointermove injects expanding ring ripples (24-point vec4 trail uniform, interpolated along movement, strength by speed) that distort reflections; hover adds a bow wave around the cursor; pointerdown = splash; reduced-motion renders one static frame; rAF pauses when tab hidden or card off-screen (IntersectionObserver); DPR capped 2; CSS sunset gradient fallback when WebGL missing/context lost
+- hero.tsx rewritten: 3D tilt card — wrapper [perspective:1400px], rAF-lerped rotateX/rotateY following pointer (mouse only; ±7.5°/6°), content layer at translateZ(34px) for true depth, pointer-following soft-light sheen; NO dark card — glass pills/chips (white/15 + blur), oversized white+amber-gradient date, sunset gradient ring (amber→rose→violet) on a glass disc, subtle scene-tinted scrims only for text legibility
+- Iterated shader after browser screenshots (fixed golden-dune look: lowered base fresnel 0.30→0.08, horizontal swell crests, softer noise, narrower haze)
+- Browser-verified: desktop light+dark, iPhone 14, wake visible along mouse sweep (glowing ripple arcs), tilt transform confirmed (rotateX(-1.34deg) rotateY(0.2deg)), ring updates on habit toggle (9%→0%→9%), streak chip updates, state restored to 1/11 + streak 1 + light theme; lint clean; no page errors
+- Commit 97a7acf (on top of auto worklog commit 013f38c); push not attempted successfully — token revoked, needs fresh credentials
+
+Stage Summary:
+- Hero is now a 3D card over a live sunset sea with real sky reflections and a pointer-following wake; theme-independent (works in light + dark, no forced dark styling)
+- Files: sunset-sea.tsx (new), hero.tsx (rewritten); page.tsx unchanged (same Hero props)
+- Remote main still at 97a9da5-era history? No — local has 19dd183..97a7acf unpushed; push blocked pending credentials
