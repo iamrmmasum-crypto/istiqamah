@@ -214,3 +214,17 @@ Work Log:
 Stage Summary:
 - GitHub main now includes "Calculate stats from habit creation date instead of fixed 30-day lookback" (5ef9bad)
 - No secrets persisted in repo or git config
+---
+Task ID: 12
+Agent: Z.ai Code (main)
+Task: Clarify weekly chart "Oct 5" label (user: "today oct 9 but you set oct 5 what?")
+
+Work Log:
+- Explained: weekly chart buckets are calendar weeks (Mon start); Oct 9 is Friday so the current week's bar is labeled by its Monday, Oct 5 — but the caption "since Oct 5" wrongly implied data started then
+- insights.tsx: added sinceLabel (earliest habit creation date → "since Oct 9" in caption); each bar now carries weekRange "Oct 5 – Oct 11" shown in the hover tooltip so the Monday label is self-explanatory
+- Lint clean; browser-verified: caption "Total check-ins per week · since Oct 9"; toggled habit on → hover tooltip "Oct 5 – Oct 11 · 1 check-ins"; toggled off → clean state 0/6; no page errors
+- Committed + pushed 9a2099b (token reuse OK, not stored anywhere)
+
+Stage Summary:
+- Caption anchors to the true start date (creation day); bar labels remain calendar weeks with full range in tooltip
+- Remote main = 9a2099b
