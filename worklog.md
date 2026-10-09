@@ -284,3 +284,16 @@ Stage Summary:
 - Habit list now 12 (6 original + water + 5 schedule blocks)
 - Possible duplicate flagged to user: #3 "প্রতিদিন গোসল করা" overlaps new #11 scheduled bath — left untouched, user decides
 - No code changes; remote main unchanged at 97a9da5
+---
+Task ID: 17
+Agent: Z.ai Code (main)
+Task: Delete old duplicate habit "প্রতিদিন গোসল করা" (user confirmed "yes")
+
+Work Log:
+- Found habit id cmv0vgmx80002mo1fkvbhevau (created 11:18, 0 entries — no data loss); DELETE /api/habits/[id] → 200 {"ok":true}
+- Verified: 11 habits remain; old bath gone, scheduled bath (#11 দুপুর ১২-১টা) intact; sortOrder displays correctly with gap at 3
+- UI verified: stats card "Today 1/11 · 9% complete" (water habit still checked); no page errors
+
+Stage Summary:
+- Final list: 11 habits (6 original + water + 5 schedule blocks − old bath)
+- No code changes; remote main unchanged at 97a9da5
