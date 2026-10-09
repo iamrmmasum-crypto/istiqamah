@@ -20,6 +20,7 @@ import {
   computeStreaks,
   countCompletions,
   createdKey,
+  formatDayLabel,
   habitCompletedSet,
   parseKey,
   rateWindowDays,
@@ -41,6 +42,14 @@ function weekLabel(key: string): string {
 export function Insights({ habits, perDayCounts }: InsightsProps) {
   const today = todayKey()
   const maxPerDay = habits.length || 1
+
+  // Honest "since" label: the day the app actually started (earliest habit),
+  // not the Monday of that week.
+  const sinceLabel = useMemo(() => {
+    if (habits.length === 0) return formatDayLabel(today)
+    const earliest = habits.map(createdKey).reduce((a, b) => (b < a ? b : a))
+    return formatDayLabel(earliest)
+  }, [habits, today])
 
   // Completions per week, capped at the last 8 weeks but never reaching
   // back before the earliest habit was created (a brand-new app gets 1 bar)
@@ -69,7 +78,12 @@ export function Insights({ habits, perDayCounts }: InsightsProps) {
           if (set.has(addDays(start, d))) completions++
         }
       }
-      return { label: weekLabel(start), completions, range: `${start}..${end}` }
+      return {
+        label: weekLabel(start),
+        weekRange: `${weekLabel(start)} – ${weekLabel(end)}`,
+        completions,
+        range: `${start}..${end}`,
+      }
     })
   }, [habits, today])
 
@@ -92,7 +106,7 @@ export function Insights({ habits, perDayCounts }: InsightsProps) {
           <CardTitle className="text-base">Weekly completions</CardTitle>
           <CardDescription>
             Total check-ins per week ·{" "}
-            {weeklyData.length < 8 ? `since ${weeklyData[0]?.label}` : "last 8 weeks"}
+            {weeklyData.length < 8 ? `since ${sinceLabel}` : "last 8 weeks"}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -126,6 +140,12 @@ export function Insights({ habits, perDayCounts }: InsightsProps) {
                     fontSize: 12,
                   }}
                   formatter={(value) => [`${value} check-ins`, "Completions"]}
+                  labelFormatter={(_, payload) => {
+                    const range = (
+                      payload?.[0]?.payload as { weekRange?: string } | undefined
+                    )?.weekRange
+                    return range ?? ""
+                  }}
                 />
                 <Bar
                   dataKey="completions"
