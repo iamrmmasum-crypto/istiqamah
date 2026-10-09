@@ -1,0 +1,37 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// A habit the user wants to build or keep disciplined about.
+model Habit {
+  id          String       @id @default(cuid())
+  name        String
+  description String?
+  icon        String       @default("✅") // emoji chosen from a preset palette
+  color       String       @default("emerald") // palette key: emerald|amber|rose|violet|teal|orange
+  frequency   String       @default("daily") // "daily" | "weekly"
+  targetDays  Int          @default(7) // days per week target (used for weekly habits)
+  archived    Boolean      @default(false)
+  sortOrder   Int          @default(0)
+  createdAt   DateTime     @default(now())
+  entries     HabitEntry[]
+}
+
+// One row per (habit, calendar day). Completion is stored as a date string
+// ("YYYY-MM-DD", local to the client) so day math is timezone-safe.
+model HabitEntry {
+  id        String   @id @default(cuid())
+  habitId   String
+  habit     Habit    @relation(fields: [habitId], references: [id], onDelete: Cascade)
+  date      String // YYYY-MM-DD
+  completed Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@unique([habitId, date])
+  @@index([habitId, date])
+}
