@@ -51,23 +51,23 @@ export function Insights({ habits, perDayCounts }: InsightsProps) {
     return formatDayLabel(earliest)
   }, [habits, today])
 
-  // Completions per week, capped at the last 8 weeks but never reaching
-  // back before the earliest habit was created (a brand-new app gets 1 bar)
+  // Completions per week (Friday–Thursday), capped at the last 8 weeks but
+  // never reaching back before the earliest habit was created
   const weeklyData = useMemo(() => {
-    const thisMonday = startOfWeek(today)
+    const weekStart = startOfWeek(today)
     let weeks = 8
     const createdDates = habits.map(createdKey)
     if (createdDates.length > 0) {
-      const earliestMonday = startOfWeek(
+      const earliestWeekStart = startOfWeek(
         createdDates.reduce((a, b) => (b < a ? b : a))
       )
       const diff = Math.round(
-        (parseKey(thisMonday).getTime() - parseKey(earliestMonday).getTime()) /
+        (parseKey(weekStart).getTime() - parseKey(earliestWeekStart).getTime()) /
           (7 * 24 * 60 * 60 * 1000)
       )
       weeks = Math.max(1, Math.min(8, diff + 1))
     }
-    const firstStart = addDays(thisMonday, -7 * (weeks - 1))
+    const firstStart = addDays(weekStart, -7 * (weeks - 1))
     return Array.from({ length: weeks }, (_, i) => {
       const start = addDays(firstStart, 7 * i)
       const end = addDays(start, 6)
@@ -105,7 +105,7 @@ export function Insights({ habits, perDayCounts }: InsightsProps) {
         <CardHeader className="pb-2">
           <CardTitle className="text-base">Weekly completions</CardTitle>
           <CardDescription>
-            Total check-ins per week ·{" "}
+            Total check-ins per week (Fri–Thu) ·{" "}
             {weeklyData.length < 8 ? `since ${sinceLabel}` : "last 8 weeks"}
           </CardDescription>
         </CardHeader>

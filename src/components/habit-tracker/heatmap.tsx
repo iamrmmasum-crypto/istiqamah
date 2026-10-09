@@ -52,7 +52,8 @@ export function Heatmap({
   const usedDays = Math.floor((todayMs - startMs) / dayMs) + 1
   const cellCount = Math.max(totalDays, Math.ceil(usedDays / 7) * 7)
 
-  const weekdayLabels = ["M", "", "W", "", "F", "", ""]
+  // Rows run Friday → Thursday (Islamic week), matching startOfWeek
+  const weekdayLabels = ["F", "", "S", "", "M", "", "W"]
 
   return (
     <div className={cn("flex gap-1.5", className)}>

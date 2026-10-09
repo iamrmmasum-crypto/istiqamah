@@ -60,10 +60,15 @@ export function formatDayLabelLong(key: string): string {
   })
 }
 
-/** Monday of the week containing `key`. */
+/**
+ * First day (Friday) of the week containing `key`.
+ * The week starts on Jumu'ah (Friday) and runs through Thursday,
+ * following the Islamic week.
+ */
 export function startOfWeek(key: string): string {
-  const dow = dayOfWeek(key) // 0 = Sun
-  return addDays(key, dow === 0 ? -6 : 1 - dow)
+  // dayOfWeek: 0=Sun 1=Mon 2=Tue 3=Wed 4=Thu 5=Fri 6=Sat
+  const dow = dayOfWeek(key)
+  return addDays(key, -((dow - 5 + 7) % 7))
 }
 
 /* --------------------------------- streaks -------------------------------- */
