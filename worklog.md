@@ -256,3 +256,17 @@ Work Log:
 Stage Summary:
 - Confirmed: every habit (now and in the future) is measured only from its own creation date forward, capped at 30 days; window label grows 1d → 30d automatically
 - No repo changes; remote main unchanged at 97a9da5
+---
+Task ID: 15
+Agent: Z.ai Code (main)
+Task: Add user's new habit "প্রতিদিন ৩ লিটার পানি পান করা" via the app UI
+
+Work Log:
+- Created via UI dialog (New habit → name + Bengali description + 💧 icon + teal color + Daily)
+- Verified via API: 7 habits total; new habit 💧 teal sortOrder 7, createdAt 2026-10-09T12:59 (today)
+- UI verified: card badge "0% · 1d" — per-habit window starts from its own creation date (rule confirmed in Task 14); stats now "Today 0/7", "Consistency 0% since Oct 9 · 0 check-ins"
+- No code changes; left unchecked for the user to mark; no page errors
+
+Stage Summary:
+- User's habit list now 7: sleep, wake-up, shower, meditation, no porn, newspaper, 💧 3L water
+- Remote main unchanged at 97a9da5
