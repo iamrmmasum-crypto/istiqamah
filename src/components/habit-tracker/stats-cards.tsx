@@ -4,7 +4,7 @@ import { CalendarCheck, Flame, TrendingUp, Trophy } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Skeleton } from "@/components/ui/skeleton"
-import type { AggregatedStats } from "@/lib/habit-utils"
+import { addDays, formatDayLabel, type AggregatedStats, todayKey } from "@/lib/habit-utils"
 import { cn } from "@/lib/utils"
 
 interface StatsCardsProps {
@@ -15,6 +15,13 @@ interface StatsCardsProps {
 
 export function StatsCards({ stats, loading, className }: StatsCardsProps) {
   const pct = stats.todayTotal === 0 ? 0 : Math.round((stats.todayDone / stats.todayTotal) * 100)
+
+  // Honest window label: brand-new habits are measured from their creation
+  // day, older ones fall back to the standard 30-day window.
+  const windowCaption =
+    stats.rateWindowDays < 30
+      ? `since ${formatDayLabel(addDays(todayKey(), -(stats.rateWindowDays - 1)))}`
+      : "last 30 days"
 
   const items = [
     {
@@ -46,9 +53,9 @@ export function StatsCards({ stats, loading, className }: StatsCardsProps) {
       iconClass: "bg-violet-500/10 text-violet-600 dark:text-violet-400",
     },
     {
-      label: "30-day rate",
-      value: `${stats.rate30}%`,
-      caption: `${stats.totalCompletions} total check-ins`,
+      label: "Consistency",
+      value: `${stats.rate}%`,
+      caption: `${windowCaption} · ${stats.totalCompletions} check-ins`,
       icon: TrendingUp,
       iconClass: "bg-teal-500/10 text-teal-600 dark:text-teal-400",
     },

@@ -114,20 +114,46 @@ export function countCompletions(habit: Habit): number {
   return habit.entries.filter((e) => e.completed).length
 }
 
+/* --------------------------- rate windows --------------------------- */
+
+/** Local date key of the day a habit was created. */
+export function createdKey(habit: Habit): string {
+  const d = new Date(habit.createdAt)
+  return isNaN(d.getTime()) ? todayKey() : toDateKey(d)
+}
+
 /**
- * Completion rate over the last `days` days.
- * Daily habits expect one entry per day; weekly habits expect
- * `targetDays` per 7 days. Capped at 100%.
+ * Date keys used for rate calculations: the last `days` days ending today,
+ * but never reaching back before the habit was created. A brand-new habit
+ * is only measured from its start day, so a fresh app shows honest rates
+ * (e.g. 100% for today when done) instead of ~3% against days that did
+ * not exist yet. Falls back to just today if creation is in the future.
+ */
+export function rateWindow(habit: Habit, days = 30): string[] {
+  const created = createdKey(habit)
+  const clamped = lastNDays(days).filter((d) => d >= created)
+  return clamped.length > 0 ? clamped : [todayKey()]
+}
+
+/** Number of days in the clamped rate window (for labels like "1d"). */
+export function rateWindowDays(habit: Habit, days = 30): number {
+  return rateWindow(habit, days).length
+}
+
+/**
+ * Completion rate over the rate window (last `days` days, clamped to the
+ * habit's creation date). Daily habits expect one entry per day; weekly
+ * habits expect `targetDays` per 7 days. Capped at 100%.
  */
 export function completionRate(habit: Habit, days = 30): number {
   const dates = habitCompletedSet(habit)
-  const window = lastNDays(days)
+  const window = rateWindow(habit, days)
   let done = 0
   for (const d of window) if (dates.has(d)) done++
   const expected =
     habit.frequency === "daily"
-      ? days
-      : Math.max(1, Math.round((habit.targetDays * days) / 7))
+      ? window.length
+      : Math.max(1, Math.round((habit.targetDays * window.length) / 7))
   return Math.min(100, Math.round((done / expected) * 100))
 }
 
@@ -136,19 +162,20 @@ export interface AggregatedStats {
   todayTotal: number
   activeStreak: number // best current streak across habits
   bestStreak: number // all-time best across habits
-  rate30: number // 0-100 combined completion rate, last 30 days
+  rate: number // 0-100 combined completion rate (since each habit was created, capped at 30 days)
+  rateWindowDays: number // longest per-habit window used, for honest labels ("since Oct 9")
   totalCompletions: number
 }
 
 export function aggregateStats(habits: Habit[]): AggregatedStats {
   const today = todayKey()
-  const window30 = lastNDays(30)
   let todayDone = 0
   let activeStreak = 0
   let bestStreak = 0
   let totalDone = 0
-  let done30 = 0
-  let expected30 = 0
+  let doneSum = 0
+  let expectedSum = 0
+  let windowDays = 0
 
   for (const habit of habits) {
     if (isDoneOn(habit, today)) todayDone++
@@ -157,21 +184,26 @@ export function aggregateStats(habits: Habit[]): AggregatedStats {
     if (streaks.current > activeStreak) activeStreak = streaks.current
     if (streaks.best > bestStreak) bestStreak = streaks.best
     totalDone += countCompletions(habit)
-    for (const d of window30) if (dates.has(d)) done30++
-    expected30 +=
+
+    // Each habit is only measured from its own creation date forward
+    const window = rateWindow(habit, 30)
+    if (window.length > windowDays) windowDays = window.length
+    for (const d of window) if (dates.has(d)) doneSum++
+    expectedSum +=
       habit.frequency === "daily"
-        ? 30
-        : Math.max(1, Math.round((habit.targetDays * 30) / 7))
+        ? window.length
+        : Math.max(1, Math.round((habit.targetDays * window.length) / 7))
   }
 
-  const rate30 = expected30 === 0 ? 0 : Math.min(100, Math.round((done30 / expected30) * 100))
+  const rate = expectedSum === 0 ? 0 : Math.min(100, Math.round((doneSum / expectedSum) * 100))
 
   return {
     todayDone,
     todayTotal: habits.length,
     activeStreak,
     bestStreak,
-    rate30,
+    rate,
+    rateWindowDays: windowDays || 30,
     totalCompletions: totalDone,
   }
 }

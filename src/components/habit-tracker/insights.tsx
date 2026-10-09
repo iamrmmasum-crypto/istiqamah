@@ -19,7 +19,10 @@ import {
   completionRate,
   computeStreaks,
   countCompletions,
+  createdKey,
   habitCompletedSet,
+  parseKey,
+  rateWindowDays,
   startOfWeek,
   todayKey,
 } from "@/lib/habit-utils"
@@ -39,11 +42,25 @@ export function Insights({ habits, perDayCounts }: InsightsProps) {
   const today = todayKey()
   const maxPerDay = habits.length || 1
 
-  // Completions per week, last 8 weeks
+  // Completions per week, capped at the last 8 weeks but never reaching
+  // back before the earliest habit was created (a brand-new app gets 1 bar)
   const weeklyData = useMemo(() => {
     const thisMonday = startOfWeek(today)
-    return Array.from({ length: 8 }, (_, i) => {
-      const start = addDays(thisMonday, -7 * (7 - i))
+    let weeks = 8
+    const createdDates = habits.map(createdKey)
+    if (createdDates.length > 0) {
+      const earliestMonday = startOfWeek(
+        createdDates.reduce((a, b) => (b < a ? b : a))
+      )
+      const diff = Math.round(
+        (parseKey(thisMonday).getTime() - parseKey(earliestMonday).getTime()) /
+          (7 * 24 * 60 * 60 * 1000)
+      )
+      weeks = Math.max(1, Math.min(8, diff + 1))
+    }
+    const firstStart = addDays(thisMonday, -7 * (weeks - 1))
+    return Array.from({ length: weeks }, (_, i) => {
+      const start = addDays(firstStart, 7 * i)
       const end = addDays(start, 6)
       let completions = 0
       for (const habit of habits) {
@@ -73,7 +90,10 @@ export function Insights({ habits, perDayCounts }: InsightsProps) {
       <Card className="rounded-xl">
         <CardHeader className="pb-2">
           <CardTitle className="text-base">Weekly completions</CardTitle>
-          <CardDescription>Total check-ins per week · last 8 weeks</CardDescription>
+          <CardDescription>
+            Total check-ins per week ·{" "}
+            {weeklyData.length < 8 ? `since ${weeklyData[0]?.label}` : "last 8 weeks"}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="h-48 w-full">
@@ -131,6 +151,7 @@ export function Insights({ habits, perDayCounts }: InsightsProps) {
             for (const d of habitCompletedSet(habit)) counts.set(d, 1)
             const streaks = computeStreaks(habitCompletedSet(habit))
             const rate = completionRate(habit, 30)
+            const rateDays = rateWindowDays(habit, 30)
 
             return (
               <div key={habit.id}>
@@ -146,7 +167,7 @@ export function Insights({ habits, perDayCounts }: InsightsProps) {
                     <div className="min-w-0">
                       <p className="truncate text-sm font-semibold">{habit.name}</p>
                       <p className="text-xs text-muted-foreground">
-                        {rate}% last 30 days · {countCompletions(habit)} check-ins ·
+                        {rate}% · {rateDays}d window · {countCompletions(habit)} check-ins ·
                         best streak {streaks.best}
                       </p>
                     </div>

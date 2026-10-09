@@ -19,6 +19,7 @@ import {
   countCompletions,
   habitCompletedSet,
   isDoneOn,
+  rateWindowDays,
   todayKey,
   weekdayLetter,
 } from "@/lib/habit-utils"
@@ -39,6 +40,8 @@ export function HabitCard({ habit, index, onEdit, onDelete }: HabitCardProps) {
   const streaks = computeStreaks(habitCompletedSet(habit))
   const total = countCompletions(habit)
   const rate = completionRate(habit, 30)
+  // Measured from the habit's creation day (a fresh habit shows "1d", not "30d")
+  const rateDays = rateWindowDays(habit, 30)
 
   return (
     <motion.div
@@ -66,8 +69,11 @@ export function HabitCard({ habit, index, onEdit, onDelete }: HabitCardProps) {
                 <Badge variant="secondary" className="h-5 px-1.5 text-[10px] font-medium">
                   {habit.frequency === "daily" ? "Daily" : `${habit.targetDays}\u00D7/week`}
                 </Badge>
-                <span className={cn("text-xs font-semibold", colorDef.text)}>
-                  {rate}% · 30d
+                <span
+                  className={cn("text-xs font-semibold", colorDef.text)}
+                  title={`Completion rate since this habit was created (up to 30 days)`}
+                >
+                  {rate}% · {rateDays}d
                 </span>
               </div>
             </div>
