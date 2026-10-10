@@ -550,3 +550,20 @@ Stage Summary:
 - All habit cards now rotate 4 color-tinted 3D styles matching the stat-card 3D family
 - Toggle buttons tactile: raised ring -> pressed-in colored check when done
 - Commits: a73deee (stat cards 3D), a822edb (habit cards 3D) both live in production
+
+---
+Task ID: 31
+Agent: main (Z.ai Code)
+Task: Act on 10/10 design critique — unified cards, compact hero, tactile micro-interactions
+
+Work Log:
+- stats-cards.tsx rewritten: single glass treatment (bg-card/80 + backdrop-blur + consistent shadows) for all 4 metric cards, differentiated only by color identity (top accent bar + glowing gradient icon disc: emerald/amber/violet/teal); kept 3D groove progress; hover tilt-lift unified; fixed missing disc gradient class bug found in screenshot review
+- hero.tsx compacted: min-h 440/400/430 -> 380/300/310 (desktop -28%), smaller type/spacing/ring; added 100%-day celebration: 16-particle color burst from progress ring, fires once on live completion via rAF-deferred setState (ESLint set-state-in-effect fix)
+- today-list.tsx: AnimatePresence check-pop spring on toggle, one-shot completion ring pulse, keyboard shortcuts 1-9 toggle first nine due habits (guarded vs inputs), kbd number hints per row (desktop), tip line under list
+- Lint clean; local verified: hero 310px, 4 glass cards, toggle + keyboard (press 2 -> 14->13 left), restored to 15 left / DB pristine (water 2 entries, no extras)
+- Push 4da73f9; production verified: heroH 310, 4 glass cards, 4 accent bars, 11 kbd hints, 0 page errors
+
+Stage Summary:
+- Critique items addressed: card system unified (glass + glow), hero compacted 25-30%, tactile micro-interactions added
+- Habit-card rotating 3D kept (explicit earlier user request, not named in critique)
+- Commits now: a73deee (3D stats) -> a822edb (3D habits) -> 4da73f9 (design elevation), all live
