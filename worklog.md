@@ -472,3 +472,20 @@ Work Log:
 
 Stage Summary:
 - Repo is Vercel-ready: single env var DATABASE_URL (Neon pooled), prisma generate via postinstall, no other config changes needed
+
+---
+Task ID: 27
+Agent: main (Z.ai Code)
+Task: Vercel deployment pre-flight check + deployment guidance for istiqamah
+
+Work Log:
+- Verified package.json: postinstall "prisma generate" present (commit e605e1f, pushed to origin/main)
+- Verified next.config.ts has output: "standalone" so the build script's cp -r commands succeed on Vercel
+- Confirmed origin/main == local main (e605e1f), working tree clean, all 27 commits pushed
+- Confirmed .env is gitignored, so DATABASE_URL must be added manually in Vercel dashboard
+- Provided user with step-by-step Vercel deploy instructions (skip Prisma Postgres integration, add DATABASE_URL env var, deploy, verify /api/habits)
+
+Stage Summary:
+- Repo is 100% deploy-ready; only missing piece is DATABASE_URL env var in Vercel
+- Target value: pooled Neon URI (ep-nameless-cell-b3gf3ykh-pooler / istiqamah_app / db istiqamah)
+- Post-deploy verification: /api/habits should return 17 habits in day-flow order; toggle persistence proves Neon link
