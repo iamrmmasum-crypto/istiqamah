@@ -3,13 +3,10 @@ generator client {
 }
 
 datasource db {
-  // TEMPORARY (Task 23): sandbox reset wiped the Neon connection string from
-  // .env, so the app runs on local SQLite until the user re-shares the Neon
-  // URL. To migrate back: restore provider "postgresql" + the pooled Neon URL,
-  // `bun run db:push`, then copy habits/entries from the local DB (see worklog
-  // Task 23).
-  provider = "sqlite"
-  url      = "file:./db/custom.db"
+  // Neon Postgres (project "Istiqamah", branch production, database istiqamah,
+  // pooled endpoint). Connection string lives in .env (DATABASE_URL).
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 // A habit the user wants to build or keep disciplined about.

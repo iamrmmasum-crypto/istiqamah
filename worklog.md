@@ -402,3 +402,29 @@ Work Log:
 Stage Summary:
 - Weekday-scheduled habits fully supported; জুমার নামাজ appears only on Fridays, জোহর every day except Friday, 5 prayers daily — 17 habits total, 16 due per day
 - DB on LOCAL SQLite until Neon URL re-shared: to migrate back restore provider postgresql + pooled URL, bun run db:push, copy habits/entries from local db (habits + entries tables are small; created Oct 9-10)
+
+---
+Task ID: 24
+Agent: Z.ai Code (main)
+Task: Restore Neon Postgres + push all commits (user re-shared credentials: GitHub PAT + Neon API key)
+
+Work Log:
+- Pushed all 24 local commits to GitHub (origin/main 19dd183..5707bcd) with the provided PAT ✓
+- Identified `napi_…` token as a Neon API key; verified via /users/me (iamrmmasum@gmail.com, org org-patient-rice-93598701)
+- Found project "Istiqamah" (falling-credit-43504622), branch br-rough-dew-b3q7he4r "production", endpoint ep-nameless-cell-b3gf3ykh (ap-southeast-1); the v2 connection_string route 404s and role password PATCH/PUT are 405 (Allow: DELETE,GET) on this API surface, so access was rebuilt instead:
+  - Created role `istiqamah_app` (API auto-generates npg_ password — my supplied one was ignored)
+  - Created dedicated database `istiqamah` owned by istiqamah_app (old `neondb` left untouched as a frozen pre-reset snapshot)
+  - Pooled URI: postgresql://istiqamah_app:…@ep-nameless-cell-b3gf3ykh-pooler.c-4.ap-southeast-1.aws.neon.tech/istiqamah?sslmode=require
+- Dumped the SQLite source of truth (17 habits incl. 6 prayers, 2 water entries Oct 9+10) to JSON before touching the client
+- schema.prisma: provider sqlite→postgresql, url env("DATABASE_URL"); .env got the pooled URI (gitignored, verified)
+- `bun run db:push` — GOTCHA: the sandbox shell init re-exports a stale DATABASE_URL=file:… which overrides .env for both CLI and spawned servers → must `unset DATABASE_URL` per command / inject the .env value into the spawn env
+- Import script (temp, deleted): pre-snapshot of Neon (0 habits, fresh DB), transaction deleteMany+create with original habit/entry ids and createdAt preserved → Neon now 17 habits, 2 entries
+- Dev server restarted twice: first died between tool calls (sandbox reaps plain `setsid nohup &` spawns); fixed with detached node spawn (Task 23 approach) + .env DATABASE_URL injected into child env (works around the shell-init override)
+- Verified via Agent Browser: API serves 17 habits/6 prayers/2 water entries from Neon; today list = 16 due (জুমা hidden on Saturday ✓, জোহর present ✓); hero 6% 1/16, streak 2, clock ticking 12:39:55; toggle ফজর → 13% → reload still 13% → entry {date 2026-10-10, completed} confirmed in Neon via API → untoggled back to 6% (user state restored); 0 console errors; footer flush with document bottom on desktop + iPhone 14; no horizontal overflow; lint clean
+- Screenshots: /tmp/verify-desktop.png, /tmp/verify-mobile.png
+
+Stage Summary:
+- App is back on Neon Postgres (fresh `istiqamah` database, pooled endpoint, .env holds the URI); SQLite file kept at prisma/db/custom.db as a local backup
+- All work (Tasks 1-24) is now on GitHub: github.com/iamrmmasum-crypto/istiqamah @ 5707bcd+1
+- Old pre-reset data still readable in the branch's `neondb` database (user can reset neondb_owner's password from the Neon Console if ever needed)
+- Sandbox quirk to remember: shell init exports stale DATABASE_URL — unset it (or inject .env value) before prisma commands and dev-server spawns
