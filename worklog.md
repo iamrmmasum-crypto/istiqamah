@@ -458,3 +458,17 @@ Work Log:
 
 Stage Summary:
 - Day flow now starts: ☀️ ঘুম থেকে ওঠা ৫:০০ → 🌅 ফজর (৫:০০–৬:০০) → 📚 পড়াশোনা ৬–৯
+
+---
+Task ID: 27
+Agent: Z.ai Code (main)
+Task: Prepare the repo for Vercel deployment (user importing iamrmmasum-crypto/istiqamah on Vercel)
+
+Work Log:
+- Audited env needs: src uses no process.env directly; the only required env var is DATABASE_URL (Prisma schema env()) → the existing pooled Neon URI
+- Added "postinstall": "prisma generate" to package.json so Vercel builds always generate the Prisma client regardless of which install/build command runs
+- Deployment guidance: keep Build Command default (next build — the standalone cp steps are sandbox-only and Vercel ignores output:"standalone"), do NOT add the "Prisma Postgres" Vercel integration (it would create a new empty DB and hijack DATABASE_URL; all data lives in the existing Neon database), paste the pooled DATABASE_URL for Production+Preview+Development
+- Runtime notes: Vercel serverless ↔ Neon needs the pooled (-pooler) endpoint — already what .env uses; all date/streak/prayer logic is client-side (device time), so UTC servers don't affect day boundaries
+
+Stage Summary:
+- Repo is Vercel-ready: single env var DATABASE_URL (Neon pooled), prisma generate via postinstall, no other config changes needed
