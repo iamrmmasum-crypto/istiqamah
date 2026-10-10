@@ -528,3 +528,25 @@ Work Log:
 Stage Summary:
 - 4 distinct 3D stat cards live in production (commit a73deee)
 - Dark mode + mobile verified; same component API (stats/loading/className) so page.tsx unchanged
+
+---
+Task ID: 30
+Agent: main (Z.ai Code)
+Task: Give the 16 habit cards rotating distinct 3D designs (Today list + All-habits grid)
+
+Work Log:
+- Created src/lib/habit-3d.ts: habit3D(index, hex) helper cycling 4 variants keyed by habit color hex
+  - emboss: neumorphic soft shadow + inset highlight
+  - slab: 4px extruded bottom edge in habit color + colored glow + sheen
+  - stack: two offset depth panels behind card + tinted border
+  - plaque: inset colored bevel ring + glow + sheen
+  - plus shared puffy icon-tile shadows and raised/pressed toggle-button shadows
+- Rewrote today-list.tsx rows: per-variant card surface, stack layers, sheen strips, 3D raised->pressed toggle buttons, whileHover lift
+- Updated habit-card.tsx (All habits grid) with same system (Card overridden border-0/shadow-none, overflow-hidden for sheen)
+- Lint clean; local verify: light/dark, desktop/mobile, toggled Fajr (14 left, pressed 3D button, streak badge) then restored (15 left, Fajr 0 entries)
+- Push a822edb; production verified: 5 stack layers, slab edges, 8 sheens present on vercel, 0 page errors
+
+Stage Summary:
+- All habit cards now rotate 4 color-tinted 3D styles matching the stat-card 3D family
+- Toggle buttons tactile: raised ring -> pressed-in colored check when done
+- Commits: a73deee (stat cards 3D), a822edb (habit cards 3D) both live in production
