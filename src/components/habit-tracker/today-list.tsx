@@ -10,6 +10,7 @@ import {
   isDoneOn,
   isScheduledOn,
 } from "@/lib/habit-utils"
+import { habit3D, stackLayerStyles } from "@/lib/habit-3d"
 import type { Habit } from "@/types/habit"
 import { cn } from "@/lib/utils"
 
@@ -20,6 +21,11 @@ interface TodayListProps {
   pendingHabitId?: string
   onToggle: (habitId: string) => void
 }
+
+const STACK_OFFSETS = [
+  "translate-x-2.5 translate-y-2.5",
+  "translate-x-[5px] translate-y-[5px]",
+]
 
 export function TodayList({
   habits,
@@ -52,7 +58,7 @@ export function TodayList({
   const dueHabits = habits.filter((habit) => isScheduledOn(habit, today))
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {dueHabits.map((habit, index) => {
         const done = isDoneOn(habit, today)
         const colorDef = HABIT_COLORS[habit.color]
@@ -60,26 +66,52 @@ export function TodayList({
           isScheduledOn(habit, k)
         )
         const pending = pendingHabitId === habit.id
+        const style3d = habit3D(index, colorDef.hex)
 
         return (
           <motion.div
             key={habit.id}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.25, delay: index * 0.04 }}
+            whileHover={{ y: -2 }}
+            transition={{ duration: 0.25, delay: Math.min(index, 8) * 0.04 }}
             layout
+            className="relative"
           >
+            {/* offset depth panels behind "stack"-variant cards */}
+            {style3d.variant === "stack" &&
+              stackLayerStyles(colorDef.hex).map((layerStyle, i) => (
+                <div
+                  key={i}
+                  aria-hidden="true"
+                  className={cn(
+                    "absolute inset-0 rounded-2xl",
+                    STACK_OFFSETS[i]
+                  )}
+                  style={layerStyle}
+                />
+              ))}
+
             <div
               className={cn(
-                "flex items-center gap-3 rounded-xl border bg-card p-3.5 transition-colors sm:gap-4 sm:p-4",
-                done && "border-emerald-500/25 bg-emerald-500/[0.04] dark:border-emerald-500/20"
+                "relative flex items-center gap-3 bg-card p-3.5 sm:gap-4 sm:p-4",
+                style3d.cardClass,
+                done && "bg-emerald-500/[0.04] dark:bg-emerald-500/[0.06]"
               )}
+              style={style3d.cardStyle}
             >
+              {style3d.sheen && (
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-x-0 top-0 h-1/2 rounded-t-2xl bg-gradient-to-b from-white/10 to-transparent"
+                />
+              )}
               <div
                 className={cn(
                   "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-xl",
                   colorDef.chip
                 )}
+                style={style3d.iconStyle}
                 aria-hidden="true"
               >
                 {habit.icon}
@@ -102,7 +134,7 @@ export function TodayList({
               </div>
               {streaks.current > 0 && (
                 <span
-                  className="hidden items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-xs font-semibold text-amber-600 dark:text-amber-400 sm:inline-flex"
+                  className="hidden items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-xs font-semibold text-amber-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.3)] dark:text-amber-400 sm:inline-flex"
                   aria-label={`Current streak: ${streaks.current} days`}
                 >
                   <Flame className="h-3.5 w-3.5" aria-hidden="true" />
@@ -122,6 +154,7 @@ export function TodayList({
                     ? cn(colorDef.solid, "border-transparent text-white")
                     : "border-muted-foreground/25 text-transparent hover:border-muted-foreground/50 hover:text-muted-foreground/30"
                 )}
+                style={done ? style3d.buttonDownStyle : style3d.buttonUpStyle}
               >
                 {pending ? (
                   <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />

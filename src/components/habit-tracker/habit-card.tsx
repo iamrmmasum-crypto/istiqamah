@@ -25,6 +25,7 @@ import {
   todayKey,
   weekdayLetter,
 } from "@/lib/habit-utils"
+import { habit3D, stackLayerStyles } from "@/lib/habit-3d"
 import type { Habit } from "@/types/habit"
 import { cn } from "@/lib/utils"
 
@@ -48,15 +49,44 @@ export function HabitCard({ habit, index, onEdit, onDelete }: HabitCardProps) {
   const rateDays = rateWindowDays(habit, 30)
   const schedule = scheduleLabel(habit)
 
+  const style3d = habit3D(index, colorDef.hex)
+  const stackOffsets = ["translate-x-2.5 translate-y-2.5", "translate-x-[5px] translate-y-[5px]"]
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.25, delay: index * 0.05 }}
+      whileHover={{ y: -3 }}
+      transition={{ duration: 0.25, delay: Math.min(index, 8) * 0.05 }}
       layout
-      className="h-full"
+      className="relative h-full"
     >
-      <Card className="flex h-full flex-col rounded-xl transition-shadow hover:shadow-md">
+      {/* offset depth panels behind "stack"-variant cards */}
+      {style3d.variant === "stack" &&
+        stackLayerStyles(colorDef.hex).map((layerStyle, i) => (
+          <div
+            key={i}
+            aria-hidden="true"
+            className={cn(
+              "absolute inset-0 rounded-2xl",
+              stackOffsets[i]
+            )}
+            style={layerStyle}
+          />
+        ))}
+      <Card
+        className={cn(
+          "relative flex h-full flex-col overflow-hidden border-0 shadow-none",
+          style3d.cardClass
+        )}
+        style={style3d.cardStyle}
+      >
+        {style3d.sheen && (
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 top-0 h-1/2 rounded-t-2xl bg-gradient-to-b from-white/10 to-transparent"
+          />
+        )}
         <CardContent className="flex flex-1 flex-col gap-4 p-4 sm:p-5">
           <div className="flex items-start gap-3">
             <div
@@ -64,6 +94,7 @@ export function HabitCard({ habit, index, onEdit, onDelete }: HabitCardProps) {
                 "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-xl",
                 colorDef.chip
               )}
+              style={style3d.iconStyle}
               aria-hidden="true"
             >
               {habit.icon}
