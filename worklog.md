@@ -489,3 +489,22 @@ Stage Summary:
 - Repo is 100% deploy-ready; only missing piece is DATABASE_URL env var in Vercel
 - Target value: pooled Neon URI (ep-nameless-cell-b3gf3ykh-pooler / istiqamah_app / db istiqamah)
 - Post-deploy verification: /api/habits should return 17 habits in day-flow order; toggle persistence proves Neon link
+
+---
+Task ID: 28
+Agent: main (Z.ai Code)
+Task: Post-deploy end-to-end verification of https://istiqamah-murex.vercel.app/
+
+Work Log:
+- Opened live site via agent-browser: title "Istiqamah — Habit & Discipline Tracker" renders
+- curl /api/habits: 17 habits returned from Neon in correct day-flow order (1=5AM wake-up, 17=12AM sleep)
+- UI snapshot: "Saturday, October 10", "Today 15 left", Juma correctly hidden (Saturday), water shows "Mark incomplete" (user's real check-in intact)
+- Toggle test: clicked Fajr -> "14 left"; full reload -> still checked (persistence through Vercel->Neon confirmed)
+- Restored state: untoggled Fajr -> "15 left"; DB verified Fajr 0 entries, water 2 entries (untouched)
+- Console: 0 errors, 0 page errors
+- Footer: mobile (iPhone 14) scrolled to bottom -> footerBottom 844 == viewport 844 (sticky OK); long content pushes it naturally
+- Screenshots: desktop + mobile both render cleanly, stats show streak 2 / consistency 7% / 2 check-ins since Oct 9
+
+Stage Summary:
+- DEPLOYMENT VERIFIED: live site fully functional, same Neon DB, user data intact, zero errors
+- URL: https://istiqamah-murex.vercel.app/
