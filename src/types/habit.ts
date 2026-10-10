@@ -24,6 +24,8 @@ export interface Habit {
   color: HabitColor
   frequency: HabitFrequency
   targetDays: number
+  /** CSV of due weekdays 0-6 (0=Sun…6=Sat); "" = due every day */
+  scheduledDays: string
   archived: boolean
   sortOrder: number
   createdAt: string
@@ -37,6 +39,7 @@ export interface HabitInput {
   color: HabitColor
   frequency: HabitFrequency
   targetDays: number
+  scheduledDays?: string
 }
 
 export interface ToggleResult {

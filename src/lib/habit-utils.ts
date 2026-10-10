@@ -71,6 +71,82 @@ export function startOfWeek(key: string): string {
   return addDays(key, -((dow - 5 + 7) % 7))
 }
 
+/* --------------------------------- schedules ------------------------------ */
+
+/**
+ * Set of due weekdays (0=Sun … 6=Sat) parsed from the CSV `scheduledDays`
+ * field. null = due every day (field empty or unparsable).
+ */
+export function scheduledDaySet(habit: Habit): Set<number> | null {
+  const raw = (habit.scheduledDays ?? "").trim()
+  if (!raw) return null
+  const days = new Set<number>()
+  for (const part of raw.split(",")) {
+    const n = Number(part.trim())
+    if (Number.isInteger(n) && n >= 0 && n <= 6) days.add(n)
+  }
+  return days.size === 0 ? null : days
+}
+
+/** True when the habit carries a weekday schedule (not due every day). */
+export function hasSchedule(habit: Habit): boolean {
+  return scheduledDaySet(habit) !== null
+}
+
+/** True when the habit is due on the given local date key. */
+export function isScheduledOn(habit: Habit, dateKey: string): boolean {
+  const days = scheduledDaySet(habit)
+  return days === null || days.has(dayOfWeek(dateKey))
+}
+
+/** True when the habit is due today. */
+export function isDueToday(habit: Habit): boolean {
+  return isScheduledOn(habit, todayKey())
+}
+
+/** Bengali full weekday names, 0=রবিবার … 6=শনিবার. */
+const BENGALI_WEEKDAYS = [
+  "রবিবার",
+  "সোমবার",
+  "মঙ্গলবার",
+  "বুধবার",
+  "বৃহস্পতিবার",
+  "শুক্রবার",
+  "শনিবার",
+]
+
+/** Bengali short weekday letters for compact labels. */
+const BENGALI_WEEKDAYS_SHORT = [
+  "রবি",
+  "সোম",
+  "মঙ্গল",
+  "বুধ",
+  "বৃহঃ",
+  "শুক্র",
+  "শনি",
+]
+
+/**
+ * Bengali label for a habit's weekday schedule, e.g. "শুক্রবার" (Fridays)
+ * or "প্রতিদিন · শুক্রবার বাদে". null when due every day.
+ */
+export function scheduleLabel(habit: Habit): string | null {
+  const days = scheduledDaySet(habit)
+  if (!days) return null
+  if (days.size === 1) {
+    const [d] = [...days]
+    return BENGALI_WEEKDAYS[d]
+  }
+  if (days.size === 6) {
+    const excluded = [0, 1, 2, 3, 4, 5, 6].find((d) => !days.has(d))
+    return `প্রতিদিন · ${BENGALI_WEEKDAYS[excluded ?? 5]} বাদে`
+  }
+  return [...days]
+    .sort((a, b) => a - b)
+    .map((d) => BENGALI_WEEKDAYS_SHORT[d])
+    .join(" · ")
+}
+
 /* --------------------------------- streaks -------------------------------- */
 
 export interface Streaks {
@@ -80,24 +156,49 @@ export interface Streaks {
   best: number
 }
 
-export function computeStreaks(completedDates: Set<string>): Streaks {
+/**
+ * Consecutive-day streaks, aware of weekday schedules: only completed days
+ * that were actually due count, and "consecutive" means consecutive *due*
+ * days (a Friday-only habit chains Friday → next Friday). With the default
+ `isDue = always true` this is the classic daily streak.
+ */
+export function computeStreaks(
+  completedDates: Set<string>,
+  isDue: (key: string) => boolean = () => true
+): Streaks {
   if (completedDates.size === 0) return { current: 0, best: 0 }
 
-  const sorted = [...completedDates].sort()
+  const dueDone = [...completedDates].filter(isDue).sort()
+  if (dueDone.length === 0) return { current: 0, best: 0 }
+
   let best = 1
   let run = 1
-  for (let i = 1; i < sorted.length; i++) {
-    if (addDays(sorted[i - 1], 1) === sorted[i]) run++
+  for (let i = 1; i < dueDone.length; i++) {
+    // first due day after the previous completed due day
+    let next = addDays(dueDone[i - 1], 1)
+    while (!isDue(next)) next = addDays(next, 1)
+    if (next === dueDone[i]) run++
     else run = 1
     if (run > best) best = run
   }
 
   const today = todayKey()
-  let cursor = completedDates.has(today) ? today : addDays(today, -1)
+  // Start counting from the most recent due day at/before today:
+  // today if due and done; otherwise the previous due day (today may simply
+  // not be done yet — yesterday-grace for daily habits, last week for weekly)
+  let cursor = today
+  if (!isDue(cursor) || !completedDates.has(cursor)) {
+    do {
+      cursor = addDays(cursor, -1)
+    } while (!isDue(cursor))
+  }
+
   let current = 0
   while (completedDates.has(cursor)) {
     current++
-    cursor = addDays(cursor, -1)
+    do {
+      cursor = addDays(cursor, -1)
+    } while (!isDue(cursor))
   }
 
   return { current, best }
@@ -147,18 +248,23 @@ export function rateWindowDays(habit: Habit, days = 30): number {
 
 /**
  * Completion rate over the rate window (last `days` days, clamped to the
- * habit's creation date). Daily habits expect one entry per day; weekly
- * habits expect `targetDays` per 7 days. Capped at 100%.
+ * habit's creation date). Scheduled habits are measured against their due
+ * days only (জুমার নামাজ expects one check-in per Friday, not per day);
+ * unscheduled weekly habits still expect `targetDays` per 7 days. Capped
+ * at 100%; a window with no due days yet reads as 100% (nothing owed).
  */
 export function completionRate(habit: Habit, days = 30): number {
   const dates = habitCompletedSet(habit)
   const window = rateWindow(habit, days)
+  const dueDays = window.filter((d) => isScheduledOn(habit, d))
   let done = 0
-  for (const d of window) if (dates.has(d)) done++
-  const expected =
-    habit.frequency === "daily"
+  for (const d of dueDays) if (dates.has(d)) done++
+  const expected = hasSchedule(habit)
+    ? dueDays.length
+    : habit.frequency === "daily"
       ? window.length
       : Math.max(1, Math.round((habit.targetDays * window.length) / 7))
+  if (expected === 0) return 100
   return Math.min(100, Math.round((done / expected) * 100))
 }
 
@@ -175,6 +281,7 @@ export interface AggregatedStats {
 export function aggregateStats(habits: Habit[]): AggregatedStats {
   const today = todayKey()
   let todayDone = 0
+  let todayTotal = 0
   let activeStreak = 0
   let bestStreak = 0
   let totalDone = 0
@@ -183,19 +290,26 @@ export function aggregateStats(habits: Habit[]): AggregatedStats {
   let windowDays = 0
 
   for (const habit of habits) {
-    if (isDoneOn(habit, today)) todayDone++
     const dates = habitCompletedSet(habit)
-    const streaks = computeStreaks(dates)
+    const streaks = computeStreaks(dates, (k) => isScheduledOn(habit, k))
     if (streaks.current > activeStreak) activeStreak = streaks.current
     if (streaks.best > bestStreak) bestStreak = streaks.best
     totalDone += countCompletions(habit)
 
+    // Habits only count toward "today" when they are due today
+    if (isScheduledOn(habit, today)) {
+      todayTotal++
+      if (isDoneOn(habit, today)) todayDone++
+    }
+
     // Each habit is only measured from its own creation date forward
     const window = rateWindow(habit, 30)
     if (window.length > windowDays) windowDays = window.length
-    for (const d of window) if (dates.has(d)) doneSum++
-    expectedSum +=
-      habit.frequency === "daily"
+    const dueDays = window.filter((d) => isScheduledOn(habit, d))
+    for (const d of dueDays) if (dates.has(d)) doneSum++
+    expectedSum += hasSchedule(habit)
+      ? dueDays.length
+      : habit.frequency === "daily"
         ? window.length
         : Math.max(1, Math.round((habit.targetDays * window.length) / 7))
   }
@@ -204,7 +318,7 @@ export function aggregateStats(habits: Habit[]): AggregatedStats {
 
   return {
     todayDone,
-    todayTotal: habits.length,
+    todayTotal,
     activeStreak,
     bestStreak,
     rate,

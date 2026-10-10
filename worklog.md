@@ -382,3 +382,23 @@ Work Log:
 Stage Summary:
 - Hero now shows live ticking time + today's সূর্যোদয়/সূর্যাস্ত/চন্দ্রোদয়/চন্দ্রাস্ত (device-local, Dhaka coords) — "সময় ও তারিখ" fully realized on the card
 - Files: src/hooks/use-clock.ts (new), src/lib/sky.ts, src/components/habit-tracker/hero.tsx, sunset-sea.tsx, src/app/globals.css
+
+---
+Task ID: 23
+Agent: Z.ai Code (main)
+Task: Add 5 daily prayers + Jumu'ah (Friday-only, replaces Dhuhr) — "ফজর/জোহর/আসর/মাগরিব/এশা + শুক্রবারে জুমা"
+
+Work Log:
+- SANDBOX RESET RECOVERY: container restarted on Oct 10 — Neon connection string, .env override and dev server were wiped (git history intact). Switched prisma datasource TEMPORARILY to sqlite (db/custom.db, commented in schema), re-seeded the user's 11 habits (exact names/icons/colors/sortOrder from Tasks 15-17, createdAt Oct 9) + the Oct 9 water check-in; restarted dev server (detached node spawn)
+- Schema: Habit.scheduledDays (CSV of weekdays 0-6, "" = daily) — e.g. "5" = Fridays, "0,1,2,3,4,6" = every day except Friday; db:push OK
+- API: POST/PATCH /api/habits accept scheduledDays (zod regex, optional on PATCH so dialog edits never wipe it)
+- habit-utils: scheduledDaySet/hasSchedule/isScheduledOn/isDueToday/scheduleLabel (Bengali: শুক্রবার, প্রতিদিন · শুক্রবার বাদে); computeStreaks now takes isDue predicate — due-day chains (Fri→Fri) with previous-due-day grace; completionRate + aggregateStats measure only due days (window with 0 due days = 100%, nothing owed); todayTotal counts only habits due today
+- UI: TodayList filters to due habits; HabitCard badge shows scheduleLabel + mini-week dims non-due days (opacity-40, "· not scheduled" tooltip); insights breakdown streaks schedule-aware; dialog passes scheduledDays through on edit
+- Created 6 habits via API: ফজর 🌅 violet, জোহর 🌞 emerald (except Fri), আসর 🌤️ amber, মাগরিব 🌇 orange, এশা 🌙 rose (all daily), জুমা 🕌 teal weekly targetDays 1 scheduledDays "5" — sortOrder 12-17
+- Unit tests (bun): 14/14 — Fri/Sat/Thu due flags, Fri→Fri streak chain (2 Fridays = current 2/best 2), missed Friday → 0, daily grace unchanged, rate counts Fridays only, fresh Saturday habit = 100%, todayTotal excludes Friday-only on Saturday
+- Browser-verified: Today = 16 items (জুমা hidden on Saturday ✓), hero 1/16 6% (user checked water today themselves — left as-is), streak 2, toggle ফজর on→13%→off→6%, badges "প্রতিদিন · শুক্রবার বাদে"/"শুক্রবার", জুমা mini-week dims all but Oct 9, mobile 390px clean, lint clean, no console/page errors
+- Commit on main (local); push still pending credentials
+
+Stage Summary:
+- Weekday-scheduled habits fully supported; জুমার নামাজ appears only on Fridays, জোহর every day except Friday, 5 prayers daily — 17 habits total, 16 due per day
+- DB on LOCAL SQLite until Neon URL re-shared: to migrate back restore provider postgresql + pooled URL, bun run db:push, copy habits/entries from local db (habits + entries tables are small; created Oct 9-10)

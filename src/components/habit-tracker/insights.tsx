@@ -22,6 +22,7 @@ import {
   createdKey,
   formatDayLabel,
   habitCompletedSet,
+  isScheduledOn,
   parseKey,
   rateWindowDays,
   startOfWeek,
@@ -169,7 +170,9 @@ export function Insights({ habits, perDayCounts }: InsightsProps) {
             const colorDef = HABIT_COLORS[habit.color]
             const counts = new Map<string, number>()
             for (const d of habitCompletedSet(habit)) counts.set(d, 1)
-            const streaks = computeStreaks(habitCompletedSet(habit))
+            const streaks = computeStreaks(habitCompletedSet(habit), (k) =>
+              isScheduledOn(habit, k)
+            )
             const rate = completionRate(habit, 30)
             const rateDays = rateWindowDays(habit, 30)
 

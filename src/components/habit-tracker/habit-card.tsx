@@ -19,7 +19,9 @@ import {
   countCompletions,
   habitCompletedSet,
   isDoneOn,
+  isScheduledOn,
   rateWindowDays,
+  scheduleLabel,
   todayKey,
   weekdayLetter,
 } from "@/lib/habit-utils"
@@ -37,11 +39,14 @@ export function HabitCard({ habit, index, onEdit, onDelete }: HabitCardProps) {
   const colorDef = HABIT_COLORS[habit.color]
   const today = todayKey()
   const last7 = Array.from({ length: 7 }, (_, i) => addDays(today, -(6 - i)))
-  const streaks = computeStreaks(habitCompletedSet(habit))
+  const streaks = computeStreaks(habitCompletedSet(habit), (k) =>
+    isScheduledOn(habit, k)
+  )
   const total = countCompletions(habit)
   const rate = completionRate(habit, 30)
   // Measured from the habit's creation day (a fresh habit shows "1d", not "30d")
   const rateDays = rateWindowDays(habit, 30)
+  const schedule = scheduleLabel(habit)
 
   return (
     <motion.div
@@ -67,7 +72,10 @@ export function HabitCard({ habit, index, onEdit, onDelete }: HabitCardProps) {
               <p className="truncate font-semibold leading-tight">{habit.name}</p>
               <div className="mt-1 flex items-center gap-1.5">
                 <Badge variant="secondary" className="h-5 px-1.5 text-[10px] font-medium">
-                  {habit.frequency === "daily" ? "Daily" : `${habit.targetDays}\u00D7/week`}
+                  {schedule ??
+                    (habit.frequency === "daily"
+                      ? "Daily"
+                      : `${habit.targetDays}\u00D7/week`)}
                 </Badge>
                 <span
                   className={cn("text-xs font-semibold", colorDef.text)}
@@ -115,6 +123,7 @@ export function HabitCard({ habit, index, onEdit, onDelete }: HabitCardProps) {
               {last7.map((date) => {
                 const done = isDoneOn(habit, date)
                 const isToday = date === today
+                const due = isScheduledOn(habit, date)
                 return (
                   <div key={date} className="flex flex-col items-center gap-1">
                     <span
@@ -126,12 +135,13 @@ export function HabitCard({ habit, index, onEdit, onDelete }: HabitCardProps) {
                       {weekdayLetter(date)}
                     </span>
                     <div
-                      title={date}
+                      title={date + (due ? "" : " · not scheduled")}
                       className={cn(
                         "flex h-7 w-7 items-center justify-center rounded-full border transition-colors",
                         done
                           ? cn(colorDef.solid, "border-transparent text-white")
                           : "border-border",
+                        !due && "opacity-40",
                         isToday && !done && "ring-2 ring-foreground/15"
                       )}
                     >

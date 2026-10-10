@@ -3,8 +3,13 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  // TEMPORARY (Task 23): sandbox reset wiped the Neon connection string from
+  // .env, so the app runs on local SQLite until the user re-shares the Neon
+  // URL. To migrate back: restore provider "postgresql" + the pooled Neon URL,
+  // `bun run db:push`, then copy habits/entries from the local DB (see worklog
+  // Task 23).
+  provider = "sqlite"
+  url      = "file:./db/custom.db"
 }
 
 // A habit the user wants to build or keep disciplined about.
@@ -16,6 +21,9 @@ model Habit {
   color       String       @default("emerald") // palette key: emerald|amber|rose|violet|teal|orange
   frequency   String       @default("daily") // "daily" | "weekly"
   targetDays  Int          @default(7) // days per week target (used for weekly habits)
+  // Weekday schedule as CSV of 0-6 (0=Sun … 6=Sat), "" = due every day.
+  // e.g. "5" = Fridays only (জুমার নামাজ), "0,1,2,3,4,6" = every day except Friday.
+  scheduledDays String     @default("")
   archived    Boolean      @default(false)
   sortOrder   Int          @default(0)
   createdAt   DateTime     @default(now())

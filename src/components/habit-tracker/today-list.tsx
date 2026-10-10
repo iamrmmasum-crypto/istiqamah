@@ -8,6 +8,7 @@ import {
   computeStreaks,
   habitCompletedSet,
   isDoneOn,
+  isScheduledOn,
 } from "@/lib/habit-utils"
 import type { Habit } from "@/types/habit"
 import { cn } from "@/lib/utils"
@@ -47,12 +48,17 @@ export function TodayList({
     )
   }
 
+  // Only habits due today appear in the Today list (e.g. জুমার নামাজ Fridays)
+  const dueHabits = habits.filter((habit) => isScheduledOn(habit, today))
+
   return (
     <div className="space-y-3">
-      {habits.map((habit, index) => {
+      {dueHabits.map((habit, index) => {
         const done = isDoneOn(habit, today)
         const colorDef = HABIT_COLORS[habit.color]
-        const streaks = computeStreaks(habitCompletedSet(habit))
+        const streaks = computeStreaks(habitCompletedSet(habit), (k) =>
+          isScheduledOn(habit, k)
+        )
         const pending = pendingHabitId === habit.id
 
         return (

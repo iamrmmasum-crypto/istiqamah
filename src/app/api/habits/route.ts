@@ -9,6 +9,11 @@ const createSchema = z.object({
   color: z.enum(["emerald", "amber", "rose", "violet", "teal", "orange"]).default("emerald"),
   frequency: z.enum(["daily", "weekly"]).default("daily"),
   targetDays: z.number().int().min(1).max(7).default(7),
+  // CSV of due weekdays 0-6 (0=Sun…6=Sat); "" = every day (e.g. "5" = Fridays)
+  scheduledDays: z
+    .string()
+    .regex(/^$|^[0-6](,[0-6])*$/, "Must be empty or CSV of weekdays 0-6")
+    .default(""),
 })
 
 // GET /api/habits — list all habits with their entries
@@ -52,6 +57,7 @@ export async function POST(request: Request) {
         frequency: parsed.data.frequency,
         targetDays:
           parsed.data.frequency === "weekly" ? parsed.data.targetDays : 7,
+        scheduledDays: parsed.data.scheduledDays,
         sortOrder: (max._max.sortOrder ?? 0) + 1,
       },
       include: { entries: true },

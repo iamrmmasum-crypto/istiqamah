@@ -77,6 +77,8 @@ function HabitFormFields({
       color,
       frequency,
       targetDays: frequency === "weekly" ? targetDays : 7,
+      // Keep the existing weekday schedule when editing (e.g. জুমার নামাজ = Fridays)
+      scheduledDays: habit?.scheduledDays ?? "",
     })
   }
 

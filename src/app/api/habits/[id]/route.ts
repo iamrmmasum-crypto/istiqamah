@@ -9,6 +9,11 @@ const updateSchema = z.object({
   color: z.enum(["emerald", "amber", "rose", "violet", "teal", "orange"]).optional(),
   frequency: z.enum(["daily", "weekly"]).optional(),
   targetDays: z.number().int().min(1).max(7).optional(),
+  // CSV of due weekdays 0-6 (0=Sun…6=Sat); "" = every day
+  scheduledDays: z
+    .string()
+    .regex(/^$|^[0-6](,[0-6])*$/, "Must be empty or CSV of weekdays 0-6")
+    .optional(),
   archived: z.boolean().optional(),
 })
 
