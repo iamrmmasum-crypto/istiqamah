@@ -444,3 +444,17 @@ Work Log:
 
 Stage Summary:
 - Habits now read as a full day plan from ফজর (5 AM) to ঘুমানো (12 AM); order stored in Habit.sortOrder and applied across Today / All habits / Insights
+
+---
+Task ID: 26
+Agent: Z.ai Code (main)
+Task: Fix wake-up habit time — "সকাল ৭:০০টায় ঘুম থেকে ওঠা" → ৫:০০ ("...fixed সকাল 5:০০টায় ঘুম থেকে ওঠা")
+
+Work Log:
+- Direct Neon update (PATCH API doesn't take sortOrder): name + description now ৫:০০ ("প্রতিদিন সকাল ৫:০০টায় ঘুম থেকে উঠবো")
+- Re-slotted to keep the chronological flow: wake ৫:০০ → sortOrder 1, ফজর 2, পড়াশোনা ৬–৯ 3 (wake now leads the day, Fajr window follows)
+- Temp script deleted; browser-verified: first 3 = wake ৫:০০ / ফজর / পড়াশোনা, 16 due, 1/16 6% unchanged, 0 console errors
+- Data-only change; pushed worklog to GitHub
+
+Stage Summary:
+- Day flow now starts: ☀️ ঘুম থেকে ওঠা ৫:০০ → 🌅 ফজর (৫:০০–৬:০০) → 📚 পড়াশোনা ৬–৯
