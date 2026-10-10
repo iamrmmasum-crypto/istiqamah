@@ -428,3 +428,19 @@ Stage Summary:
 - All work (Tasks 1-24) is now on GitHub: github.com/iamrmmasum-crypto/istiqamah @ 5707bcd+1
 - Old pre-reset data still readable in the branch's `neondb` database (user can reset neondb_owner's password from the Neon Console if ever needed)
 - Sandbox quirk to remember: shell init exports stale DATABASE_URL — unset it (or inject .env value) before prisma commands and dev-server spawns
+
+---
+Task ID: 25
+Agent: Z.ai Code (main)
+Task: Reorganize the 16/17 habits into a sorted order ("16 habit organize as sort?")
+
+Work Log:
+- Habits were in creation order (sleep first, prayer block appended at the end in Task 23); client renders API order (sortOrder asc, createdAt asc — confirmed no client-side re-sort), so this is a pure Neon data change
+- Temp script (deleted): matched all 17 habits by exact name with icon-emoji fallback and rewrote sortOrder into a chronological day flow — 15 rows updated, 0 misses:
+  1 ফজর 2 পড়াশোনা ৬–৯ 3 ঘুম থেকে ওঠা ৭টা 4 মেডিটেশন 5 সংবাদপত্র 6 খাওয়া ৯–১০ 7 পড়াশোনা ১০–১২ 8 গোসল ১২–১ 9 জোহর (Fri বাদে) 10 জুমা (Fri only) 11 ঘুমানো ২–৪ 12 আসর 13 মাগরিব 14 এশা 15 পানি 16 No porn 17 ঘুমানো ১২টা
+- জুমা sits directly after জোহর, so on Fridays it appears exactly in জোহর's slot (জোহর hidden that day)
+- Browser-verified: Today tab = 16 items in the new order (জুমা hidden Saturday ✓), All habits tab shows জুমা at slot 10 with its description, hero 1/16 + streak 2 unchanged, 0 console errors
+- Data-only change (no code); DB is Neon Postgres via .env
+
+Stage Summary:
+- Habits now read as a full day plan from ফজর (5 AM) to ঘুমানো (12 AM); order stored in Habit.sortOrder and applied across Today / All habits / Insights
