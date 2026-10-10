@@ -508,3 +508,23 @@ Work Log:
 Stage Summary:
 - DEPLOYMENT VERIFIED: live site fully functional, same Neon DB, user data intact, zero errors
 - URL: https://istiqamah-murex.vercel.app/
+
+---
+Task ID: 29
+Agent: main (Z.ai Code)
+Task: Redesign the 4 stat cards (Today / Active streak / All-time best / Consistency) with distinct 3D designs
+
+Work Log:
+- Rewrote src/components/habit-tracker/stats-cards.tsx: replaced flat shadcn Card map with 4 explicit 3D designs
+- Card 1 Today: neumorphic emboss, puffy icon disc, pressed-in progress groove with glossy emerald fill (aria progressbar preserved)
+- Card 2 Active streak: orange fire slab, extruded bottom edge (0 6px 0 shadow), glossy top highlight
+- Card 3 All-time best: violet plaque with gold ring/bottom edge, sheen sweep, gold trophy disc, amber number
+- Card 4 Consistency: layered offset depth panels, teal gradient icon disc, mini 3D rising bars
+- All cards: framer-motion hover lift (y:-5, rotateX:4, transformPerspective 900, spring)
+- Lint clean; verified locally (light+dark, desktop+mobile) via agent-browser; 0 console errors
+- Push a73deee (one-off PAT push, creds not stored); waited for Vercel auto-deploy
+- Production verified: isPlaque/isSlab/hasGroove all true on istiqamah-murex.vercel.app, screenshot confirms, 0 errors
+
+Stage Summary:
+- 4 distinct 3D stat cards live in production (commit a73deee)
+- Dark mode + mobile verified; same component API (stats/loading/className) so page.tsx unchanged
