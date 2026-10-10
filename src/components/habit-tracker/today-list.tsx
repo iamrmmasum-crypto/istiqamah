@@ -1,6 +1,7 @@
 "use client"
 
-import { motion } from "framer-motion"
+import { useEffect } from "react"
+import { AnimatePresence, motion } from "framer-motion"
 import { Check, Flame, Loader2 } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
@@ -34,6 +35,32 @@ export function TodayList({
   pendingHabitId,
   onToggle,
 }: TodayListProps) {
+  // Only habits due today appear in the Today list (e.g. জুমার নামাজ Fridays)
+  const dueHabits = habits.filter((habit) => isScheduledOn(habit, today))
+
+  // Keyboard shortcuts: press 1–9 to toggle the first nine habits.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return
+      const t = e.target as HTMLElement | null
+      if (
+        t &&
+        (t.tagName === "INPUT" ||
+          t.tagName === "TEXTAREA" ||
+          t.tagName === "SELECT" ||
+          t.isContentEditable)
+      ) {
+        return
+      }
+      const n = Number(e.key)
+      if (!Number.isInteger(n) || n < 1 || n > 9) return
+      const habit = dueHabits[n - 1]
+      if (habit) onToggle(habit.id)
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [dueHabits, onToggle])
+
   if (loading) {
     return (
       <div className="space-y-3">
@@ -53,9 +80,6 @@ export function TodayList({
       </div>
     )
   }
-
-  // Only habits due today appear in the Today list (e.g. জুমার নামাজ Fridays)
-  const dueHabits = habits.filter((habit) => isScheduledOn(habit, today))
 
   return (
     <div className="space-y-4">
@@ -141,6 +165,14 @@ export function TodayList({
                   {streaks.current}
                 </span>
               )}
+              {index < 9 && (
+                <kbd
+                  aria-hidden="true"
+                  className="hidden h-5 min-w-5 shrink-0 items-center justify-center rounded-md border border-border/70 bg-muted/50 px-1 font-mono text-[10px] font-medium text-muted-foreground/70 sm:inline-flex"
+                >
+                  {index + 1}
+                </kbd>
+              )}
               <motion.button
                 type="button"
                 whileTap={{ scale: 0.85 }}
@@ -149,23 +181,65 @@ export function TodayList({
                 aria-pressed={done}
                 aria-label={`${done ? "Mark incomplete" : "Mark complete"}: ${habit.name}`}
                 className={cn(
-                  "flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 transition-colors disabled:opacity-60",
+                  "relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 transition-colors disabled:opacity-60",
                   done
                     ? cn(colorDef.solid, "border-transparent text-white")
                     : "border-muted-foreground/25 text-transparent hover:border-muted-foreground/50 hover:text-muted-foreground/30"
                 )}
                 style={done ? style3d.buttonDownStyle : style3d.buttonUpStyle}
               >
-                {pending ? (
-                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                ) : (
-                  <Check className="h-5 w-5" aria-hidden="true" />
+                {/* one-shot ring pulse on completion */}
+                {done && !pending && (
+                  <motion.span
+                    key={`pulse-${today}`}
+                    aria-hidden="true"
+                    className="absolute inset-0 rounded-full border-2 border-current"
+                    initial={{ scale: 1, opacity: 0.7 }}
+                    animate={{ scale: 1.9, opacity: 0 }}
+                    transition={{ duration: 0.6, ease: "easeOut" }}
+                  />
                 )}
+                <AnimatePresence mode="wait" initial={false}>
+                  {pending ? (
+                    <motion.span
+                      key="pending"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                    >
+                      <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                    </motion.span>
+                  ) : (
+                    <motion.span
+                      key={done ? "done" : "undone"}
+                      initial={{ scale: 0, rotate: -30, opacity: 0 }}
+                      animate={{ scale: 1, rotate: 0, opacity: 1 }}
+                      exit={{ scale: 0, opacity: 0 }}
+                      transition={{ type: "spring", stiffness: 500, damping: 24 }}
+                      className="flex"
+                    >
+                      <Check className="h-5 w-5" aria-hidden="true" />
+                    </motion.span>
+                  )}
+                </AnimatePresence>
               </motion.button>
             </div>
           </motion.div>
         )
       })}
+      {dueHabits.length > 0 && (
+        <p className="hidden text-center text-xs text-muted-foreground/70 sm:block">
+          Tip: press{" "}
+          <kbd className="rounded border border-border/70 bg-muted/50 px-1 font-mono text-[10px]">
+            1
+          </kbd>
+          –
+          <kbd className="rounded border border-border/70 bg-muted/50 px-1 font-mono text-[10px]">
+            9
+          </kbd>{" "}
+          to tick habits instantly
+        </p>
+      )}
     </div>
   )
 }

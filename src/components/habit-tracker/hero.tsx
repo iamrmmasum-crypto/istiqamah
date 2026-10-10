@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useRef } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { motion, useReducedMotion } from "framer-motion"
 import {
   ArrowDown,
@@ -44,6 +44,10 @@ function vibeLine(done: number, total: number): string {
 
 const RING_GRADIENT_ID = "heroRingGradient"
 
+/* celebration particles — fired once when the day hits 100% */
+const BURST_COLORS = ["#fbbf24", "#fb7185", "#c084fc", "#2dd4bf", "#34d399", "#f59e0b"]
+const BURST_COUNT = 16
+
 const textShadow = "[text-shadow:0_2px_16px_rgba(50,15,45,0.45)]"
 const chipClass =
   "inline-flex items-center gap-1.5 rounded-full border border-white/30 bg-white/15 px-3 py-1 text-xs font-semibold text-white backdrop-blur-md [text-shadow:0_1px_8px_rgba(40,10,40,0.4)]"
@@ -56,6 +60,18 @@ export function Hero({ loading, done, total, activeStreak }: HeroProps) {
   const cardRef = useRef<HTMLElement | null>(null)
   const sheenRef = useRef<HTMLDivElement | null>(null)
   const tiltRef = useRef({ rx: 0, ry: 0, tx: 0, ty: 0 })
+
+  // --- 100% day celebration: one particle burst on live completion ---
+  const [burstKey, setBurstKey] = useState(0)
+  const prevDoneRef = useRef(done)
+  useEffect(() => {
+    if (total > 0 && done === total && prevDoneRef.current < total) {
+      const id = requestAnimationFrame(() => setBurstKey((k) => k + 1))
+      prevDoneRef.current = done
+      return () => cancelAnimationFrame(id)
+    }
+    prevDoneRef.current = done
+  }, [done, total])
 
   // Smooth 3D tilt: lerp current rotation toward the pointer target each frame.
   useEffect(() => {
@@ -235,7 +251,7 @@ export function Hero({ loading, done, total, activeStreak }: HeroProps) {
         />
 
         {/* floating content layer — in normal flow so the card grows with it */}
-        <div className="relative z-20 flex min-h-[440px] flex-col justify-between p-5 [transform:translateZ(34px)] sm:min-h-[400px] sm:p-8 lg:min-h-[430px]">
+        <div className="relative z-20 flex min-h-[380px] flex-col justify-between p-5 [transform:translateZ(34px)] sm:min-h-[300px] sm:p-6 lg:min-h-[310px]">
           {/* top row */}
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="flex flex-wrap items-center gap-2">
@@ -282,16 +298,16 @@ export function Hero({ loading, done, total, activeStreak }: HeroProps) {
           </div>
 
           {/* bottom block */}
-          <div className="flex flex-col-reverse gap-6 sm:flex-row sm:items-end sm:justify-between">
+          <div className="flex flex-col-reverse gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div className="min-w-0">
               <h1
-                className={`mt-3 font-black leading-[0.95] tracking-tight text-white [text-shadow:0_2px_20px_rgba(60,20,50,0.5)]`}
+                className={`font-black leading-[0.95] tracking-tight text-white [text-shadow:0_2px_20px_rgba(60,20,50,0.5)]`}
               >
-                <span className="block text-3xl sm:text-5xl">
+                <span className="block text-3xl sm:text-4xl">
                   {now ? weekday : "\u00A0"}
                   <span className="text-white/60">,</span>
                 </span>
-                <span className="block bg-gradient-to-r from-amber-100 via-amber-200 to-orange-300 bg-clip-text text-3xl text-transparent sm:text-5xl">
+                <span className="block bg-gradient-to-r from-amber-100 via-amber-200 to-orange-300 bg-clip-text text-3xl text-transparent sm:text-4xl">
                   {now ? monthDay : "\u00A0"}
                 </span>
               </h1>
@@ -300,10 +316,10 @@ export function Hero({ loading, done, total, activeStreak }: HeroProps) {
               <div
                 role="timer"
                 aria-label="Local time"
-                className="mt-3 flex items-center gap-2"
+                className="mt-2 flex items-center gap-2"
               >
                 <Clock3
-                  className="h-4 w-4 text-amber-200/90 sm:h-5 sm:w-5"
+                  className="h-4 w-4 text-amber-200/90 sm:h-4 sm:w-4"
                   aria-hidden="true"
                 />
                 {clock ? (
@@ -312,14 +328,14 @@ export function Hero({ loading, done, total, activeStreak }: HeroProps) {
                     className="flex items-baseline gap-1"
                   >
                     <span
-                      className={`font-black tabular-nums text-2xl leading-none tracking-tight text-white sm:text-4xl ${textShadow}`}
+                      className={`font-black tabular-nums text-2xl leading-none tracking-tight text-white sm:text-3xl ${textShadow}`}
                     >
                       {clock.h}
                       <span className={blink}>:</span>
                       {clock.mm}
                     </span>
                     <span
-                      className={`font-black tabular-nums text-lg leading-none text-amber-200 sm:text-2xl ${textShadow}`}
+                      className={`font-black tabular-nums text-lg leading-none text-amber-200 sm:text-xl ${textShadow}`}
                     >
                       <span className={blink}>:</span>
                       {clock.ss}
@@ -339,7 +355,7 @@ export function Hero({ loading, done, total, activeStreak }: HeroProps) {
               </div>
 
               <p
-                className={`mt-3 max-w-md text-sm font-medium text-white/95 sm:text-base ${textShadow}`}
+                className={`mt-2 max-w-md text-sm font-medium text-white/95 sm:text-sm ${textShadow}`}
               >
                 {loading ? (
                   <span className="inline-block h-4 w-56 animate-pulse rounded bg-white/25" />
@@ -349,7 +365,7 @@ export function Hero({ loading, done, total, activeStreak }: HeroProps) {
               </p>
 
               {(!loading || riseSet) && (
-                <div className="mt-4 flex flex-wrap items-center gap-2">
+                <div className="mt-3 flex flex-wrap items-center gap-2">
                   {!loading && total > 0 && (
                     <>
                       <span className={chipClass}>
@@ -386,7 +402,7 @@ export function Hero({ loading, done, total, activeStreak }: HeroProps) {
 
             {/* progress ring on a glass disc */}
             <div
-              className="relative mx-auto h-32 w-32 shrink-0 rounded-full bg-white/15 p-1.5 shadow-xl shadow-[#06283a]/40 ring-1 ring-white/35 backdrop-blur-md sm:mx-0 sm:h-36 sm:w-36"
+              className="relative mx-auto h-28 w-28 shrink-0 rounded-full bg-white/15 p-1.5 shadow-xl shadow-[#06283a]/40 ring-1 ring-white/35 backdrop-blur-md sm:mx-0 sm:h-32 sm:w-32"
               role="img"
               aria-label={`${pct}% of today's habits completed`}
             >
@@ -431,7 +447,7 @@ export function Hero({ loading, done, total, activeStreak }: HeroProps) {
                   initial={{ scale: 0.6, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ type: "spring", stiffness: 260, damping: 18 }}
-                  className={`text-3xl font-black tabular-nums tracking-tight text-white sm:text-4xl ${textShadow}`}
+                  className={`text-3xl font-black tabular-nums tracking-tight text-white sm:text-3xl ${textShadow}`}
                 >
                   {pct}%
                 </motion.span>
@@ -439,6 +455,28 @@ export function Hero({ loading, done, total, activeStreak }: HeroProps) {
                   {done}/{total || 0} today
                 </span>
               </div>
+              {/* 100% celebration burst */}
+              {burstKey > 0 &&
+                Array.from({ length: BURST_COUNT }, (_, i) => {
+                  const angle = (i / BURST_COUNT) * Math.PI * 2
+                  const dist = 84 + (i % 4) * 14
+                  return (
+                    <motion.span
+                      key={`${burstKey}-${i}`}
+                      aria-hidden="true"
+                      className="pointer-events-none absolute left-1/2 top-1/2 z-40 h-1.5 w-1.5 rounded-full"
+                      style={{ backgroundColor: BURST_COLORS[i % BURST_COLORS.length] }}
+                      initial={{ x: 0, y: 0, scale: 0, opacity: 1 }}
+                      animate={{
+                        x: Math.cos(angle) * dist,
+                        y: Math.sin(angle) * dist - 14,
+                        scale: [0, 1.3, 0.4],
+                        opacity: [1, 1, 0],
+                      }}
+                      transition={{ duration: 0.95, ease: "easeOut", delay: (i % 5) * 0.03 }}
+                    />
+                  )
+                })}
             </div>
           </div>
         </div>
