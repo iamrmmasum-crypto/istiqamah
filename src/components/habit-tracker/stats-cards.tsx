@@ -40,6 +40,17 @@ const ACCENTS = {
 
 type AccentKey = keyof typeof ACCENTS
 
+/** scroll-in choreography — each stat arrives along its own axis */
+type Entrance = "flipUp" | "swingLeft" | "swingRight" | "rise" | "drop"
+
+const ENTRANCE_FROM: Record<Entrance, { opacity: number; y: number; x: number; rotateX: number; rotateY: number; z: number }> = {
+  flipUp: { opacity: 0, y: 60, x: 0, rotateX: -68, rotateY: 0, z: -90 },
+  swingLeft: { opacity: 0, y: 34, x: -44, rotateX: 5, rotateY: 38, z: -100 },
+  swingRight: { opacity: 0, y: 34, x: 44, rotateX: 5, rotateY: -38, z: -100 },
+  rise: { opacity: 0, y: 70, x: 0, rotateX: 14, rotateY: 0, z: -110 },
+  drop: { opacity: 0, y: -54, x: 0, rotateX: -12, rotateY: 0, z: -70 },
+}
+
 const CARD_BASE =
   "relative overflow-hidden rounded-2xl border border-black/[0.06] bg-card/80 backdrop-blur-xl " +
   "shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_4px_14px_-6px_rgba(0,0,0,0.12)] " +
@@ -52,6 +63,8 @@ function StatCard({
   value,
   caption,
   loading,
+  entrance = "rise",
+  index = 0,
   children,
 }: {
   accent: AccentKey
@@ -60,13 +73,19 @@ function StatCard({
   value: string
   caption: string
   loading?: boolean
+  entrance?: Entrance
+  index?: number
   children?: ReactNode
 }) {
   const a = ACCENTS[accent]
+  const from = ENTRANCE_FROM[entrance]
   return (
     <motion.div
+      initial={from}
+      whileInView={{ opacity: 1, y: 0, x: 0, rotateX: 0, rotateY: 0, z: 0 }}
+      viewport={{ once: true, margin: "-10% 0px" }}
+      transition={{ type: "spring", stiffness: 62, damping: 15, mass: 0.9, delay: index * 0.09 }}
       whileHover={{ y: -4, rotateX: 3 }}
-      transition={{ type: "spring", stiffness: 300, damping: 20 }}
       style={{ transformPerspective: 900 }}
       className={CARD_BASE}
     >
@@ -127,6 +146,8 @@ export function StatsCards({ stats, loading, className }: StatsCardsProps) {
         value={`${stats.todayDone}/${stats.todayTotal}`}
         caption={`${pct}% complete`}
         loading={loading}
+        entrance="flipUp"
+        index={0}
       >
         {/* pressed-in 3D groove — shared signature, emerald fill */}
         <div
@@ -153,6 +174,8 @@ export function StatsCards({ stats, loading, className }: StatsCardsProps) {
         value={String(stats.activeStreak)}
         caption={stats.activeStreak === 1 ? "day in a row" : "days in a row"}
         loading={loading}
+        entrance="swingLeft"
+        index={1}
       />
 
       <StatCard
@@ -162,6 +185,8 @@ export function StatsCards({ stats, loading, className }: StatsCardsProps) {
         value={String(stats.bestStreak)}
         caption="day streak record"
         loading={loading}
+        entrance="swingRight"
+        index={2}
       />
 
       <StatCard
@@ -171,6 +196,8 @@ export function StatsCards({ stats, loading, className }: StatsCardsProps) {
         value={`${stats.rate}%`}
         caption={`${windowCaption} · ${stats.totalCompletions} check-ins`}
         loading={loading}
+        entrance="drop"
+        index={3}
       />
     </div>
   )

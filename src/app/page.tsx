@@ -1,16 +1,20 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { AlertTriangle, RefreshCw } from "lucide-react"
+import { AlertTriangle, ListChecks, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useToast } from "@/hooks/use-toast"
 import { useHabits } from "@/hooks/use-habits"
 import { Providers } from "@/components/providers"
-import {
-  AppHeader,
-} from "@/components/habit-tracker/app-header"
+import { SmoothScroll } from "@/components/scroll/smooth-scroll"
+import { DepthBackground } from "@/components/scroll/depth-background"
+import { ScrollProgress } from "@/components/scroll/scroll-progress"
+import { Reveal3D } from "@/components/scroll/reveal-3d"
+import { HeroScene } from "@/components/scroll/scene-hero"
+import { HabitDeck } from "@/components/scroll/scene-deck"
+import { SectionHeading } from "@/components/scroll/section-heading"
+import { AppHeader } from "@/components/habit-tracker/app-header"
 import { DeleteDialog } from "@/components/habit-tracker/delete-dialog"
 import { EmptyState } from "@/components/habit-tracker/empty-state"
 import { HabitCard } from "@/components/habit-tracker/habit-card"
@@ -112,99 +116,132 @@ function TrackerApp() {
   const submitting = createHabit.isPending || updateHabit.isPending
   const remaining = stats.todayTotal - stats.todayDone
 
+  const hero = (
+    <Hero
+      loading={isLoading}
+      done={stats.todayDone}
+      total={stats.todayTotal}
+      activeStreak={stats.activeStreak}
+    />
+  )
+
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="relative flex min-h-screen flex-col">
+      <DepthBackground />
+      <ScrollProgress />
       <AppHeader onNewHabit={openCreate} />
 
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
+      <main className="relative flex-1">
         {isError ? (
-          <Card className="border-destructive/40">
-            <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-              <AlertTriangle className="h-8 w-8 text-destructive" aria-hidden="true" />
-              <div>
-                <p className="font-semibold">Could not load your habits</p>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Check your connection and try again.
-                </p>
-              </div>
-              <Button onClick={() => refetch()} variant="outline" className="rounded-full">
-                <RefreshCw className="h-4 w-4" aria-hidden="true" />
-                Retry
-              </Button>
-            </CardContent>
-          </Card>
-        ) : !isLoading && habits.length === 0 ? (
-          <div className="space-y-6">
-            <Hero
-              loading={isLoading}
-              done={stats.todayDone}
-              total={stats.todayTotal}
-              activeStreak={stats.activeStreak}
-            />
-            <EmptyState
-              onCreate={openCreate}
-              onSeed={handleSeed}
-              seeding={seedDemo.isPending}
-            />
-          </div>
-        ) : (
-          <div className="space-y-6 sm:space-y-8">
-            <Hero
-              loading={isLoading}
-              done={stats.todayDone}
-              total={stats.todayTotal}
-              activeStreak={stats.activeStreak}
-            />
-
-            <StatsCards stats={stats} loading={isLoading} />
-
-            <Tabs defaultValue="today">
-              <TabsList className="h-11 w-full justify-start overflow-x-auto rounded-xl bg-muted/60 p-1 sm:w-auto">
-                <TabsTrigger value="today" className="rounded-lg px-4 data-[state=active]:bg-background">
-                  Today
-                  {!isLoading && remaining > 0 && (
-                    <span className="ml-1.5 rounded-full bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-400">
-                      {remaining} left
-                    </span>
-                  )}
-                </TabsTrigger>
-                <TabsTrigger value="habits" className="rounded-lg px-4 data-[state=active]:bg-background">
-                  All habits
-                </TabsTrigger>
-                <TabsTrigger value="insights" className="rounded-lg px-4 data-[state=active]:bg-background">
-                  Insights
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="today" className="mt-4 sm:mt-6">
-                <TodayList
-                  habits={habits}
-                  loading={isLoading}
-                  today={today}
-                  pendingHabitId={toggleHabit.isPending ? toggleHabit.variables?.habitId : undefined}
-                  onToggle={handleToggle}
-                />
-              </TabsContent>
-
-              <TabsContent value="habits" className="mt-4 sm:mt-6">
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {habits.map((habit, index) => (
-                    <HabitCard
-                      key={habit.id}
-                      habit={habit}
-                      index={index}
-                      onEdit={openEdit}
-                      onDelete={setDeleteTarget}
-                    />
-                  ))}
+          <div className="mx-auto w-full max-w-6xl px-4 py-20 sm:px-6">
+            <Card className="border-destructive/40">
+              <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
+                <AlertTriangle className="h-8 w-8 text-destructive" aria-hidden="true" />
+                <div>
+                  <p className="font-semibold">Could not load your habits</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Check your connection and try again.
+                  </p>
                 </div>
-              </TabsContent>
-
-              <TabsContent value="insights" className="mt-4 sm:mt-6">
-                <Insights habits={habits} perDayCounts={perDayCounts} />
-              </TabsContent>
-            </Tabs>
+                <Button onClick={() => refetch()} variant="outline" className="rounded-full">
+                  <RefreshCw className="h-4 w-4" aria-hidden="true" />
+                  Retry
+                </Button>
+              </CardContent>
+            </Card>
           </div>
+        ) : !isLoading && habits.length === 0 ? (
+          <>
+            <HeroScene>{hero}</HeroScene>
+            <section className="mx-auto w-full max-w-6xl px-4 pb-20 sm:px-6">
+              <Reveal3D variant="rise">
+                <EmptyState
+                  onCreate={openCreate}
+                  onSeed={handleSeed}
+                  seeding={seedDemo.isPending}
+                />
+              </Reveal3D>
+            </section>
+          </>
+        ) : (
+          <>
+            {/* ── Scene 1 · pinned cinematic hero ─────────────────────── */}
+            <HeroScene>{hero}</HeroScene>
+
+            {/* ── Scene 2 · stats fly in from four axes ───────────────── */}
+            <section id="stats" aria-label="Statistics" className="mx-auto w-full max-w-6xl px-4 pb-16 sm:px-6 sm:pb-24">
+              <SectionHeading
+                kicker="এক নজরে"
+                title="আজকের মোমেন্টাম"
+                description="আজকের অগ্রগতি, চলমান ধারা ও সর্বোচ্চ রেকর্ড — গ্লাস কার্ডে মুহূর্তেই ধরা পড়ে।"
+              />
+              <StatsCards stats={stats} loading={isLoading} />
+            </section>
+
+            {/* ── Scene 3 · today's checklist, rows rise from depth ───── */}
+            <section id="today" aria-label="Today's checklist" className="mx-auto w-full max-w-6xl px-4 pb-16 sm:px-6 sm:pb-24">
+              <SectionHeading
+                kicker="চেকলিস্ট"
+                title="আজকের অভ্যাস"
+                description={
+                  remaining > 0
+                    ? `আর মাত্র ${remaining}টি বাকি — প্রতিটি টিক এক ধাপ এগিয়ে।`
+                    : "আজকের সব কুঠুরি টিক — আলহামদুলিল্লাহ, পুরো দিন শেষ!"
+                }
+              />
+              <div className="flex items-center gap-2 mb-4 text-xs font-semibold text-muted-foreground">
+                <ListChecks className="h-4 w-4 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
+                <span>
+                  {stats.todayDone}/{stats.todayTotal} সম্পন্ন ·{" "}
+                  <span className="hidden sm:inline">কীবোর্ডে </span>
+                  <kbd className="rounded border border-border/70 bg-muted/50 px-1 font-mono text-[10px]">1</kbd>–
+                  <kbd className="rounded border border-border/70 bg-muted/50 px-1 font-mono text-[10px]">9</kbd>
+                  <span className="hidden sm:inline"> চেপেও টিক করা যায়</span>
+                </span>
+              </div>
+              <TodayList
+                habits={habits}
+                loading={isLoading}
+                today={today}
+                pendingHabitId={toggleHabit.isPending ? toggleHabit.variables?.habitId : undefined}
+                onToggle={handleToggle}
+              />
+            </section>
+
+            {/* ── Scene 4 · habit deck — horizontal 3D coverflow ──────── */}
+            {!isLoading && habits.length > 0 && (
+              <HabitDeck
+                count={habits.length}
+                heading={
+                  <SectionHeading
+                    kicker="কালেকশন"
+                    title="সব অভ্যাস"
+                    description="স্ক্রল করতেই থাকুন — কার্ডগুলো ত্রিমাত্রিক কভারফ্লোতে পাশে গড়িয়ে যাবে।"
+                  />
+                }
+                renderItem={(index) => (
+                  <HabitCard
+                    habit={habits[index]}
+                    index={index}
+                    onEdit={openEdit}
+                    onDelete={setDeleteTarget}
+                  />
+                )}
+              />
+            )}
+
+            {/* ── Scene 5 · insights ──────────────────────────────────── */}
+            <section id="insights" aria-label="Insights" className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
+              <SectionHeading
+                kicker="ইনসাইট"
+                title="ধরা ও অগ্রগতি"
+                description="২০ সপ্তাহের হিটম্যাপ, সাপ্তাহিক তুলনা আর প্রতিটি অভ্যাসের নিজস্ব ছন্দ।"
+              />
+              <Reveal3D variant="rise">
+                <Insights habits={habits} perDayCounts={perDayCounts} />
+              </Reveal3D>
+            </section>
+          </>
         )}
       </main>
 
@@ -240,7 +277,9 @@ function TrackerApp() {
 export default function Home() {
   return (
     <Providers>
-      <TrackerApp />
+      <SmoothScroll>
+        <TrackerApp />
+      </SmoothScroll>
     </Providers>
   )
 }

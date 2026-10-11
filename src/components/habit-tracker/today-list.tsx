@@ -95,10 +95,17 @@ export function TodayList({
         return (
           <motion.div
             key={habit.id}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: 56, rotateX: 18, z: -90 }}
+            whileInView={{ opacity: 1, y: 0, rotateX: 0, z: 0 }}
+            viewport={{ once: true, margin: "-6% 0px" }}
+            transition={{
+              type: "spring",
+              stiffness: 68,
+              damping: 16,
+              delay: Math.min(index, 6) * 0.05,
+            }}
             whileHover={{ y: -2 }}
-            transition={{ duration: 0.25, delay: Math.min(index, 8) * 0.04 }}
+            style={{ transformPerspective: 900 }}
             layout
             className="relative"
           >

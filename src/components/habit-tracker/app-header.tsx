@@ -3,12 +3,26 @@
 import { Download, Flame, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { useScrollToSection } from "@/components/scroll/smooth-scroll"
+
+const NAV = [
+  { id: "today", label: "আজ" },
+  { id: "habits", label: "অভ্যাস" },
+  { id: "insights", label: "ইনসাইট" },
+]
 
 export function AppHeader({ onNewHabit }: { onNewHabit: () => void }) {
+  const scrollTo = useScrollToSection()
+
   return (
-    <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-40 border-b bg-background/70 backdrop-blur-xl supports-[backdrop-filter]:bg-background/55">
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4 sm:px-6">
-        <div className="flex items-center gap-2.5">
+        <button
+          type="button"
+          onClick={() => scrollTo("hero")}
+          className="flex items-center gap-2.5 rounded-xl text-left transition-opacity hover:opacity-80"
+          aria-label="Back to top"
+        >
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500 text-white shadow-sm shadow-emerald-500/30">
             <Flame className="h-5 w-5" aria-hidden="true" />
           </div>
@@ -26,8 +40,23 @@ export function AppHeader({ onNewHabit }: { onNewHabit: () => void }) {
               Habit &amp; discipline tracker
             </p>
           </div>
-        </div>
+        </button>
+
         <div className="flex items-center gap-1.5 sm:gap-2">
+          {/* section nav */}
+          <nav aria-label="Page sections" className="mr-1 hidden items-center gap-1 md:flex">
+            {NAV.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => scrollTo(item.id)}
+                className="rounded-full px-3 py-1.5 text-sm font-semibold text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground"
+              >
+                {item.label}
+              </button>
+            ))}
+          </nav>
+
           <Button
             asChild
             variant="ghost"

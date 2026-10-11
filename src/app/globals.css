@@ -118,7 +118,28 @@
   }
   body {
     @apply bg-background text-foreground;
+    /* clip (not hidden) — guards against 3D reveal overshoot without
+       creating a scroll container that would break position: sticky */
+    overflow-x: clip;
   }
+}
+
+/* ── Lenis smooth-scroll required styles ────────────────────────────── */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
 }
 
 /* Live clock colon blink (hero). Disabled via reduced motion in JS. */

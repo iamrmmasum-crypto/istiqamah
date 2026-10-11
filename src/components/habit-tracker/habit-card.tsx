@@ -54,10 +54,12 @@ export function HabitCard({ habit, index, onEdit, onDelete }: HabitCardProps) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, y: 26, scale: 0.96 }}
+      whileInView={{ opacity: 1, y: 0, scale: 1 }}
+      viewport={{ once: true, margin: "-4% 0px" }}
+      transition={{ type: "spring", stiffness: 72, damping: 16, delay: Math.min(index % 6, 5) * 0.05 }}
       whileHover={{ y: -3 }}
-      transition={{ duration: 0.25, delay: Math.min(index, 8) * 0.05 }}
+      style={{ transformPerspective: 900 }}
       layout
       className="relative h-full"
     >
