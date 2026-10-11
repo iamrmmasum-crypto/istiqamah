@@ -1,11 +1,16 @@
 "use client"
 
-import { Download, Flame, Plus } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Download, Flame, Plus, Volume2, VolumeX } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { useScrollToSection } from "@/components/scroll/smooth-scroll"
+import { soundEffects } from "@/lib/audio-effects"
 
 const NAV = [
+  { id: "prayers", label: "ওয়াক্ত" },
+  { id: "tasbih", label: "তাসবীহ" },
+  { id: "rank", label: "র্যাংক" },
   { id: "today", label: "আজ" },
   { id: "habits", label: "অভ্যাস" },
   { id: "insights", label: "ইনসাইট" },
@@ -13,6 +18,16 @@ const NAV = [
 
 export function AppHeader({ onNewHabit }: { onNewHabit: () => void }) {
   const scrollTo = useScrollToSection()
+  const [muted, setMuted] = useState(false)
+
+  useEffect(() => {
+    setMuted(soundEffects.isMuted())
+  }, [])
+
+  const handleToggleSound = () => {
+    const next = soundEffects.toggleMute()
+    setMuted(next)
+  }
 
   return (
     <header className="sticky top-0 z-40 border-b bg-background/70 backdrop-blur-xl supports-[backdrop-filter]:bg-background/55">
@@ -71,6 +86,17 @@ export function AppHeader({ onNewHabit }: { onNewHabit: () => void }) {
             >
               <Download className="h-4.5 w-4.5" aria-hidden="true" />
             </a>
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={handleToggleSound}
+            className="h-9 w-9 rounded-full text-muted-foreground hover:text-foreground cursor-pointer"
+            aria-label={muted ? "Unmute audio" : "Mute audio"}
+            title={muted ? "সাউন্ড অন করুন" : "সাউন্ড মিউট করুন"}
+          >
+            {muted ? <VolumeX className="h-4.5 w-4.5" /> : <Volume2 className="h-4.5 w-4.5 text-emerald-500" />}
           </Button>
           <ThemeToggle />
           <Button

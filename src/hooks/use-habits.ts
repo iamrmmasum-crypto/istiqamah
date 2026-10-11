@@ -62,7 +62,12 @@ export function useHabits() {
     onSuccess: () => invalidate(),
   })
 
-  const toggleHabit = useMutation<ToggleResult, Error, { habitId: string; date: string }>({
+  const toggleHabit = useMutation<
+    ToggleResult,
+    Error,
+    { habitId: string; date: string },
+    { previous?: Habit[] }
+  >({
     mutationFn: async ({ habitId, date }) => {
       const res = await fetch(`/api/habits/${habitId}/toggle`, {
         method: "POST",

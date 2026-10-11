@@ -7,7 +7,11 @@ import { cn } from "@/lib/utils"
 
 const SECTIONS = [
   { id: "hero", label: "নেভিগেট: হিরো", en: "Overview" },
-  { id: "stats", label: "নেভিগেট: পরিসংখ্যান", en: "Stats" },
+  { id: "stats", label: "নেভিগেট: মোমেন্টাম", en: "Stats" },
+  { id: "prayers", label: "নেভিগেট: ওয়াক্ত ও নামাজ", en: "Prayers" },
+  { id: "tasbih", label: "নেভিগেট: ডিজিটাল তাসবীহ", en: "Tasbih" },
+  { id: "rank", label: "নেভিগেট: শৃঙ্খলা র্যাংক", en: "Rank" },
+  { id: "fasting", label: "নেভিগেট: সিয়াম ও রোজা", en: "Fasting" },
   { id: "today", label: "নেভিগেট: আজকের চেকলিস্ট", en: "Today" },
   { id: "habits", label: "নেভিগেট: সব অভ্যাস", en: "Habits" },
   { id: "insights", label: "নেভিগেট: ইনসাইট", en: "Insights" },

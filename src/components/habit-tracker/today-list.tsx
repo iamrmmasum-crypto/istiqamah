@@ -14,6 +14,7 @@ import {
 import { habit3D, stackLayerStyles } from "@/lib/habit-3d"
 import type { Habit } from "@/types/habit"
 import { cn } from "@/lib/utils"
+import { soundEffects } from "@/lib/audio-effects"
 
 interface TodayListProps {
   habits: Habit[]
@@ -183,7 +184,10 @@ export function TodayList({
               <motion.button
                 type="button"
                 whileTap={{ scale: 0.85 }}
-                onClick={() => onToggle(habit.id)}
+                onClick={() => {
+                  if (!done) soundEffects.playHabitDone()
+                  onToggle(habit.id)
+                }}
                 disabled={pending}
                 aria-pressed={done}
                 aria-label={`${done ? "Mark incomplete" : "Mark complete"}: ${habit.name}`}

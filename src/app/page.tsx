@@ -23,6 +23,11 @@ import { Hero } from "@/components/habit-tracker/hero"
 import { Insights } from "@/components/habit-tracker/insights"
 import { StatsCards } from "@/components/habit-tracker/stats-cards"
 import { TodayList } from "@/components/habit-tracker/today-list"
+import { PrayerWidget } from "@/components/spiritual/prayer-widget"
+import { DigitalTasbih } from "@/components/spiritual/digital-tasbih"
+import { DisciplineRank } from "@/components/spiritual/discipline-rank"
+import { FastingTracker } from "@/components/spiritual/fasting-tracker"
+import { DailyReflection } from "@/components/spiritual/daily-reflection"
 import {
   aggregateStats,
   completionsPerDay,
@@ -176,6 +181,61 @@ function TrackerApp() {
                 description="আজকের অগ্রগতি, চলমান ধারা ও সর্বোচ্চ রেকর্ড — গ্লাস কার্ডে মুহূর্তেই ধরা পড়ে।"
               />
               <StatsCards stats={stats} loading={isLoading} />
+            </section>
+
+            {/* ── Scene 3 · Live Prayer Times & Countdown ─────────────── */}
+            <section id="prayers" aria-label="Prayer Times" className="mx-auto w-full max-w-6xl px-4 pb-16 sm:px-6 sm:pb-24">
+              <SectionHeading
+                kicker="ওয়াক্ত ও ইবাদত"
+                title="লাইভ নামাজের সময়সূচি"
+                description="স্বয়ংক্রিয় জ্যোতির্বৈজ্ঞানিক সময় গণনা, পরবর্তী ওয়াক্তের কাউন্টডাউন এবং এক ক্লিকে নামাজ আদায় রেকর্ড।"
+              />
+              <Reveal3D variant="rise">
+                <PrayerWidget
+                  habits={habits}
+                  todayKey={today}
+                  onToggleHabit={handleToggle}
+                />
+              </Reveal3D>
+            </section>
+
+            {/* ── Scene 4 · Interactive Digital Tasbih ─────────────────── */}
+            <section id="tasbih" aria-label="Digital Tasbih" className="mx-auto w-full max-w-6xl px-4 pb-16 sm:px-6 sm:pb-24">
+              <SectionHeading
+                kicker="জিকির ও স্মরণ"
+                title="ইন্টারেক্টিভ ডিজিটাল তাসবীহ"
+                description="বাস্তবধর্মী হ্যাপটিক উডেন ক্লিকের শব্দ, একাধিক মাসনুন জিকির প্রিসেট ও সাইকেল সমাপ্তির সুরেলা ঘণ্টা।"
+              />
+              <Reveal3D variant="rise">
+                <DigitalTasbih />
+              </Reveal3D>
+            </section>
+
+            {/* ── Scene 5 · Discipline Rank & Achievement Badges ──────── */}
+            <section id="rank" aria-label="Discipline Rank" className="mx-auto w-full max-w-6xl px-4 pb-16 sm:px-6 sm:pb-24">
+              <SectionHeading
+                kicker="শৃঙ্খলা ও অর্জন"
+                title="আধ্যাত্মিক র্যাংক ও সম্মাননা"
+                description="তালিব থেকে মুত্তাকী পর্যন্ত ৫টি মর্যাদাপূর্ণ র্যাংক, অর্জিত XP ও ধারাবাহিকতার ব্যাজ আনলক।"
+              />
+              <Reveal3D variant="rise">
+                <DisciplineRank stats={stats} />
+              </Reveal3D>
+            </section>
+
+            {/* ── Scene 6 · Fasting & Daily Muhasabah ───────────────────── */}
+            <section id="fasting" aria-label="Fasting & Reflection" className="mx-auto w-full max-w-6xl px-4 pb-16 sm:px-6 sm:pb-24">
+              <SectionHeading
+                kicker="সিয়াম ও আত্মশুদ্ধি"
+                title="রোজা ও দৈনিক মুহাসাবাহ"
+                description="সাহরি-ইফতারের লাইভ কাউন্টডাউন, সুন্নাত রোজার দিকনির্দেশনা ও ৩টি নিয়ামতের শুকরিয়া জার্নাল।"
+              />
+              <Reveal3D variant="rise">
+                <div className="space-y-6">
+                  <FastingTracker />
+                  <DailyReflection />
+                </div>
+              </Reveal3D>
             </section>
 
             {/* ── Scene 3 · today's checklist, rows rise from depth ───── */}
