@@ -523,6 +523,11 @@ def build_habit_tracker_workbook(filename="Istiqamah_Tracker_2026_2036.xlsx"):
         cell.font = Font(name="Calibri", size=9, bold=True, color=text_color)
         cell.alignment = Alignment(horizontal="center", vertical="center")
 
+    cell_rew_hdr = ws_month.cell(row=weekly_subhdr_row, column=13, value="Earned ($)")
+    cell_rew_hdr.fill = summary_card_fill
+    cell_rew_hdr.font = Font(name="Calibri", size=9, bold=True)
+    cell_rew_hdr.alignment = Alignment(horizontal="center", vertical="center")
+
     sample_weekly_habits = [
         ("🕌 Jummah Prayer & Surah Al-Kahf (Friday)", "Spiritual", "10B981", 10.0),
         ("📖 Weekly Quran & Islamic Lecture", "Spiritual", "10B981", 5.0),
@@ -546,6 +551,12 @@ def build_habit_tracker_workbook(filename="Istiqamah_Tracker_2026_2036.xlsx"):
             c_cell = ws_month.cell(row=r, column=7 + wk_idx, value=False)
             c_cell.alignment = Alignment(horizontal="center", vertical="center")
             c_cell.border = cell_border
+
+        w_rew = ws_month.cell(row=r, column=13, value=f"=COUNTIF(G{r}:K{r}, TRUE)*{rew_val}")
+        w_rew.font = Font(name="Calibri", size=9, bold=True, color="059669")
+        w_rew.number_format = '$#,##0.00'
+        w_rew.alignment = Alignment(horizontal="center", vertical="center")
+        w_rew.border = cell_border
 
     # ==========================================
     # MONTHLY HABITS SECTION
@@ -578,6 +589,19 @@ def build_habit_tracker_workbook(filename="Istiqamah_Tracker_2026_2036.xlsx"):
         c_cell = ws_month.cell(row=r, column=7, value=False)
         c_cell.alignment = Alignment(horizontal="center", vertical="center")
         c_cell.border = cell_border
+
+        m_rew = ws_month.cell(row=r, column=8, value=f"=IF(G{r}=TRUE, {rew_val}, 0)")
+        m_rew.font = Font(name="Calibri", size=9, bold=True, color="059669")
+        m_rew.number_format = '$#,##0.00'
+        m_rew.alignment = Alignment(horizontal="center", vertical="center")
+        m_rew.border = cell_border
+
+    # Connect total monthly reward formula to daily + weekly + monthly habits
+    w_end_row = weekly_start_row + len(sample_weekly_habits) - 1
+    m_end_row = monthly_start_row + len(sample_monthly_tasks) - 1
+    all_rewards_formula = f"=SUM(H{daily_rew_row}:AP{daily_rew_row})+SUM(M{weekly_start_row}:M{w_end_row})+SUM(H{monthly_start_row}:H{m_end_row})"
+    ws_month["D11"] = all_rewards_formula
+    ws_month[f"B{total_earned_val_row}"] = all_rewards_formula
 
     # Column widths for Monthly habits
     ws_month.column_dimensions["A"].width = 6
@@ -637,7 +661,6 @@ def build_habit_tracker_workbook(filename="Istiqamah_Tracker_2026_2036.xlsx"):
     ws_year["B9"].font = Font(name="Calibri", size=9)
     ws_year["B9"].alignment = Alignment(horizontal="center", vertical="center")
 
-    ws_year["D9"] = "18%"
     ws_year["D9"].font = Font(name="Calibri", size=10, bold=True)
     ws_year["D9"].alignment = Alignment(horizontal="center", vertical="center")
     ws_year["D9"].border = card_border
@@ -647,7 +670,6 @@ def build_habit_tracker_workbook(filename="Istiqamah_Tracker_2026_2036.xlsx"):
     ws_year["B11"].font = Font(name="Calibri", size=9)
     ws_year["B11"].alignment = Alignment(horizontal="center", vertical="center")
 
-    ws_year["D11"] = "$1,752.00"
     ws_year["D11"].font = Font(name="Calibri", size=11, bold=True, color="059669")
     ws_year["D11"].alignment = Alignment(horizontal="center", vertical="center")
     ws_year["D11"].border = card_border
@@ -660,23 +682,42 @@ def build_habit_tracker_workbook(filename="Istiqamah_Tracker_2026_2036.xlsx"):
     # 12 Months Sections
     months = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"]
     y_row = 15
-    for m in months:
+    for idx_m, m in enumerate(months):
         ws_year.merge_cells(start_row=y_row, start_column=1, end_row=y_row, end_column=42)
         cell = ws_year.cell(row=y_row, column=1, value=m)
-        cell.fill = PatternFill(start_color="9CA3AF", end_color="9CA3AF", fill_type="solid")
+        is_active = (m == "OCTOBER")
+        cell.fill = PatternFill(start_color="2563EB" if is_active else "9CA3AF", end_color="2563EB" if is_active else "9CA3AF", fill_type="solid")
         cell.font = Font(name="Calibri", size=10, bold=True, color="FFFFFF")
         cell.alignment = Alignment(horizontal="left", vertical="center", indent=1)
         ws_year.row_dimensions[y_row].height = 20
 
         # Sub summary for each month
         ws_year.cell(row=y_row+1, column=2, value="Completion:").font = Font(size=8, bold=True)
-        ws_year.cell(row=y_row+1, column=4, value="24%").font = Font(size=8)
+        c_comp = ws_year.cell(row=y_row+1, column=4)
+        c_comp.font = Font(size=8, bold=True)
+        c_comp.number_format = '0%'
+
         ws_year.cell(row=y_row+1, column=8, value="Total Rewards:").font = Font(size=8, bold=True)
-        c_m_rew = ws_year.cell(row=y_row+1, column=11, value=516.50)
+        c_m_rew = ws_year.cell(row=y_row+1, column=11)
         c_m_rew.number_format = '$#,##0.00'
         c_m_rew.font = Font(size=8, color="059669", bold=True)
 
+        if is_active:
+            c_comp.value = "='Monthly habits'!D9"
+            c_m_rew.value = "='Monthly habits'!D11"
+        else:
+            c_comp.value = 0
+            c_m_rew.value = 0.0
+
         y_row += 3
+
+    # Dynamic Annual Summary Formulas
+    comp_cells = [f"D{16 + i*3}" for i in range(12)]
+    rew_cells = [f"K{16 + i*3}" for i in range(12)]
+    ws_year["D9"] = f"=AVERAGE({','.join(comp_cells)})"
+    ws_year["D9"].number_format = '0%'
+    ws_year["D11"] = f"=SUM({','.join(rew_cells)})"
+    ws_year["D11"].number_format = '$#,##0.00'
 
     # Column widths for Yearly habits
     ws_year.column_dimensions["A"].width = 6

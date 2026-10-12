@@ -431,7 +431,7 @@ body {
   left: 0;
   z-index: 10;
   font-weight: 700;
-  border-right: 2px solid #CBD5E1 !d;
+  border-right: 2px solid #CBD5E1 !important;
 }
 
 .td-habit-name {

@@ -60,34 +60,63 @@ const STORAGE_KEY = "istiqamah_tracker_state_2026";
 let trackerState = loadState();
 
 function loadState() {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (saved) {
-    try { return JSON.parse(saved); } catch (e) { }
-  }
-  return {
-    checks: {}, // key format: `y-m-habitId-day` or `y-m-wId-wk` or `y-m-mId`
+  const defaults = {
+    checks: {},
     weeklyChecks: {},
     monthlyChecks: {},
-    oneOffChecks: {}
+    oneOffChecks: {},
+    reportName: "My habits",
+    startDate: "Jan 1, 2026"
   };
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      if (parsed && typeof parsed === "object") {
+        return {
+          checks: parsed.checks || {},
+          weeklyChecks: parsed.weeklyChecks || {},
+          monthlyChecks: parsed.monthlyChecks || {},
+          oneOffChecks: parsed.oneOffChecks || {},
+          reportName: parsed.reportName || "My habits",
+          startDate: parsed.startDate || "Jan 1, 2026"
+        };
+      }
+    } catch (e) {}
+  }
+  return defaults;
 }
 
 function saveState() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(trackerState));
 }
 
-// Procedural Audio Synthesizer for Tactile Feedback
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+// Procedural Audio Synthesizer (Lazy-loaded to comply with browser autoplay policies)
+let audioCtx = null;
+function getAudioContext() {
+  if (!audioCtx) {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (AudioContextClass) {
+      audioCtx = new AudioContextClass();
+    }
+  }
+  return audioCtx;
+}
+
 function playBeep(isCheck) {
-  if (!soundEnabled || !audioCtx) return;
+  if (!soundEnabled) return;
   try {
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    if (ctx.state === "suspended") {
+      ctx.resume();
+    }
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
     osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    
-    const now = audioCtx.currentTime;
+    gain.connect(ctx.destination);
+
+    const now = ctx.currentTime;
     if (isCheck) {
       osc.frequency.setValueAtTime(587.33, now); // D5
       osc.frequency.exponentialRampToValueAtTime(880, now + 0.08); // A5
@@ -96,8 +125,8 @@ function playBeep(isCheck) {
       osc.start(now);
       osc.stop(now + 0.12);
     } else {
-      osc.frequency.setValueAtTime(440, now);
-      osc.frequency.exponentialRampToValueAtTime(329.63, now + 0.08);
+      osc.frequency.setValueAtTime(440, now); // A4
+      osc.frequency.exponentialRampToValueAtTime(329.63, now + 0.08); // E4
       gain.gain.setValueAtTime(0.08, now);
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
       osc.start(now);
@@ -106,7 +135,7 @@ function playBeep(isCheck) {
   } catch (err) {}
 }
 
-// Days in month helper
+// Calendar helpers
 function getDaysInMonth(year, month) {
   return new Date(year, month + 1, 0).getDate();
 }
@@ -121,6 +150,34 @@ const MONTH_NAMES = [
 ];
 const WEEKDAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
+function getWeekClassForDay(day) {
+  if (day <= 7) return "bg-wk1";
+  if (day <= 14) return "bg-wk2";
+  if (day <= 21) return "bg-wk3";
+  if (day <= 28) return "bg-wk4";
+  return "bg-wk5";
+}
+
+function getCategoryMeta(catName) {
+  return HABIT_DATABASE.categories.find(c => c.name === catName) || { color: "#CBD5E1", textColor: "#000000" };
+}
+
+// ===================================================
+// ACTIVE MONTH WEEKS CONFIGURATION
+// ===================================================
+function getMonthWeeksConfig(totalDays) {
+  const weeks = [
+    { name: "Week 1 (%)", start: 1, end: 7, class: "bg-wk1" },
+    { name: "Week 2 (%)", start: 8, end: 14, class: "bg-wk2" },
+    { name: "Week 3 (%)", start: 15, end: 21, class: "bg-wk3" },
+    { name: "Week 4 (%)", start: 22, end: 28, class: "bg-wk4" }
+  ];
+  if (totalDays >= 29) {
+    weeks.push({ name: "Week 5 (%)", start: 29, end: totalDays, class: "bg-wk5" });
+  }
+  return weeks;
+}
+
 // ===================================================
 // RENDER DAILY MATRIX
 // ===================================================
@@ -131,24 +188,12 @@ function renderDailyMatrix() {
   const tbody = document.getElementById("daily-matrix-tbody");
   const tfoot = document.getElementById("daily-matrix-tfoot");
 
-  // Determine week groupings:
-  // Week 1: Days 1-7
-  // Week 2: Days 8-14
-  // Week 3: Days 15-21
-  // Week 4: Days 22-28
-  // Week 5: Days 29..totalDays (or up to 31)
-  const weeks = [
-    { name: "Week 1 (%)", start: 1, end: 7, class: "bg-wk1" },
-    { name: "Week 2 (%)", start: 8, end: 14, class: "bg-wk2" },
-    { name: "Week 3 (%)", start: 15, end: 21, class: "bg-wk3" },
-    { name: "Week 4 (%)", start: 22, end: 28, class: "bg-wk4" },
-    { name: "Week 5 (%)", start: 29, end: totalDays, class: "bg-wk5" }
-  ];
+  const weeks = getMonthWeeksConfig(totalDays);
 
   // 1. HEADER ROW 1: Week Banners
   let rowWeeksHtml = `<tr class="row-weeks"><th class="th-habit-name">Daily habits</th>`;
   weeks.forEach(w => {
-    const span = Math.max(1, w.end - w.start + 1);
+    const span = w.end - w.start + 1;
     rowWeeksHtml += `<th colspan="${span}" class="${w.class}">${w.name}</th>`;
   });
   rowWeeksHtml += `</tr>`;
@@ -182,10 +227,10 @@ function renderDailyMatrix() {
   // 5. BODY: Habit rows
   let tbodyHtml = "";
   HABIT_DATABASE.dailyHabits.forEach(habit => {
-    const cat = HABIT_DATABASE.categories.find(c => c.name === habit.category) || { color: "#CBD5E1", textColor: "#000" };
+    const cat = getCategoryMeta(habit.category);
     tbodyHtml += `<tr>`;
     tbodyHtml += `<td class="td-habit-name" style="background:${cat.color}; color:${cat.textColor};">${habit.name}</td>`;
-    
+
     for (let d = 1; d <= totalDays; d++) {
       const key = `${currentYear}-${currentMonth}-${habit.id}-${d}`;
       const checked = trackerState.checks[key] ? "checked" : "";
@@ -198,8 +243,8 @@ function renderDailyMatrix() {
   // 6. FOOTER: Week completed %, Daily reward earned ($)
   let footWkPctHtml = `<tr class="row-week-pct"><td class="tfoot-label bold">Week completed (%):</td>`;
   weeks.forEach((w, idx) => {
-    const span = Math.max(1, w.end - w.start + 1);
-    footWkPctHtml += `<td colspan="${span}" id="foot-wk-pct-${idx+1}" class="${w.class}">0%</td>`;
+    const span = w.end - w.start + 1;
+    footWkPctHtml += `<td colspan="${span}" id="foot-wk-pct-${idx + 1}" class="${w.class}">0%</td>`;
   });
   footWkPctHtml += `</tr>`;
 
@@ -221,35 +266,35 @@ function renderDailyMatrix() {
       saveState();
       playBeep(e.target.checked);
       recalculateMetrics();
+      renderYearlyView();
     });
   });
 
   recalculateMetrics();
 }
 
-function getWeekClassForDay(day) {
-  if (day <= 7) return "bg-wk1";
-  if (day <= 14) return "bg-wk2";
-  if (day <= 21) return "bg-wk3";
-  if (day <= 28) return "bg-wk4";
-  return "bg-wk5";
-}
-
 // ===================================================
 // RENDER SUB TRACKERS (WEEKLY & MONTHLY)
 // ===================================================
 function renderSubTrackers() {
+  const totalDays = getDaysInMonth(currentYear, currentMonth);
+  const numWeeks = totalDays >= 29 ? 5 : 4;
+
   // Weekly habits
   const weeklyTbody = document.getElementById("weekly-habits-tbody");
   let wHtml = "";
   HABIT_DATABASE.weeklyHabits.forEach(wHabit => {
-    const cat = HABIT_DATABASE.categories.find(c => c.name === wHabit.category) || { color: "#CBD5E1", textColor: "#000" };
+    const cat = getCategoryMeta(wHabit.category);
     wHtml += `<tr>`;
     wHtml += `<td style="background:${cat.color}; color:${cat.textColor}; font-weight:700;">${wHabit.name}</td>`;
     for (let wk = 1; wk <= 5; wk++) {
-      const key = `${currentYear}-${currentMonth}-${wHabit.id}-wk${wk}`;
-      const checked = trackerState.weeklyChecks[key] ? "checked" : "";
-      wHtml += `<td class="center"><input type="checkbox" class="sheet-check weekly-check" data-habit="${wHabit.id}" data-week="${wk}" ${checked}></td>`;
+      if (wk <= numWeeks) {
+        const key = `${currentYear}-${currentMonth}-${wHabit.id}-wk${wk}`;
+        const checked = trackerState.weeklyChecks[key] ? "checked" : "";
+        wHtml += `<td class="center"><input type="checkbox" class="sheet-check weekly-check" data-habit="${wHabit.id}" data-week="${wk}" ${checked}></td>`;
+      } else {
+        wHtml += `<td class="center text-muted" style="background:#F8FAFC;">—</td>`;
+      }
     }
     wHtml += `<td class="center green bold" id="w-earned-${wHabit.id}">$0.00</td>`;
     wHtml += `</tr>`;
@@ -265,6 +310,7 @@ function renderSubTrackers() {
       saveState();
       playBeep(e.target.checked);
       recalculateMetrics();
+      renderYearlyView();
     });
   });
 
@@ -279,7 +325,7 @@ function renderSubTrackers() {
 
     mHtml += `<tr>`;
     if (mHabit) {
-      const cat = HABIT_DATABASE.categories.find(c => c.name === mHabit.category) || { color: "#CBD5E1", textColor: "#000" };
+      const cat = getCategoryMeta(mHabit.category);
       const key = `${currentYear}-${currentMonth}-${mHabit.id}`;
       const checked = trackerState.monthlyChecks[key] ? "checked" : "";
       mHtml += `<td style="background:${cat.color}; color:${cat.textColor}; font-weight:700;">${mHabit.name}</td>`;
@@ -308,6 +354,7 @@ function renderSubTrackers() {
       saveState();
       playBeep(e.target.checked);
       recalculateMetrics();
+      renderYearlyView();
     });
   });
 
@@ -319,24 +366,132 @@ function renderSubTrackers() {
       saveState();
       playBeep(e.target.checked);
       recalculateMetrics();
+      renderYearlyView();
     });
   });
 }
 
 // ===================================================
-// RECALCULATE METRICS & TALLIES
+// CALCULATION HELPER (FOR ANY MONTH)
+// ===================================================
+function getMonthStats(year, month) {
+  const daysInMonth = getDaysInMonth(year, month);
+  const numWeeks = daysInMonth >= 29 ? 5 : 4;
+  const totalHabits = HABIT_DATABASE.dailyHabits.length;
+
+  let dailyEarned = 0;
+  let dailyChecked = 0;
+  const totalDailyPossible = daysInMonth * totalHabits;
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    HABIT_DATABASE.dailyHabits.forEach(habit => {
+      const key = `${year}-${month}-${habit.id}-${d}`;
+      if (trackerState.checks[key]) {
+        dailyChecked++;
+        dailyEarned += habit.reward;
+      }
+    });
+  }
+
+  let weeklyEarned = 0;
+  let weeklyChecked = 0;
+  const totalWeeklyPossible = HABIT_DATABASE.weeklyHabits.length * numWeeks;
+
+  HABIT_DATABASE.weeklyHabits.forEach(wHabit => {
+    for (let wk = 1; wk <= numWeeks; wk++) {
+      const key = `${year}-${month}-${wHabit.id}-wk${wk}`;
+      if (trackerState.weeklyChecks[key]) {
+        weeklyChecked++;
+        weeklyEarned += wHabit.reward;
+      }
+    }
+  });
+
+  let monthlyEarned = 0;
+  let monthlyChecked = 0;
+  const totalMonthlyPossible = HABIT_DATABASE.monthlyHabits.length;
+
+  HABIT_DATABASE.monthlyHabits.forEach(mHabit => {
+    const key = `${year}-${month}-${mHabit.id}`;
+    if (trackerState.monthlyChecks[key]) {
+      monthlyChecked++;
+      monthlyEarned += mHabit.reward;
+    }
+  });
+
+  const totalPossible = totalDailyPossible + totalWeeklyPossible + totalMonthlyPossible;
+  const totalChecked = dailyChecked + weeklyChecked + monthlyChecked;
+  const completionPct = totalPossible > 0 ? Math.round((totalChecked / totalPossible) * 100) : 0;
+  const dailyCompletionPct = totalDailyPossible > 0 ? Math.round((dailyChecked / totalDailyPossible) * 100) : 0;
+  const totalEarned = dailyEarned + weeklyEarned + monthlyEarned;
+
+  return {
+    dailyChecked,
+    dailyEarned,
+    dailyCompletionPct,
+    weeklyChecked,
+    weeklyEarned,
+    totalWeeklyPossible,
+    monthlyChecked,
+    monthlyEarned,
+    totalEarned,
+    completionPct
+  };
+}
+
+// Compute total rewards earned all-time across all years & frequencies
+function computeAllTimeTotalEarned() {
+  let allEarned = 0;
+
+  // 1. Daily
+  Object.keys(trackerState.checks).forEach(k => {
+    if (trackerState.checks[k]) {
+      const parts = k.split("-");
+      const habitId = parts[2];
+      const habit = HABIT_DATABASE.dailyHabits.find(h => h.id === habitId);
+      if (habit) allEarned += habit.reward;
+    }
+  });
+
+  // 2. Weekly
+  Object.keys(trackerState.weeklyChecks).forEach(k => {
+    if (trackerState.weeklyChecks[k]) {
+      const parts = k.split("-");
+      const habitId = parts[2];
+      const habit = HABIT_DATABASE.weeklyHabits.find(h => h.id === habitId);
+      if (habit) allEarned += habit.reward;
+    }
+  });
+
+  // 3. Monthly
+  Object.keys(trackerState.monthlyChecks).forEach(k => {
+    if (trackerState.monthlyChecks[k]) {
+      const parts = k.split("-");
+      const habitId = parts[2];
+      const habit = HABIT_DATABASE.monthlyHabits.find(h => h.id === habitId);
+      if (habit) allEarned += habit.reward;
+    }
+  });
+
+  return allEarned;
+}
+
+// ===================================================
+// RECALCULATE METRICS & TALLIES FOR CURRENT MONTH
 // ===================================================
 function recalculateMetrics() {
   const totalDays = getDaysInMonth(currentYear, currentMonth);
   const totalHabits = HABIT_DATABASE.dailyHabits.length;
+  const weeks = getMonthWeeksConfig(totalDays);
+  const numWeeks = totalDays >= 29 ? 5 : 4;
 
-  let monthTotalEarned = 0;
+  let monthTotalDailyEarned = 0;
   let totalCheckedDaily = 0;
-  let totalPossibleDaily = totalDays * totalHabits;
+  const totalPossibleDaily = totalDays * totalHabits;
 
   // 1. Daily tallies
-  const weekSums = [0, 0, 0, 0, 0];
-  const weekCounts = [0, 0, 0, 0, 0];
+  const weekSums = new Array(weeks.length).fill(0);
+  const weekCounts = new Array(weeks.length).fill(0);
 
   for (let d = 1; d <= totalDays; d++) {
     let dayChecked = 0;
@@ -357,7 +512,7 @@ function recalculateMetrics() {
     const footRew = document.getElementById(`foot-day-rew-${d}`);
     if (footRew) footRew.innerText = `$${dayEarned.toFixed(0)}`;
 
-    monthTotalEarned += dayEarned;
+    monthTotalDailyEarned += dayEarned;
     totalCheckedDaily += dayChecked;
 
     // Week bucket
@@ -368,12 +523,14 @@ function recalculateMetrics() {
     else if (d <= 28) wkIndex = 3;
     else wkIndex = 4;
 
-    weekSums[wkIndex] += dayPct;
-    weekCounts[wkIndex]++;
+    if (wkIndex < weeks.length) {
+      weekSums[wkIndex] += dayPct;
+      weekCounts[wkIndex]++;
+    }
   }
 
   // Week averages
-  for (let w = 0; w < 5; w++) {
+  for (let w = 0; w < weeks.length; w++) {
     const footWk = document.getElementById(`foot-wk-pct-${w + 1}`);
     if (footWk) {
       const avg = weekCounts[w] > 0 ? Math.round(weekSums[w] / weekCounts[w]) : 0;
@@ -384,11 +541,11 @@ function recalculateMetrics() {
   // 2. Weekly Habits
   let weeklyTotalEarned = 0;
   let totalWeeklyChecked = 0;
-  const totalWeeklyPossible = HABIT_DATABASE.weeklyHabits.length * 5;
+  const totalWeeklyPossible = HABIT_DATABASE.weeklyHabits.length * numWeeks;
 
   HABIT_DATABASE.weeklyHabits.forEach(wHabit => {
     let hEarned = 0;
-    for (let wk = 1; wk <= 5; wk++) {
+    for (let wk = 1; wk <= numWeeks; wk++) {
       const key = `${currentYear}-${currentMonth}-${wHabit.id}-wk${wk}`;
       if (trackerState.weeklyChecks[key]) {
         hEarned += wHabit.reward;
@@ -401,8 +558,10 @@ function recalculateMetrics() {
   });
 
   const weeklyPct = totalWeeklyPossible > 0 ? Math.round((totalWeeklyChecked / totalWeeklyPossible) * 100) : 0;
-  document.getElementById("weekly-progress-percent").innerText = `${weeklyPct}%`;
-  document.getElementById("weekly-total-reward").innerText = `$${weeklyTotalEarned.toFixed(2)}`;
+  const weeklyPctEl = document.getElementById("weekly-progress-percent");
+  if (weeklyPctEl) weeklyPctEl.innerText = `${weeklyPct}%`;
+  const weeklyTotalRewEl = document.getElementById("weekly-total-reward");
+  if (weeklyTotalRewEl) weeklyTotalRewEl.innerText = `$${weeklyTotalEarned.toFixed(2)}`;
 
   // 3. Monthly Habits & One-offs
   let monthlyHabitsEarned = 0;
@@ -412,38 +571,55 @@ function recalculateMetrics() {
       monthlyHabitsEarned += mHabit.reward;
     }
   });
-  document.getElementById("monthly-tasks-reward").innerText = `$${monthlyHabitsEarned.toFixed(2)}`;
+  const monthlyTasksRewEl = document.getElementById("monthly-tasks-reward");
+  if (monthlyTasksRewEl) monthlyTasksRewEl.innerText = `$${monthlyHabitsEarned.toFixed(2)}`;
 
   let oneOffCheckedCount = 0;
   HABIT_DATABASE.oneOffTasks.forEach(oTask => {
     const key = `${currentYear}-${currentMonth}-${oTask.id}`;
     if (trackerState.oneOffChecks[key]) oneOffCheckedCount++;
   });
-  document.getElementById("oneoff-tasks-status").innerText = `${oneOffCheckedCount} / ${HABIT_DATABASE.oneOffTasks.length} done`;
+  const oneOffStatusEl = document.getElementById("oneoff-tasks-status");
+  if (oneOffStatusEl) {
+    oneOffStatusEl.innerText = `${oneOffCheckedCount} / ${HABIT_DATABASE.oneOffTasks.length} completed`;
+  }
 
   // 4. Overall Monthly Totals
-  const totalCombinedEarned = monthTotalEarned + weeklyTotalEarned + monthlyHabitsEarned;
+  const totalCombinedEarned = monthTotalDailyEarned + weeklyTotalEarned + monthlyHabitsEarned;
   const overallCompletion = totalPossibleDaily > 0 ? Math.round((totalCheckedDaily / totalPossibleDaily) * 100) : 0;
 
-  document.getElementById("kpi-completion-rate").innerText = `${overallCompletion}%`;
-  document.getElementById("kpi-total-earned").innerText = `$${totalCombinedEarned.toFixed(2)}`;
-  document.getElementById("banner-subtext").innerText = `\u0671\u0644\u0650\u0627\u0633\u0652\u062a\u0650\u0642\u064e\u0627\u0645\u064e\u0629 \u2014 'My habits' for ${MONTH_NAMES[currentMonth]} ${currentYear}`;
+  const kpiCompletionEl = document.getElementById("kpi-completion-rate");
+  if (kpiCompletionEl) kpiCompletionEl.innerText = `${overallCompletion}%`;
+  const kpiTotalEl = document.getElementById("kpi-total-earned");
+  if (kpiTotalEl) kpiTotalEl.innerText = `$${totalCombinedEarned.toFixed(2)}`;
+
+  const repName = trackerState.reportName || "My habits";
+  const bannerEl = document.getElementById("banner-subtext");
+  if (bannerEl) {
+    bannerEl.innerText = `\u0671\u0644\u0650\u0627\u0633\u0652\u062a\u0650\u0642\u064e\u0627\u0645\u064e\u0629 \u2014 '${repName}' for ${MONTH_NAMES[currentMonth]} ${currentYear}`;
+  }
 }
 
 // ===================================================
-// YEARLY VIEW RENDERER
+// YEARLY VIEW RENDERER (DYNAMIC REAL-TIME DATA)
 // ===================================================
 function renderYearlyView() {
   const container = document.getElementById("yearly-months-container");
+  if (!container) return;
+
   let html = "";
-  
+  let yearlyEarnedSum = 0;
+  let yearlyPctSum = 0;
+
   MONTH_NAMES.forEach((mName, idx) => {
     const isCurrent = idx === currentMonth;
-    const samplePct = [38, 42, 55, 60, 48, 70, 75, 65, 80, 85, 72, 68][idx];
-    const sampleEarned = (samplePct * 18.5).toFixed(0);
+    const stats = getMonthStats(currentYear, idx);
+
+    yearlyEarnedSum += stats.totalEarned;
+    yearlyPctSum += stats.completionPct;
 
     html += `
-      <div class="year-month-card ${isCurrent ? 'active-month' : ''}">
+      <div class="year-month-card ${isCurrent ? 'active-month' : ''}" data-month="${idx}" style="cursor: pointer;" title="Click to view ${mName}">
         <div class="year-month-header" style="background: ${isCurrent ? '#2563EB' : '#475569'};">
           <h5>${mName.toUpperCase()}</h5>
           <span style="font-size:10px; font-weight:700;">${isCurrent ? 'ACTIVE' : ''}</span>
@@ -451,14 +627,14 @@ function renderYearlyView() {
         <div class="year-month-body">
           <div class="stat-row">
             <span class="text-muted">Monthly Completion:</span>
-            <span class="bold">${samplePct}%</span>
+            <span class="bold">${stats.completionPct}%</span>
           </div>
           <div class="progress-bar-bg">
-            <div class="progress-bar-fill" style="width: ${samplePct}%;"></div>
+            <div class="progress-bar-fill" style="width: ${stats.completionPct}%;"></div>
           </div>
           <div class="stat-row mt-2">
             <span class="text-muted">Rewards Accumulated:</span>
-            <span class="bold green">$${sampleEarned}</span>
+            <span class="bold green">$${stats.totalEarned.toFixed(2)}</span>
           </div>
         </div>
       </div>
@@ -466,6 +642,36 @@ function renderYearlyView() {
   });
 
   container.innerHTML = html;
+
+  // Add click to jump to month
+  container.querySelectorAll(".year-month-card").forEach(card => {
+    card.addEventListener("click", () => {
+      const targetMonth = parseInt(card.getAttribute("data-month"));
+      currentMonth = targetMonth;
+      const monthPicker = document.getElementById("month-picker");
+      if (monthPicker) monthPicker.value = currentMonth;
+      renderDailyMatrix();
+      renderSubTrackers();
+      renderYearlyView();
+      // Switch tab to monthly
+      const monthlyTabBtn = document.getElementById("tab-monthly-btn");
+      if (monthlyTabBtn) monthlyTabBtn.click();
+      showToast(`Switched to ${MONTH_NAMES[currentMonth]} ${currentYear}`);
+    });
+  });
+
+  // Annual Compound KPI Updates
+  const annualAvgCompletion = Math.round(yearlyPctSum / 12);
+  const yearlyCompEl = document.getElementById("yearly-completion-rate");
+  if (yearlyCompEl) yearlyCompEl.innerText = `${annualAvgCompletion}%`;
+
+  const yearlyEarnedEl = document.getElementById("yearly-total-earned");
+  if (yearlyEarnedEl) yearlyEarnedEl.innerText = `$${yearlyEarnedSum.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+  // Total All-Time Earned Vault
+  const allTimeTotal = computeAllTimeTotalEarned();
+  const vaultEl = document.getElementById("rewards-vault-total");
+  if (vaultEl) vaultEl.innerText = `$${allTimeTotal.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
 // ===================================================
@@ -474,52 +680,99 @@ function renderYearlyView() {
 function renderFieldsAndRewards() {
   // Categories config
   const catList = document.getElementById("categories-config-list");
-  let catHtml = "";
-  HABIT_DATABASE.categories.forEach(cat => {
-    const dailyCount = HABIT_DATABASE.dailyHabits.filter(h => h.category === cat.name).length;
-    const weeklyCount = HABIT_DATABASE.weeklyHabits.filter(h => h.category === cat.name).length;
-    const monthlyCount = HABIT_DATABASE.monthlyHabits.filter(h => h.category === cat.name).length;
-    
-    catHtml += `
-      <div class="category-config-item">
-        <div class="cat-config-header">
-          <span class="cat-chip" style="background:${cat.color}; color:${cat.textColor};">${cat.name}</span>
-          <span class="text-muted text-sm ml-auto">${dailyCount} Daily · ${weeklyCount} Weekly · ${monthlyCount} Monthly</span>
+  if (catList) {
+    let catHtml = "";
+    HABIT_DATABASE.categories.forEach(cat => {
+      const dailyCount = HABIT_DATABASE.dailyHabits.filter(h => h.category === cat.name).length;
+      const weeklyCount = HABIT_DATABASE.weeklyHabits.filter(h => h.category === cat.name).length;
+      const monthlyCount = HABIT_DATABASE.monthlyHabits.filter(h => h.category === cat.name).length;
+
+      catHtml += `
+        <div class="category-config-item">
+          <div class="cat-config-header">
+            <span class="cat-chip" style="background:${cat.color}; color:${cat.textColor};">${cat.name}</span>
+            <span class="text-muted text-sm ml-auto">${dailyCount} Daily · ${weeklyCount} Weekly · ${monthlyCount} Monthly</span>
+          </div>
         </div>
-      </div>
-    `;
-  });
-  catList.innerHTML = catHtml;
+      `;
+    });
+    catList.innerHTML = catHtml;
+  }
 
   // Reward settings table
   const rewardTbody = document.getElementById("rewards-settings-tbody");
-  let rHtml = "";
-  const maxRows = Math.max(HABIT_DATABASE.dailyHabits.length, HABIT_DATABASE.weeklyHabits.length, HABIT_DATABASE.monthlyHabits.length);
+  if (rewardTbody) {
+    let rHtml = "";
+    const maxRows = Math.max(HABIT_DATABASE.dailyHabits.length, HABIT_DATABASE.weeklyHabits.length, HABIT_DATABASE.monthlyHabits.length);
 
-  for (let i = 0; i < maxRows; i++) {
-    const dH = HABIT_DATABASE.dailyHabits[i];
-    const wH = HABIT_DATABASE.weeklyHabits[i];
-    const mH = HABIT_DATABASE.monthlyHabits[i];
+    for (let i = 0; i < maxRows; i++) {
+      const dH = HABIT_DATABASE.dailyHabits[i];
+      const wH = HABIT_DATABASE.weeklyHabits[i];
+      const mH = HABIT_DATABASE.monthlyHabits[i];
 
-    rHtml += `<tr>`;
-    rHtml += `<td class="bold">${dH ? dH.category : (wH ? wH.category : (mH ? mH.category : ''))}</td>`;
-    rHtml += `<td>${dH ? dH.name : '-'}</td>`;
-    rHtml += `<td class="green bold">${dH ? '$' + dH.reward.toFixed(2) : '-'}</td>`;
-    rHtml += `<td>${wH ? wH.name : '-'}</td>`;
-    rHtml += `<td class="green bold">${wH ? '$' + wH.reward.toFixed(2) : '-'}</td>`;
-    rHtml += `<td>${mH ? mH.name : '-'}</td>`;
-    rHtml += `<td class="green bold">${mH ? '$' + mH.reward.toFixed(2) : '-'}</td>`;
-    rHtml += `</tr>`;
+      rHtml += `<tr>`;
+      rHtml += `<td class="bold">${dH ? `<span class="badge-soft" style="background:${getCategoryMeta(dH.category).color}; color:${getCategoryMeta(dH.category).textColor}; padding:2px 6px; border-radius:3px;">${dH.category}</span>` : '—'}</td>`;
+      rHtml += `<td>${dH ? dH.name : '—'}</td>`;
+      rHtml += `<td class="green bold">${dH ? '$' + dH.reward.toFixed(2) : '—'}</td>`;
+      rHtml += `<td>${wH ? wH.name : '—'}</td>`;
+      rHtml += `<td class="green bold">${wH ? '$' + wH.reward.toFixed(2) : '—'}</td>`;
+      rHtml += `<td>${mH ? mH.name : '—'}</td>`;
+      rHtml += `<td class="green bold">${mH ? '$' + mH.reward.toFixed(2) : '—'}</td>`;
+      rHtml += `</tr>`;
+    }
+    rewardTbody.innerHTML = rHtml;
   }
-  rewardTbody.innerHTML = rHtml;
+
+  // Bind static field inputs
+  const repNameInput = document.getElementById("report-name-input");
+  if (repNameInput) {
+    repNameInput.value = trackerState.reportName || "My habits";
+    repNameInput.addEventListener("input", (e) => {
+      trackerState.reportName = e.target.value;
+      saveState();
+      recalculateMetrics();
+    });
+  }
+
+  const repStartDate = document.getElementById("report-start-date");
+  if (repStartDate) {
+    repStartDate.value = trackerState.startDate || "Jan 1, 2026";
+    repStartDate.addEventListener("input", (e) => {
+      trackerState.startDate = e.target.value;
+      saveState();
+    });
+  }
 }
 
 // Toast notification helper
 function showToast(msg) {
   const toast = document.getElementById("toast-notification");
-  document.getElementById("toast-message").innerText = msg;
+  if (!toast) return;
+  const msgEl = document.getElementById("toast-message");
+  if (msgEl) msgEl.innerText = msg;
   toast.classList.add("show");
   setTimeout(() => toast.classList.remove("show"), 3200);
+}
+
+// Update year globally across pickers
+function updateYear(newYear) {
+  currentYear = parseInt(newYear);
+
+  const monthlyYearPicker = document.getElementById("monthly-year-picker");
+  if (monthlyYearPicker) monthlyYearPicker.value = currentYear;
+
+  const yearPicker = document.getElementById("year-picker");
+  if (yearPicker) yearPicker.value = currentYear;
+
+  const bannerSub = document.getElementById("yearly-banner-sub");
+  if (bannerSub) {
+    bannerSub.innerText = `\u0671\u0644\u0650\u0627\u0633\u0652\u062a\u0650\u0642\u064e\u0627\u0645\u064e\u0629 — 'Habits ${currentYear}' through '${currentYear + 10}'`;
+  }
+
+  renderDailyMatrix();
+  renderSubTrackers();
+  renderYearlyView();
+  showToast(`Year range set to ${currentYear}`);
 }
 
 // ===================================================
@@ -533,68 +786,101 @@ document.addEventListener("DOMContentLoaded", () => {
       document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
       tab.classList.add("active");
       const target = tab.getAttribute("data-tab");
-      document.getElementById(`view-${target}`).classList.add("active");
+      const targetEl = document.getElementById(`view-${target}`);
+      if (targetEl) targetEl.classList.add("active");
+
+      if (target === "yearly") {
+        renderYearlyView();
+      } else if (target === "rewards") {
+        renderYearlyView(); // Updates total vault amount
+      }
     });
   });
 
   // Month Picker
   const monthPicker = document.getElementById("month-picker");
-  monthPicker.addEventListener("change", (e) => {
-    currentMonth = parseInt(e.target.value);
-    renderDailyMatrix();
-    renderSubTrackers();
-    showToast(`Switched to ${MONTH_NAMES[currentMonth]} ${currentYear}`);
-  });
+  if (monthPicker) {
+    monthPicker.value = currentMonth;
+    monthPicker.addEventListener("change", (e) => {
+      currentMonth = parseInt(e.target.value);
+      renderDailyMatrix();
+      renderSubTrackers();
+      renderYearlyView();
+      showToast(`Switched to ${MONTH_NAMES[currentMonth]} ${currentYear}`);
+    });
+  }
 
-  // Year Picker
+  // Monthly Year Picker (on Month view)
+  const monthlyYearPicker = document.getElementById("monthly-year-picker");
+  if (monthlyYearPicker) {
+    monthlyYearPicker.value = currentYear;
+    monthlyYearPicker.addEventListener("change", (e) => {
+      updateYear(e.target.value);
+    });
+  }
+
+  // Year Picker (on Yearly view)
   const yearPicker = document.getElementById("year-picker");
-  yearPicker.addEventListener("change", (e) => {
-    currentYear = parseInt(e.target.value);
-    document.getElementById("yearly-banner-sub").innerText = `\u0671\u0644\u0650\u0627\u0633\u0652\u062a\u0650\u0642\u064e\u0627\u0645\u064e\u0629 — 'Habits ${currentYear}' through '${currentYear + 10}'`;
-    renderDailyMatrix();
-    renderSubTrackers();
-    showToast(`Year range set to ${currentYear}`);
-  });
+  if (yearPicker) {
+    yearPicker.value = currentYear;
+    yearPicker.addEventListener("change", (e) => {
+      updateYear(e.target.value);
+    });
+  }
 
   // Sound Toggle
   const btnAudio = document.getElementById("btn-audio-toggle");
-  btnAudio.addEventListener("click", () => {
-    soundEnabled = !soundEnabled;
-    document.getElementById("audio-icon").innerText = soundEnabled ? "🔊" : "🔇";
-    btnAudio.innerHTML = `<span id="audio-icon">${soundEnabled ? "🔊" : "🔇"}</span> Sound: ${soundEnabled ? "ON" : "OFF"}`;
-    showToast(`Audio feedback: ${soundEnabled ? "Enabled" : "Disabled"}`);
-  });
+  if (btnAudio) {
+    btnAudio.addEventListener("click", () => {
+      soundEnabled = !soundEnabled;
+      btnAudio.innerHTML = `<span id="audio-icon">${soundEnabled ? "🔊" : "🔇"}</span> Sound: ${soundEnabled ? "ON" : "OFF"}`;
+      showToast(`Audio feedback: ${soundEnabled ? "Enabled" : "Disabled"}`);
+      if (soundEnabled) {
+        playBeep(true);
+      }
+    });
+  }
 
   // Reset Month
-  document.getElementById("btn-reset-data").addEventListener("click", () => {
-    if (confirm(`Are you sure you want to clear all checked habits for ${MONTH_NAMES[currentMonth]} ${currentYear}?`)) {
-      const prefix = `${currentYear}-${currentMonth}-`;
-      Object.keys(trackerState.checks).forEach(k => {
-        if (k.startsWith(prefix)) delete trackerState.checks[k];
-      });
-      Object.keys(trackerState.weeklyChecks).forEach(k => {
-        if (k.startsWith(prefix)) delete trackerState.weeklyChecks[k];
-      });
-      Object.keys(trackerState.monthlyChecks).forEach(k => {
-        if (k.startsWith(prefix)) delete trackerState.monthlyChecks[k];
-      });
-      saveState();
-      renderDailyMatrix();
-      renderSubTrackers();
-      showToast("Month data cleared.");
-    }
-  });
+  const btnReset = document.getElementById("btn-reset-data");
+  if (btnReset) {
+    btnReset.addEventListener("click", () => {
+      if (confirm(`Are you sure you want to clear all checked habits and tasks for ${MONTH_NAMES[currentMonth]} ${currentYear}?`)) {
+        const prefix = `${currentYear}-${currentMonth}-`;
+        Object.keys(trackerState.checks).forEach(k => {
+          if (k.startsWith(prefix)) delete trackerState.checks[k];
+        });
+        Object.keys(trackerState.weeklyChecks).forEach(k => {
+          if (k.startsWith(prefix)) delete trackerState.weeklyChecks[k];
+        });
+        Object.keys(trackerState.monthlyChecks).forEach(k => {
+          if (k.startsWith(prefix)) delete trackerState.monthlyChecks[k];
+        });
+        Object.keys(trackerState.oneOffChecks).forEach(k => {
+          if (k.startsWith(prefix)) delete trackerState.oneOffChecks[k];
+        });
+        saveState();
+        renderDailyMatrix();
+        renderSubTrackers();
+        renderYearlyView();
+        showToast("Month data cleared.");
+      }
+    });
+  }
 
   // Download Excel (.xlsx) file
-  document.getElementById("btn-download-excel").addEventListener("click", () => {
-    showToast("ٱلِاسْتِقَامَة — Downloading Istiqamah Tracker spreadsheet...");
-    const link = document.createElement("a");
-    link.href = "Istiqamah_Tracker_2026_2036.xlsx";
-    link.download = "Istiqamah_Tracker_2026_2036.xlsx";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  });
+  const btnDownload = document.getElementById("btn-download-excel");
+  if (btnDownload) {
+    btnDownload.addEventListener("click", () => {
+      showToast("ٱلِاسْتِقَامَة — Downloading Istiqamah Tracker spreadsheet...");
+      const link = document.createElement("a");
+      link.href = "Istiqamah_Tracker_2026_2036.xlsx";
+      link.download = "Istiqamah_Tracker_2026_2036.xlsx";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
+  }
 
   // Initial Renders
   renderDailyMatrix();
