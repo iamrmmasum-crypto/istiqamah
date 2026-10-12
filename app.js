@@ -4,48 +4,49 @@
 
 const HABIT_DATABASE = {
   categories: [
-    { name: "Creative", color: "#D98880", textColor: "#FFFFFF" },
-    { name: "Career", color: "#F5B075", textColor: "#1E293B" },
-    { name: "Fitness", color: "#FDE047", textColor: "#1E293B" },
-    { name: "Financial", color: "#A7F3D0", textColor: "#1E293B" },
-    { name: "Relationships", color: "#BAE6FD", textColor: "#1E293B" },
-    { name: "Chores", color: "#DDD6FE", textColor: "#1E293B" }
+    { name: "Spiritual", color: "#10B981", textColor: "#FFFFFF" },
+    { name: "Study & Work", color: "#3B82F6", textColor: "#FFFFFF" },
+    { name: "Health & Routine", color: "#F59E0B", textColor: "#1E293B" },
+    { name: "Mindfulness", color: "#8B5CF6", textColor: "#FFFFFF" },
+    { name: "Self-Discipline", color: "#EC4899", textColor: "#FFFFFF" }
   ],
   dailyHabits: [
-    { id: "d1", name: "Practice painting", category: "Creative", reward: 10.0 },
-    { id: "d2", name: "Learn guitar", category: "Creative", reward: 25.0 },
-    { id: "d3", name: "Sketch at least once", category: "Creative", reward: 30.0 },
-    { id: "d4", name: "Practice embroidery", category: "Creative", reward: 2.0 },
-    { id: "d5", name: "Learn code", category: "Career", reward: 5.0 },
-    { id: "d6", name: "Sync with virtual team", category: "Career", reward: 10.0 },
-    { id: "d7", name: "Complete daily tasks by EOD", category: "Career", reward: 1.0 },
-    { id: "d8", name: "Read all emails by EOD", category: "Career", reward: 1.5 },
-    { id: "d9", name: "Stop work by 6pm", category: "Career", reward: 1.5 },
-    { id: "d10", name: "Ride exercise bike for 5 mins", category: "Fitness", reward: 0.5 },
-    { id: "d11", name: "Go to the gym", category: "Fitness", reward: 2.0 },
-    { id: "d12", name: "Run one mile", category: "Fitness", reward: 2.0 },
-    { id: "d13", name: "Check account", category: "Financial", reward: 0.5 },
-    { id: "d14", name: "Save $50", category: "Financial", reward: 50.0 }
+    { id: "d1", name: "☀️ Early Wake Up (4:45 AM)", category: "Health & Routine", reward: 3.0 },
+    { id: "d2", name: "🌅 Fajr Prayer (5:00 AM)", category: "Spiritual", reward: 5.0 },
+    { id: "d3", name: "🧘 Meditation & Morning Dhikr (5:30 AM)", category: "Mindfulness", reward: 3.0 },
+    { id: "d4", name: "📚 Deep Study - Session 1 (6:00–9:00 AM)", category: "Study & Work", reward: 8.0 },
+    { id: "d5", name: "📰 Newspaper & Reading (9:00–9:30 AM)", category: "Study & Work", reward: 2.0 },
+    { id: "d6", name: "🥗 Breakfast & Rest (9:30–10:00 AM)", category: "Health & Routine", reward: 2.0 },
+    { id: "d7", name: "📝 Deep Study - Session 2 (10:00 AM–12:00 PM)", category: "Study & Work", reward: 6.0 },
+    { id: "d8", name: "🚿 Bath & Grooming (12:00–1:00 PM)", category: "Health & Routine", reward: 2.0 },
+    { id: "d9", name: "🌞 Dhuhr Prayer [Jummah on Fri] (1:00 PM)", category: "Spiritual", reward: 5.0 },
+    { id: "d10", name: "🛏️ Afternoon Nap / Qaylulah (2:00–4:00 PM)", category: "Health & Routine", reward: 3.0 },
+    { id: "d11", name: "🌤️ Asr Prayer (4:15 PM)", category: "Spiritual", reward: 5.0 },
+    { id: "d12", name: "🌇 Maghrib Prayer (5:45 PM)", category: "Spiritual", reward: 5.0 },
+    { id: "d13", name: "🌙 Isha Prayer & Reflection (7:45 PM)", category: "Spiritual", reward: 5.0 },
+    { id: "d14", name: "💧 Drink 2.5L+ Water (All Day)", category: "Health & Routine", reward: 2.0 },
+    { id: "d15", name: "🛡️ Screen Purity & Chastity / No Porn (All Day)", category: "Self-Discipline", reward: 10.0 },
+    { id: "d16", name: "😴 Night Sleep on Time (11:30 PM–12:00 AM)", category: "Health & Routine", reward: 4.0 }
   ],
   weeklyHabits: [
-    { id: "w1", name: "Paint a new landscape", category: "Creative", reward: 15.0 },
-    { id: "w2", name: "Play one new song", category: "Creative", reward: 25.0 },
-    { id: "w3", name: "Meet weekly deadlines", category: "Career", reward: 20.0 },
-    { id: "w4", name: "Career reflection every Sunday", category: "Career", reward: 2.0 },
-    { id: "w5", name: "Ride exercise bike for an hour", category: "Fitness", reward: 2.0 },
-    { id: "w6", name: "Save 10% of earnings", category: "Financial", reward: 0.5 }
+    { id: "w1", name: "🕌 Jummah Prayer & Surah Al-Kahf (Friday)", category: "Spiritual", reward: 10.0 },
+    { id: "w2", name: "📖 Weekly Quran & Islamic Lecture", category: "Spiritual", reward: 5.0 },
+    { id: "w3", name: "🏃 5km Run / Outdoor Fitness Session", category: "Health & Routine", reward: 5.0 },
+    { id: "w4", name: "👨‍👩‍👧 Family Quality Time & Silat ar-Rahim", category: "Mindfulness", reward: 5.0 },
+    { id: "w5", name: "🧹 Room & Digital Workspace Deep Clean", category: "Health & Routine", reward: 5.0 },
+    { id: "w6", name: "📊 Weekly Habit Audit & Next Week Planning", category: "Study & Work", reward: 5.0 }
   ],
   monthlyHabits: [
-    { id: "m1", name: "Host an art night", category: "Creative", reward: 15.0 },
-    { id: "m2", name: "Memorize four songs", category: "Creative", reward: 25.0 },
-    { id: "m3", name: "Attend a networking event", category: "Career", reward: 5.0 },
-    { id: "m4", name: "Go to the gym 25 days", category: "Fitness", reward: 2.0 },
-    { id: "m5", name: "Contribute to 401(K)", category: "Financial", reward: 0.5 }
+    { id: "m1", name: "🌙 Fast 3 White Days (Ayyam al-Beed)", category: "Spiritual", reward: 20.0 },
+    { id: "m2", name: "📚 Finish Reading 1 Complete Book", category: "Study & Work", reward: 25.0 },
+    { id: "m3", name: "🤝 Sadaqah & Charitable Giving", category: "Spiritual", reward: 15.0 },
+    { id: "m4", name: "📈 Monthly Financial & Savings Audit", category: "Study & Work", reward: 15.0 },
+    { id: "m5", name: "🎯 Goals & Self-Accountability Review", category: "Mindfulness", reward: 10.0 }
   ],
   oneOffTasks: [
-    { id: "o1", name: "Tidy up studio desk and organize brushes" },
-    { id: "o2", name: "File quarterly expense receipts" },
-    { id: "o3", name: "Schedule annual wellness checkup" }
+    { id: "o1", name: "🩺 Annual Health & Dental Checkup" },
+    { id: "o2", name: "📁 Backup Digital Storage & Study Notes" },
+    { id: "o3", name: "🤲 Set Intentions & Du'a List for Quarter" }
   ]
 };
 

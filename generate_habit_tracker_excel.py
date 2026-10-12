@@ -5,32 +5,29 @@ from openpyxl.utils import get_column_letter
 def build_habit_tracker_workbook(filename="Istiqamah_Tracker_2026_2036.xlsx"):
     wb = openpyxl.Workbook()
     # Remove default sheet
-    wb.remove(wb.active)
+    if "Sheet" in wb.sheetnames:
+        wb.remove(wb["Sheet"])
 
-    # Common Styles & Palette
-    header_fill = PatternFill(start_color="1F2937", end_color="1F2937", fill_type="solid") # Dark slate
-    sub_header_fill = PatternFill(start_color="4B5563", end_color="4B5563", fill_type="solid")
-    summary_card_fill = PatternFill(start_color="F3F4F6", end_color="F3F4F6", fill_type="solid")
-    total_card_fill = PatternFill(start_color="E5E7EB", end_color="E5E7EB", fill_type="solid")
-    
-    # Week Colors (Matching exact template screenshots)
-    week1_fill = PatternFill(start_color="2563EB", end_color="2563EB", fill_type="solid") # Royal Blue
-    week2_fill = PatternFill(start_color="F59E0B", end_color="F59E0B", fill_type="solid") # Amber / Orange
-    week3_fill = PatternFill(start_color="FACC15", end_color="FACC15", fill_type="solid") # Bright Yellow
-    week4_fill = PatternFill(start_color="C084FC", end_color="C084FC", fill_type="solid") # Purple / Lavender
+    # Global Style definitions
+    header_fill = PatternFill(start_color="1E3A8A", end_color="1E3A8A", fill_type="solid") # Navy Blue
+    sub_header_fill = PatternFill(start_color="3B82F6", end_color="3B82F6", fill_type="solid") # Royal Blue
+    summary_card_fill = PatternFill(start_color="F1F5F9", end_color="F1F5F9", fill_type="solid") # Light Slate
+    total_card_fill = PatternFill(start_color="E2E8F0", end_color="E2E8F0", fill_type="solid")
+
+    # Week Colors
+    week1_fill = PatternFill(start_color="2563EB", end_color="2563EB", fill_type="solid") # Blue
+    week2_fill = PatternFill(start_color="F59E0B", end_color="F59E0B", fill_type="solid") # Orange
+    week3_fill = PatternFill(start_color="FACC15", end_color="FACC15", fill_type="solid") # Yellow
+    week4_fill = PatternFill(start_color="C084FC", end_color="C084FC", fill_type="solid") # Purple
     week5_fill = PatternFill(start_color="06B6D4", end_color="06B6D4", fill_type="solid") # Cyan
 
     # Category Colors
     cat_colors = {
-        "Creative": ("D98880", "White"),
-        "Career": ("F5B075", "Black"),
-        "Fitness": ("FDE047", "Black"),
-        "Financial": ("A7F3D0", "Black"),
-        "Relationships": ("BAE6FD", "Black"),
-        "Chores": ("DDD6FE", "Black"),
-        "Personal": ("FED7AA", "Black"),
-        "Spiritual": ("FEF08A", "Black"),
-        "Learn new skills": ("E2E8F0", "Black"),
+        "Spiritual": ("10B981", "White"),
+        "Study & Work": ("3B82F6", "White"),
+        "Health & Routine": ("F59E0B", "Black"),
+        "Mindfulness": ("8B5CF6", "White"),
+        "Self-Discipline": ("EC4899", "White"),
     }
 
     border_thin = Side(border_style="thin", color="D1D5DB")
@@ -64,7 +61,6 @@ def build_habit_tracker_workbook(filename="Istiqamah_Tracker_2026_2036.xlsx"):
     ws_fields["A4"].font = Font(name="Calibri", size=11, bold=True)
     ws_fields.row_dimensions[4].height = 22
 
-    # Bottom line under Static Inputs
     for col in range(1, 10):
         ws_fields.cell(row=4, column=col).border = Border(bottom=Side(style="medium", color="000000"))
 
@@ -109,40 +105,41 @@ def build_habit_tracker_workbook(filename="Istiqamah_Tracker_2026_2036.xlsx"):
     ws_fields["D12"].alignment = Alignment(horizontal="center", vertical="center")
     ws_fields["D12"].font = Font(bold=True)
 
-    ws_fields["E12"] = "Habit category"
+    ws_fields["E12"] = "Categories"
     ws_fields["E12"].fill = summary_card_fill
     ws_fields["E12"].alignment = Alignment(horizontal="center", vertical="center")
     ws_fields["E12"].font = Font(bold=True)
 
-    week_items = [
-        ("Week 1", "2563EB"),
-        ("Week 2", "F59E0B"),
-        ("Week 3", "FACC15"),
-        ("Week 4", "C084FC"),
-        ("Week 5", "06B6D4")
+    # Week Color Items
+    weeks_info = [
+        ("Week 1", "2563EB", "Days 1 to 7"),
+        ("Week 2", "F59E0B", "Days 8 to 14"),
+        ("Week 3", "FACC15", "Days 15 to 21"),
+        ("Week 4", "C084FC", "Days 22 to 28"),
+        ("Week 5", "06B6D4", "Days 29 to 31")
     ]
-    for idx, (wk_name, wk_hex) in enumerate(week_items):
-        r = 13 + idx
-        ws_fields.cell(row=r, column=1).fill = PatternFill(start_color=wk_hex, end_color=wk_hex, fill_type="solid")
-        ws_fields.cell(row=r, column=2, value=wk_name).font = Font(color="0000FF", bold=True)
-        ws_fields.cell(row=r, column=2).alignment = Alignment(horizontal="center", vertical="center")
+    for idx, (w_name, color_hex, desc) in enumerate(weeks_info):
+        r = 14 + (idx * 2)
+        c_swatch = ws_fields.cell(row=r, column=1)
+        c_swatch.fill = PatternFill(start_color=color_hex, end_color=color_hex, fill_type="solid")
+        c_swatch.border = cell_border
+        
+        c_lbl = ws_fields.cell(row=r, column=2, value=w_name)
+        c_lbl.font = Font(name="Calibri", size=10, bold=True)
+        c_lbl.alignment = Alignment(horizontal="left", vertical="center")
+        c_lbl.border = cell_border
 
-    categories_list = [
-        ("Creative", "D98880"),
-        ("Career", "F5B075"),
-        ("Fitness", "FDE047"),
-        ("Financial", "A7F3D0"),
-        ("Relationships", "BAE6FD"),
-        ("Chores", "DDD6FE"),
-        ("Personal", "FED7AA"),
-        ("Spiritual", "FEF08A"),
-        ("Learn new skills", "E2E8F0")
-    ]
-    for idx, (cat_name, cat_hex) in enumerate(categories_list):
-        r = 13 + idx
-        ws_fields.cell(row=r, column=4).fill = PatternFill(start_color=cat_hex, end_color=cat_hex, fill_type="solid")
-        ws_fields.cell(row=r, column=5, value=cat_name).font = Font(color="0000FF", bold=True)
-        ws_fields.cell(row=r, column=5).alignment = Alignment(horizontal="center", vertical="center")
+    # Category Color Items
+    for idx, (cat_name, (color_hex, txt_col)) in enumerate(cat_colors.items()):
+        r = 14 + (idx * 2)
+        c_swatch = ws_fields.cell(row=r, column=4)
+        c_swatch.fill = PatternFill(start_color=color_hex, end_color=color_hex, fill_type="solid")
+        c_swatch.border = cell_border
+        
+        c_lbl = ws_fields.cell(row=r, column=5, value=cat_name)
+        c_lbl.font = Font(name="Calibri", size=10, bold=True)
+        c_lbl.alignment = Alignment(horizontal="left", vertical="center")
+        c_lbl.border = cell_border
 
     # HABIT SELECTOR SECTION
     ws_fields["A24"] = "HABIT SELECTOR"
@@ -158,35 +155,42 @@ def build_habit_tracker_workbook(filename="Istiqamah_Tracker_2026_2036.xlsx"):
         ws_fields[cell_id].font = Font(bold=True)
         ws_fields[cell_id].alignment = Alignment(horizontal="center", vertical="center")
 
-    # Habit sample definitions (matching the template exactly)
+    # Habit sample definitions organized by user's daily habits
     habit_data = [
         {
-            "category": "Creative",
-            "color": "D98880",
-            "daily": ["Practice painting", "Learn guitar", "Read one chapter", "Write one chapter", "Sketch at least once", "Practice embroidery"],
-            "weekly": ["Paint a new landscape", "Play one new song", "Finish 10 chapters", "Write three chapters", "Draw 1 still life", "Finish one shape"],
-            "monthly": ["Host an art night", "Memorize four songs", "Read one book", "Edit 10 chapters", "Paint one sketch", "Finish one embroidery project"]
+            "category": "Spiritual",
+            "color": "10B981",
+            "daily": ["🌅 Fajr Prayer (5:00 AM)", "🌞 Dhuhr Prayer [Jummah on Fri] (1:00 PM)", "🌤️ Asr Prayer (4:15 PM)", "🌇 Maghrib Prayer (5:45 PM)", "🌙 Isha Prayer & Reflection (7:45 PM)"],
+            "weekly": ["🕌 Jummah Prayer & Surah Al-Kahf (Friday)", "📖 Weekly Quran & Islamic Lecture"],
+            "monthly": ["🌙 Fast 3 White Days (Ayyam al-Beed)", "🤝 Sadaqah & Charitable Giving"]
         },
         {
-            "category": "Career",
-            "color": "F5B075",
-            "daily": ["Learn code", "Sync with virtual team", "Complete daily tasks by EOD", "Read all emails by EOD", "Stop work by 6pm"],
-            "weekly": ["Work", "Max three meetings", "Meet weekly deadlines", "Read all emails in a week", "Finish work by Friday 4pm", "Career reflection every Sunday"],
-            "monthly": ["Attend a networking event", "Research new growth area", "Meet or surpass KPIs", "Inbox zero", "Create new KPIs for next month"]
+            "category": "Study & Work",
+            "color": "3B82F6",
+            "daily": ["📚 Deep Study - Session 1 (6:00–9:00 AM)", "📰 Newspaper & Reading (9:00–9:30 AM)", "📝 Deep Study - Session 2 (10:00 AM–12:00 PM)"],
+            "weekly": ["📊 Weekly Habit Audit & Next Week Planning", "Research new growth topics"],
+            "monthly": ["📚 Finish Reading 1 Complete Book", "📈 Monthly Financial & Savings Audit"]
         },
         {
-            "category": "Fitness",
-            "color": "FDE047",
-            "daily": ["Ride exercise bike for 5 mins", "Go to the gym", "Practice football", "Run one mile", "50 situps", "20 pushups / pullups", "50 squats"],
-            "weekly": ["Ride exercise bike for an hour", "Go to the gym 5 times", "Practice football with friends", "Run five miles", "250 situps", "100 pushups / pullups", "250 squats"],
-            "monthly": ["Ride exercise bike every day", "Go to the gym 25 days", "Play one scrimmage", "Run 20 miles", "1000 situps", "400 pushups / pullups", "1000 squats"]
+            "category": "Health & Routine",
+            "color": "F59E0B",
+            "daily": ["☀️ Early Wake Up (4:45 AM)", "🥗 Breakfast & Rest (9:30–10:00 AM)", "🚿 Bath & Grooming (12:00–1:00 PM)", "🛏️ Afternoon Nap / Qaylulah (2:00–4:00 PM)", "💧 Drink 2.5L+ Water (All Day)", "😴 Night Sleep on Time (11:30 PM–12:00 AM)"],
+            "weekly": ["🏃 5km Run / Outdoor Fitness Session", "🧹 Room & Digital Workspace Deep Clean"],
+            "monthly": ["🩺 Complete Routine Health Audit", "Deep rest & rejuvenation weekend"]
         },
         {
-            "category": "Financial",
-            "color": "A7F3D0",
-            "daily": ["Check account", "Save $50", "Only eat out once", "Check stock market", "Research investment property"],
-            "weekly": ["Save 10% of earnings", "Save $500", "Only eat out on Saturday", "Buy one new stock", "Go to one listing"],
-            "monthly": ["Contribute to 401(K)", "Save $2000", "Limit eating out to 5 days", "Buy five new stocks", "Make one offer"]
+            "category": "Mindfulness",
+            "color": "8B5CF6",
+            "daily": ["🧘 Meditation & Morning Dhikr (5:30 AM)"],
+            "weekly": ["👨‍👩‍👧 Family Quality Time & Silat ar-Rahim"],
+            "monthly": ["🎯 Goals & Self-Accountability Review"]
+        },
+        {
+            "category": "Self-Discipline",
+            "color": "EC4899",
+            "daily": ["🛡️ Screen Purity & Chastity / No Porn (All Day)"],
+            "weekly": ["Digital Detox Sunday afternoon"],
+            "monthly": ["Review Screen Discipline Milestones"]
         }
     ]
 
@@ -199,7 +203,7 @@ def build_habit_tracker_workbook(filename="Istiqamah_Tracker_2026_2036.xlsx"):
         ws_fields.merge_cells(start_row=start_cat_row, start_column=1, end_row=end_cat_row, end_column=1)
         cat_cell = ws_fields.cell(row=start_cat_row, column=1, value=group["category"])
         cat_cell.fill = PatternFill(start_color=group["color"], end_color=group["color"], fill_type="solid")
-        cat_cell.font = Font(name="Calibri", size=11, bold=True)
+        cat_cell.font = Font(name="Calibri", size=11, bold=True, color="FFFFFF" if group["color"] != "F59E0B" else "000000")
         cat_cell.alignment = Alignment(horizontal="center", vertical="center")
 
         for i in range(max_len):
@@ -240,56 +244,56 @@ def build_habit_tracker_workbook(filename="Istiqamah_Tracker_2026_2036.xlsx"):
         c.font = Font(bold=True)
         c.alignment = Alignment(horizontal="center", vertical="center")
     
-    # Sample reward mappings
     sample_rewards = [
-        ("Practice painting", 10.0, "Paint a new landscape", 15.0, "Host an art night", 15.0),
-        ("Learn guitar", 25.0, "Play one new song", 25.0, "Memorize four songs", 25.0),
-        ("Sketch at least once", 30.0, "Draw 1 still life", 30.0, "Paint one sketch", 30.0),
-        ("Practice embroidery", 2.0, "Finish one shape", 2.0, "Finish one embroidery project", 2.0),
-        ("Learn code", 5.0, "Work", 5.0, "Attend a networking event", 5.0),
-        ("Sync with virtual team", 10.0, "Max three meetings", 10.0, "Research new growth area", 5.0),
-        ("Complete daily tasks by EOD", 1.0, "Meet weekly deadlines", 20.0, "Meet or surpass KPIs", 5.0),
-        ("Read all emails by EOD", 1.5, "Read all emails in a week", 10.0, "Inbox zero", 4.0),
-        ("Stop work by 6pm", 1.5, "Finish work by Friday 4pm", 10.0, "Create new KPIs for next month", 2.0),
-        ("Ride exercise bike for 5 mins", 0.5, "Career reflection every Sunday", 2.0, "Ride exercise bike every day", 2.0),
-        ("Go to the gym", 2.0, "Ride exercise bike for an hour", 2.0, "Go to the gym 25 days", 2.0),
-        ("Practice football", 2.0, "Go to the gym 5 times", 2.0, "Play one scrimmage", 5.0),
-        ("Run one mile", 2.0, "Practice football with friends", 5.0, "Run 20 miles", 1.0),
-        ("50 situps", 5.0, "Run five miles", 1.0, "1000 situps", 5.0),
-        ("20 pushups / pullups", 1.0, "250 situps", 3.0, "400 pushups / pullups", 1.0),
-        ("50 squats", 2.5, "100 pushups / pullups", 1.0, "1000 squats", 2.5),
-        ("Check account", 0.5, "250 squats", 2.5, "Contribute to 401(K)", 0.5),
-        ("Save $50", 50.0, "Save 10% of earnings", 0.5, "Save $2000", 50.0),
-        ("Only eat out once", 10.0, "Save $500", 50.0, "Limit eating out to 5 days", 10.0),
-        ("Check stock market", 25.0, "Only eat out on Saturday", 10.0, "Buy five new stocks", 25.0),
+        ("☀️ Early Wake Up (4:45 AM)", 3.0, "🕌 Jummah Prayer & Surah Al-Kahf (Friday)", 10.0, "🌙 Fast 3 White Days (Ayyam al-Beed)", 20.0),
+        ("🌅 Fajr Prayer (5:00 AM)", 5.0, "📖 Weekly Quran & Islamic Lecture", 5.0, "📚 Finish Reading 1 Complete Book", 25.0),
+        ("🧘 Meditation & Morning Dhikr (5:30 AM)", 3.0, "🏃 5km Run / Outdoor Fitness Session", 5.0, "🤝 Sadaqah & Charitable Giving", 15.0),
+        ("📚 Deep Study - Session 1 (6:00–9:00 AM)", 8.0, "👨‍👩‍👧 Family Quality Time & Silat ar-Rahim", 5.0, "📈 Monthly Financial & Savings Audit", 15.0),
+        ("📰 Newspaper & Reading (9:00–9:30 AM)", 2.0, "🧹 Room & Digital Workspace Deep Clean", 5.0, "🎯 Goals & Self-Accountability Review", 10.0),
+        ("🥗 Breakfast & Rest (9:30–10:00 AM)", 2.0, "📊 Weekly Habit Audit & Planning", 5.0, "-", 0.0),
+        ("📝 Deep Study - Session 2 (10:00 AM–12:00 PM)", 6.0, "-", 0.0, "-", 0.0),
+        ("🚿 Bath & Grooming (12:00–1:00 PM)", 2.0, "-", 0.0, "-", 0.0),
+        ("🌞 Dhuhr Prayer [Jummah on Fri] (1:00 PM)", 5.0, "-", 0.0, "-", 0.0),
+        ("🛏️ Afternoon Nap / Qaylulah (2:00–4:00 PM)", 3.0, "-", 0.0, "-", 0.0),
+        ("🌤️ Asr Prayer (4:15 PM)", 5.0, "-", 0.0, "-", 0.0),
+        ("🌇 Maghrib Prayer (5:45 PM)", 5.0, "-", 0.0, "-", 0.0),
+        ("🌙 Isha Prayer & Reflection (7:45 PM)", 5.0, "-", 0.0, "-", 0.0),
+        ("💧 Drink 2.5L+ Water (All Day)", 2.0, "-", 0.0, "-", 0.0),
+        ("🛡️ Screen Purity & Chastity / No Porn (All Day)", 10.0, "-", 0.0, "-", 0.0),
+        ("😴 Night Sleep on Time (11:30 PM–12:00 AM)", 4.0, "-", 0.0, "-", 0.0),
     ]
 
-    for item in sample_rewards:
-        curr_row += 1
-        ws_fields.cell(row=curr_row, column=1, value=item[0])
-        c2 = ws_fields.cell(row=curr_row, column=2, value=item[1])
-        c2.number_format = '$#,##0.00'
-        c2.font = Font(color="0000FF")
+    for idx, (dh, dr, wh, wr, mh, mr) in enumerate(sample_rewards):
+        r = curr_row + 1 + idx
+        ws_fields.cell(row=r, column=1, value=dh).font = Font(color="0000FF")
+        c_dr = ws_fields.cell(row=r, column=2, value=dr)
+        c_dr.number_format = '$#,##0.00'
+        c_dr.border = Border(bottom=border_thin)
+        ws_fields.cell(row=r, column=1).border = Border(bottom=border_thin)
 
-        ws_fields.cell(row=curr_row, column=4, value=item[2])
-        c5 = ws_fields.cell(row=curr_row, column=5, value=item[3])
-        c5.number_format = '$#,##0.00'
-        c5.font = Font(color="0000FF")
+        if wh != "-":
+            ws_fields.cell(row=r, column=4, value=wh).font = Font(color="0000FF")
+            c_wr = ws_fields.cell(row=r, column=5, value=wr)
+            c_wr.number_format = '$#,##0.00'
+            c_wr.border = Border(bottom=border_thin)
+            ws_fields.cell(row=r, column=4).border = Border(bottom=border_thin)
 
-        ws_fields.cell(row=curr_row, column=7, value=item[4])
-        c8 = ws_fields.cell(row=curr_row, column=8, value=item[5])
-        c8.number_format = '$#,##0.00'
-        c8.font = Font(color="0000FF")
+        if mh != "-":
+            ws_fields.cell(row=r, column=7, value=mh).font = Font(color="0000FF")
+            c_mr = ws_fields.cell(row=r, column=8, value=mr)
+            c_mr.number_format = '$#,##0.00'
+            c_mr.border = Border(bottom=border_thin)
+            ws_fields.cell(row=r, column=7).border = Border(bottom=border_thin)
 
-    # Column widths for Fields
-    ws_fields.column_dimensions["A"].width = 24
-    ws_fields.column_dimensions["B"].width = 22
-    ws_fields.column_dimensions["C"].width = 4
-    ws_fields.column_dimensions["D"].width = 24
-    ws_fields.column_dimensions["E"].width = 22
-    ws_fields.column_dimensions["F"].width = 4
-    ws_fields.column_dimensions["G"].width = 26
-    ws_fields.column_dimensions["H"].width = 20
+    # Column dimensions for Fields
+    ws_fields.column_dimensions["A"].width = 18
+    ws_fields.column_dimensions["B"].width = 38
+    ws_fields.column_dimensions["C"].width = 14
+    ws_fields.column_dimensions["D"].width = 38
+    ws_fields.column_dimensions["E"].width = 14
+    ws_fields.column_dimensions["F"].width = 38
+    ws_fields.column_dimensions["G"].width = 14
+    ws_fields.column_dimensions["H"].width = 14
 
     # ==========================================
     # SHEET 2: MONTHLY HABITS
@@ -298,75 +302,62 @@ def build_habit_tracker_workbook(filename="Istiqamah_Tracker_2026_2036.xlsx"):
     ws_month.views.sheetView[0].showGridLines = True
 
     # Title Banner
-    ws_month.merge_cells("A1:AL1")
+    ws_month.merge_cells("A1:AP1")
     ws_month["A1"] = "ٱلِاسْتِقَامَة — MONTHLY HABITS"
     ws_month["A1"].font = Font(name="Calibri", size=16, bold=True, color="FFFFFF")
     ws_month["A1"].fill = header_fill
     ws_month["A1"].alignment = Alignment(horizontal="left", vertical="center", indent=1)
     ws_month.row_dimensions[1].height = 32
 
-    ws_month.merge_cells("A2:AL2")
-    ws_month["A2"] = "Istiqamah Tracker | 'My habits' for 'October 2026'"
+    ws_month.merge_cells("A2:AP2")
+    ws_month["A2"] = "Istiqamah Tracker | 'My habits' for October 2026"
     ws_month["A2"].font = Font(name="Calibri", size=11, italic=True, color="FFFFFF")
     ws_month["A2"].fill = sub_header_fill
     ws_month["A2"].alignment = Alignment(horizontal="left", vertical="center", indent=1)
     ws_month.row_dimensions[2].height = 20
 
-    # Summary Section
+    # Summary Section Cards
     ws_month["A4"] = "SUMMARY"
     ws_month["A4"].font = Font(name="Calibri", size=11, bold=True)
     ws_month.row_dimensions[4].height = 22
     for col in range(1, 10):
         ws_month.cell(row=4, column=col).border = Border(bottom=Side(style="medium", color="000000"))
 
-    ws_month["B6"] = "EDIT RANGE"
+    # Cards
+    ws_month["B6"] = "SELECT MONTH"
     ws_month["B6"].font = Font(name="Calibri", size=9, bold=True)
     ws_month["B6"].alignment = Alignment(horizontal="center", vertical="center")
 
-    ws_month["B7"] = "View from"
+    ws_month["B7"] = "Month"
     ws_month["B7"].fill = summary_card_fill
     ws_month["B7"].font = Font(name="Calibri", size=9)
     ws_month["B7"].alignment = Alignment(horizontal="center", vertical="center")
-    
-    ws_month["D7"] = "Oct 1, 2026"
+
+    ws_month["D7"] = "Oct 2026"
     ws_month["D7"].font = Font(name="Calibri", size=10, bold=True, color="0000FF")
     ws_month["D7"].alignment = Alignment(horizontal="center", vertical="center")
     ws_month["D7"].border = card_border
 
-    ws_month["B9"] = "Complete to date:"
+    ws_month["B9"] = "Complete to date (%):"
     ws_month["B9"].fill = summary_card_fill
     ws_month["B9"].font = Font(name="Calibri", size=9)
     ws_month["B9"].alignment = Alignment(horizontal="center", vertical="center")
 
-    ws_month["D9"] = "=AVERAGE(H13:AL13)"
+    ws_month["D9"] = "=AVERAGE(H15:AP15)"
     ws_month["D9"].font = Font(name="Calibri", size=10, bold=True)
     ws_month["D9"].alignment = Alignment(horizontal="center", vertical="center")
     ws_month["D9"].number_format = '0%'
     ws_month["D9"].border = card_border
 
-    ws_month["B11"] = "Total earned to date:"
+    ws_month["B11"] = "Total earned to date ($):"
     ws_month["B11"].fill = summary_card_fill
     ws_month["B11"].font = Font(name="Calibri", size=9)
     ws_month["B11"].alignment = Alignment(horizontal="center", vertical="center")
-
-    ws_month["D11"] = "=SUM(H27:AL27)"
-    ws_month["D11"].font = Font(name="Calibri", size=11, bold=True, color="059669")
-    ws_month["D11"].alignment = Alignment(horizontal="center", vertical="center")
-    ws_month["D11"].number_format = '$#,##0.00'
-    ws_month["D11"].border = card_border
 
     # Month View Title
     ws_month["A13"] = "MONTH VIEW"
     ws_month["A13"].font = Font(name="Calibri", size=11, bold=True)
     ws_month.row_dimensions[13].height = 24
-
-    # Grid columns structure:
-    # Column A-F: Habit Names & Category Indicators
-    # Column H-N: Week 1 (7 days: Day 1-7)
-    # Column P-V: Week 2 (7 days: Day 8-14)
-    # Column X-AD: Week 3 (7 days: Day 15-21)
-    # Column AF-AL: Week 4 (7 days: Day 22-28)
-    # Column AN-AP: Week 5 (3 days: Day 29-31)
 
     weeks_cols = [
         ("Week 1 (%)", 8, 14, week1_fill, "FFFFFF"),
@@ -376,7 +367,6 @@ def build_habit_tracker_workbook(filename="Istiqamah_Tracker_2026_2036.xlsx"):
         ("Week 5 (%)", 40, 42, week5_fill, "FFFFFF")
     ]
 
-    # Row 14: Week Header Banners
     for wk_name, start_c, end_c, fill_color, text_color in weeks_cols:
         ws_month.merge_cells(start_row=14, start_column=start_c, end_row=14, end_column=end_c)
         cell = ws_month.cell(row=14, column=start_c, value=wk_name)
@@ -386,33 +376,63 @@ def build_habit_tracker_workbook(filename="Istiqamah_Tracker_2026_2036.xlsx"):
 
     ws_month.row_dimensions[14].height = 24
 
+    # Daily Habits list (Rows 18-33)
+    sample_month_habits = [
+        ("☀️ Early Wake Up (4:45 AM)", "Health & Routine", "F59E0B", 3.0),
+        ("🌅 Fajr Prayer (5:00 AM)", "Spiritual", "10B981", 5.0),
+        ("🧘 Meditation & Morning Dhikr (5:30 AM)", "Mindfulness", "8B5CF6", 3.0),
+        ("📚 Deep Study - Session 1 (6:00–9:00 AM)", "Study & Work", "3B82F6", 8.0),
+        ("📰 Newspaper & Reading (9:00–9:30 AM)", "Study & Work", "3B82F6", 2.0),
+        ("🥗 Breakfast & Rest (9:30–10:00 AM)", "Health & Routine", "F59E0B", 2.0),
+        ("📝 Deep Study - Session 2 (10:00 AM–12:00 PM)", "Study & Work", "3B82F6", 6.0),
+        ("🚿 Bath & Grooming (12:00–1:00 PM)", "Health & Routine", "F59E0B", 2.0),
+        ("🌞 Dhuhr Prayer [Jummah on Fri] (1:00 PM)", "Spiritual", "10B981", 5.0),
+        ("🛏️ Afternoon Nap / Qaylulah (2:00–4:00 PM)", "Health & Routine", "F59E0B", 3.0),
+        ("🌤️ Asr Prayer (4:15 PM)", "Spiritual", "10B981", 5.0),
+        ("🌇 Maghrib Prayer (5:45 PM)", "Spiritual", "10B981", 5.0),
+        ("🌙 Isha Prayer & Reflection (7:45 PM)", "Spiritual", "10B981", 5.0),
+        ("💧 Drink 2.5L+ Water (All Day)", "Health & Routine", "F59E0B", 2.0),
+        ("🛡️ Screen Purity & Chastity / No Porn (All Day)", "Self-Discipline", "EC4899", 10.0),
+        ("😴 Night Sleep on Time (11:30 PM–12:00 AM)", "Health & Routine", "F59E0B", 4.0),
+    ]
+
+    daily_start_row = 18
+    daily_end_row = daily_start_row + len(sample_month_habits) - 1 # 33
+    wk_pct_row = daily_end_row + 1 # 34
+    daily_rew_row = daily_end_row + 2 # 35
+    total_earned_label_row = daily_end_row + 4 # 37
+    total_earned_val_row = daily_end_row + 5 # 38
+
+    # Row 11 Total earned formula
+    ws_month["D11"] = f"=SUM(H{daily_rew_row}:AP{daily_rew_row})"
+    ws_month["D11"].font = Font(name="Calibri", size=11, bold=True, color="059669")
+    ws_month["D11"].alignment = Alignment(horizontal="center", vertical="center")
+    ws_month["D11"].number_format = '$#,##0.00'
+    ws_month["D11"].border = card_border
+
     # Row 15: Daily Completed (%)
     ws_month.cell(row=15, column=2, value="Daily completed (%)").font = Font(name="Calibri", size=9, bold=True)
     ws_month.cell(row=15, column=2).alignment = Alignment(horizontal="left", vertical="center")
     
-    # Days & Weekdays
     day_counter = 1
-    days_of_week = ["Wed", "Thu", "Fri", "Sat", "Sun", "Mon", "Tue"] # Sample for Feb
+    days_of_week = ["Thu", "Fri", "Sat", "Sun", "Mon", "Tue", "Wed"] # Oct 2026 starts on Thursday
     
     for wk_name, start_c, end_c, fill_color, text_color in weeks_cols:
         for c in range(start_c, end_c + 1):
-            if day_counter <= 28: # February 28 days
-                # Daily completed % formula
+            if day_counter <= 31:
                 col_letter = get_column_letter(c)
-                ws_month.cell(row=15, column=c, value=f"=COUNTIF({col_letter}18:{col_letter}25, TRUE)/COUNTA({col_letter}18:{col_letter}25)")
+                ws_month.cell(row=15, column=c, value=f"=COUNTIF({col_letter}{daily_start_row}:{col_letter}{daily_end_row}, TRUE)/COUNTA({col_letter}{daily_start_row}:{col_letter}{daily_end_row})")
                 ws_month.cell(row=15, column=c).fill = fill_color
                 ws_month.cell(row=15, column=c).font = Font(name="Calibri", size=8, bold=True, color=text_color)
                 ws_month.cell(row=15, column=c).number_format = '0%'
                 ws_month.cell(row=15, column=c).alignment = Alignment(horizontal="center", vertical="center")
 
-                # Weekday name (Row 16)
                 w_day_name = days_of_week[(day_counter - 1) % 7]
                 c16 = ws_month.cell(row=16, column=c, value=w_day_name)
                 c16.fill = fill_color
                 c16.font = Font(name="Calibri", size=8, bold=True, color=text_color)
                 c16.alignment = Alignment(horizontal="center", vertical="center")
 
-                # Day number (Row 17)
                 c17 = ws_month.cell(row=17, column=c, value=day_counter)
                 c17.fill = fill_color
                 c17.font = Font(name="Calibri", size=10, bold=True, color=text_color)
@@ -420,120 +440,105 @@ def build_habit_tracker_workbook(filename="Istiqamah_Tracker_2026_2036.xlsx"):
 
                 day_counter += 1
             else:
-                # Extra days (for months with 30 or 31 days)
                 c16 = ws_month.cell(row=16, column=c, value="")
                 c16.fill = fill_color
-                c17 = ws_month.cell(row=17, column=c, value=day_counter if day_counter <= 31 else "")
+                c17 = ws_month.cell(row=17, column=c, value="")
                 c17.fill = fill_color
-                c17.font = Font(name="Calibri", size=10, bold=True, color=text_color)
-                c17.alignment = Alignment(horizontal="center", vertical="center")
-                day_counter += 1
-
-    # Daily Habits list (Rows 18-25)
-    sample_month_habits = [
-        ("Practice painting", "Creative", "D98880", 10.0),
-        ("Learn guitar", "Creative", "D98880", 25.0),
-        ("Sketch at least once", "Creative", "D98880", 30.0),
-        ("Practice embroidery", "Creative", "D98880", 2.0),
-        ("Learn code", "Career", "F5B075", 5.0),
-        ("Sync with virtual team", "Career", "F5B075", 10.0),
-        ("Complete daily tasks by EOD", "Career", "F5B075", 1.0),
-        ("Ride exercise bike for 5 mins", "Fitness", "FDE047", 0.5)
-    ]
 
     for idx, (h_name, cat, cat_color, rew_val) in enumerate(sample_month_habits):
-        r = 18 + idx
-        # Category color block and name
+        r = daily_start_row + idx
         ws_month.merge_cells(start_row=r, start_column=1, end_row=r, end_column=5)
         h_cell = ws_month.cell(row=r, column=1, value=h_name)
         h_cell.fill = PatternFill(start_color=cat_color, end_color=cat_color, fill_type="solid")
-        h_cell.font = Font(name="Calibri", size=9, bold=True)
+        h_cell.font = Font(name="Calibri", size=9, bold=True, color="FFFFFF" if cat_color != "F59E0B" else "000000")
         h_cell.alignment = Alignment(horizontal="left", vertical="center", indent=1)
         h_cell.border = cell_border
         
-        # Checkbox cells across all weeks
         for wk_name, start_c, end_c, fill_color, text_color in weeks_cols:
             for c in range(start_c, end_c + 1):
-                box_cell = ws_month.cell(row=r, column=c, value=False) # Boolean checkboxes in Excel
+                box_cell = ws_month.cell(row=r, column=c, value=False)
                 box_cell.alignment = Alignment(horizontal="center", vertical="center")
                 box_cell.border = cell_border
 
-    # Bottom Rows:
-    # Row 26: Week completed (%)
-    ws_month.cell(row=26, column=2, value="Week completed (%):").font = Font(name="Calibri", size=9, bold=True)
+    # Row 34: Week completed (%)
+    ws_month.cell(row=wk_pct_row, column=2, value="Week completed (%):").font = Font(name="Calibri", size=9, bold=True)
     for wk_name, start_c, end_c, fill_color, text_color in weeks_cols:
-        ws_month.merge_cells(start_row=26, start_column=start_c, end_row=26, end_column=end_c)
+        ws_month.merge_cells(start_row=wk_pct_row, start_column=start_c, end_row=wk_pct_row, end_column=end_c)
         sc_letter = get_column_letter(start_c)
         ec_letter = get_column_letter(end_c)
-        cell = ws_month.cell(row=26, column=start_c, value=f"=AVERAGE({sc_letter}15:{ec_letter}15)")
+        cell = ws_month.cell(row=wk_pct_row, column=start_c, value=f"=AVERAGE({sc_letter}15:{ec_letter}15)")
         cell.fill = fill_color
         cell.font = Font(name="Calibri", size=10, bold=True, color=text_color)
         cell.alignment = Alignment(horizontal="center", vertical="center")
         cell.number_format = '0%'
 
-    # Row 27: Daily reward earned ($)
-    ws_month.cell(row=27, column=2, value="Daily reward earned ($):").font = Font(name="Calibri", size=9, bold=True)
+    # Row 35: Daily reward earned ($)
+    rew_list_str = "; ".join(str(h[3]) for h in sample_month_habits)
+    ws_month.cell(row=daily_rew_row, column=2, value="Daily reward earned ($):").font = Font(name="Calibri", size=9, bold=True)
     for wk_name, start_c, end_c, fill_color, text_color in weeks_cols:
         for c in range(start_c, end_c + 1):
             col_letter = get_column_letter(c)
-            # Formula: count checked * reward amounts (simplified sumproduct / sum of checked habits)
-            # In Excel formula:
-            ws_month.cell(row=27, column=c, value=f"=SUMPRODUCT(({col_letter}18:{col_letter}25=TRUE)*({{10; 25; 30; 2; 5; 10; 1; 0.5}}))")
-            ws_month.cell(row=27, column=c).font = Font(name="Calibri", size=8, bold=True)
-            ws_month.cell(row=27, column=c).alignment = Alignment(horizontal="center", vertical="center")
-            ws_month.cell(row=27, column=c).number_format = '$#,##0'
+            ws_month.cell(row=daily_rew_row, column=c, value=f"=SUMPRODUCT(({col_letter}{daily_start_row}:{col_letter}{daily_end_row}=TRUE)*({{{rew_list_str}}}))")
+            ws_month.cell(row=daily_rew_row, column=c).font = Font(name="Calibri", size=8, bold=True)
+            ws_month.cell(row=daily_rew_row, column=c).alignment = Alignment(horizontal="center", vertical="center")
+            ws_month.cell(row=daily_rew_row, column=c).number_format = '$#,##0'
 
-    # Total Earned To Date Box (Row 30)
-    ws_month.merge_cells("B29:E29")
-    ws_month["B29"] = "Total earned to date"
-    ws_month["B29"].fill = total_card_fill
-    ws_month["B29"].font = Font(name="Calibri", size=9, bold=True)
-    ws_month["B29"].alignment = Alignment(horizontal="center", vertical="center")
-    ws_month["B29"].border = cell_border
+    # Total Earned To Date Box
+    ws_month.merge_cells(f"B{total_earned_label_row}:E{total_earned_label_row}")
+    ws_month[f"B{total_earned_label_row}"] = "Total earned to date"
+    ws_month[f"B{total_earned_label_row}"].fill = total_card_fill
+    ws_month[f"B{total_earned_label_row}"].font = Font(name="Calibri", size=9, bold=True)
+    ws_month[f"B{total_earned_label_row}"].alignment = Alignment(horizontal="center", vertical="center")
+    ws_month[f"B{total_earned_label_row}"].border = cell_border
 
-    ws_month.merge_cells("B30:E30")
-    ws_month["B30"] = "=SUM(H27:AP27)"
-    ws_month["B30"].fill = summary_card_fill
-    ws_month["B30"].font = Font(name="Calibri", size=12, bold=True, color="059669")
-    ws_month["B30"].alignment = Alignment(horizontal="center", vertical="center")
-    ws_month["B30"].number_format = '$#,##0.00'
-    ws_month["B30"].border = card_border
+    ws_month.merge_cells(f"B{total_earned_val_row}:E{total_earned_val_row}")
+    ws_month[f"B{total_earned_val_row}"] = f"=SUM(H{daily_rew_row}:AP{daily_rew_row})"
+    ws_month[f"B{total_earned_val_row}"].fill = summary_card_fill
+    ws_month[f"B{total_earned_val_row}"].font = Font(name="Calibri", size=12, bold=True, color="059669")
+    ws_month[f"B{total_earned_val_row}"].alignment = Alignment(horizontal="center", vertical="center")
+    ws_month[f"B{total_earned_val_row}"].number_format = '$#,##0.00'
+    ws_month[f"B{total_earned_val_row}"].border = card_border
 
     # ==========================================
-    # WEEKLY HABITS SECTION (Rows 33-42)
+    # WEEKLY HABITS SECTION
     # ==========================================
-    ws_month["A33"] = "WEEKLY HABITS"
-    ws_month["A33"].font = Font(name="Calibri", size=11, bold=True)
-    ws_month.row_dimensions[33].height = 24
+    weekly_hdr_row = total_earned_val_row + 3
+    ws_month[f"A{weekly_hdr_row}"] = "WEEKLY HABITS"
+    ws_month[f"A{weekly_hdr_row}"].font = Font(name="Calibri", size=11, bold=True)
+    ws_month.row_dimensions[weekly_hdr_row].height = 24
     for col in range(1, 15):
-        ws_month.cell(row=33, column=col).border = Border(bottom=Side(style="medium", color="000000"))
+        ws_month.cell(row=weekly_hdr_row, column=col).border = Border(bottom=Side(style="medium", color="000000"))
 
-    ws_month.merge_cells("A34:E34")
-    ws_month["A34"] = "Weekly tasks"
-    ws_month["A34"].fill = summary_card_fill
-    ws_month["A34"].font = Font(name="Calibri", size=9, bold=True)
-    ws_month["A34"].alignment = Alignment(horizontal="center", vertical="center")
+    weekly_subhdr_row = weekly_hdr_row + 1
+    ws_month.merge_cells(f"A{weekly_subhdr_row}:E{weekly_subhdr_row}")
+    ws_month[f"A{weekly_subhdr_row}"] = "Weekly tasks"
+    ws_month[f"A{weekly_subhdr_row}"].fill = summary_card_fill
+    ws_month[f"A{weekly_subhdr_row}"].font = Font(name="Calibri", size=9, bold=True)
+    ws_month[f"A{weekly_subhdr_row}"].alignment = Alignment(horizontal="center", vertical="center")
 
     for idx, (wk_name, _, _, fill_color, text_color) in enumerate(weeks_cols):
         c_idx = 7 + idx
-        cell = ws_month.cell(row=34, column=c_idx, value=f"Wk {idx+1}")
+        cell = ws_month.cell(row=weekly_subhdr_row, column=c_idx, value=f"Wk {idx+1}")
         cell.fill = fill_color
         cell.font = Font(name="Calibri", size=9, bold=True, color=text_color)
         cell.alignment = Alignment(horizontal="center", vertical="center")
 
     sample_weekly_habits = [
-        ("Paint a new landscape", "Creative", "D98880", 15.0),
-        ("Play one new song", "Creative", "D98880", 25.0),
-        ("Meet weekly deadlines", "Career", "F5B075", 20.0),
-        ("Ride exercise bike for an hour", "Fitness", "FDE047", 2.0)
+        ("🕌 Jummah Prayer & Surah Al-Kahf (Friday)", "Spiritual", "10B981", 10.0),
+        ("📖 Weekly Quran & Islamic Lecture", "Spiritual", "10B981", 5.0),
+        ("🏃 5km Run / Outdoor Fitness Session", "Health & Routine", "F59E0B", 5.0),
+        ("👨‍👩‍👧 Family Quality Time & Silat ar-Rahim", "Mindfulness", "8B5CF6", 5.0),
+        ("🧹 Room & Digital Workspace Deep Clean", "Health & Routine", "F59E0B", 5.0),
+        ("📊 Weekly Habit Audit & Next Week Planning", "Study & Work", "3B82F6", 5.0)
     ]
 
+    weekly_start_row = weekly_subhdr_row + 1
     for idx, (w_name, cat, cat_color, rew_val) in enumerate(sample_weekly_habits):
-        r = 35 + idx
+        r = weekly_start_row + idx
         ws_month.merge_cells(start_row=r, start_column=1, end_row=r, end_column=5)
         cell = ws_month.cell(row=r, column=1, value=w_name)
         cell.fill = PatternFill(start_color=cat_color, end_color=cat_color, fill_type="solid")
-        cell.font = Font(name="Calibri", size=9, bold=True)
+        cell.font = Font(name="Calibri", size=9, bold=True, color="FFFFFF" if cat_color != "F59E0B" else "000000")
         cell.alignment = Alignment(horizontal="left", vertical="center", indent=1)
         cell.border = cell_border
 
@@ -543,27 +548,30 @@ def build_habit_tracker_workbook(filename="Istiqamah_Tracker_2026_2036.xlsx"):
             c_cell.border = cell_border
 
     # ==========================================
-    # MONTHLY HABITS SECTION (Rows 43-52)
+    # MONTHLY HABITS SECTION
     # ==========================================
-    ws_month["A43"] = "MONTHLY HABITS"
-    ws_month["A43"].font = Font(name="Calibri", size=11, bold=True)
-    ws_month.row_dimensions[43].height = 24
+    monthly_hdr_row = weekly_start_row + len(sample_weekly_habits) + 2
+    ws_month[f"A{monthly_hdr_row}"] = "MONTHLY HABITS"
+    ws_month[f"A{monthly_hdr_row}"].font = Font(name="Calibri", size=11, bold=True)
+    ws_month.row_dimensions[monthly_hdr_row].height = 24
     for col in range(1, 15):
-        ws_month.cell(row=43, column=col).border = Border(bottom=Side(style="medium", color="000000"))
+        ws_month.cell(row=monthly_hdr_row, column=col).border = Border(bottom=Side(style="medium", color="000000"))
 
     sample_monthly_tasks = [
-        ("Host an art night", "Creative", "D98880", 15.0),
-        ("Memorize four songs", "Creative", "D98880", 25.0),
-        ("Attend a networking event", "Career", "F5B075", 5.0),
-        ("Go to the gym 25 days", "Fitness", "FDE047", 2.0)
+        ("🌙 Fast 3 White Days (Ayyam al-Beed)", "Spiritual", "10B981", 20.0),
+        ("📚 Finish Reading 1 Complete Book", "Study & Work", "3B82F6", 25.0),
+        ("🤝 Sadaqah & Charitable Giving", "Spiritual", "10B981", 15.0),
+        ("📈 Monthly Financial & Savings Audit", "Study & Work", "3B82F6", 15.0),
+        ("🎯 Goals & Self-Accountability Review", "Mindfulness", "8B5CF6", 10.0)
     ]
 
+    monthly_start_row = monthly_hdr_row + 1
     for idx, (m_name, cat, cat_color, rew_val) in enumerate(sample_monthly_tasks):
-        r = 44 + idx
+        r = monthly_start_row + idx
         ws_month.merge_cells(start_row=r, start_column=1, end_row=r, end_column=5)
         cell = ws_month.cell(row=r, column=1, value=m_name)
         cell.fill = PatternFill(start_color=cat_color, end_color=cat_color, fill_type="solid")
-        cell.font = Font(name="Calibri", size=9, bold=True)
+        cell.font = Font(name="Calibri", size=9, bold=True, color="FFFFFF" if cat_color != "F59E0B" else "000000")
         cell.alignment = Alignment(horizontal="left", vertical="center", indent=1)
         cell.border = cell_border
 
