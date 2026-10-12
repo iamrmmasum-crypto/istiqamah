@@ -5,3 +5,5 @@ __pycache__/
 .env
 .env.local
 node_modules/
+Atomic_Habit_Tracker_*.xlsx
+*.png
