@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Istiqāmah — ٱلِاسْتِقَامَة | Daily & Yearly Consistency Tracker</title>
+  <meta name="description" content="Istiqamah: A Quranic-inspired daily, weekly and monthly habit tracker with reward gamification and Excel sync. Steadfast on a right course as commanded. Surah Hud 11:112.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=2026.2">
+</head>
+<body>
+  <!-- Header Bar -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="logo-badge">
+        <span class="logo-icon">⚡</span>
+        <div class="logo-text">
+          <h1>ٱلِاسْتِقَامَة &mdash; ISTIQĀMAH</h1>
+          <span class="logo-sub">فَٱسْتَقِمْ كَمَآ أُمِرْتَ &mdash; Daily &amp; Yearly Consistency Tracker</span>
+        </div>
+      </div>
+      <div class="tab-nav" role="tablist">
+        <button class="nav-tab active" data-tab="monthly" id="tab-monthly-btn">
+          <span class="tab-icon">📊</span> Monthly Habits
+        </button>
+        <button class="nav-tab" data-tab="yearly" id="tab-yearly-btn">
+          <span class="tab-icon">📅</span> Yearly View (2026–2036)
+        </button>
+        <button class="nav-tab" data-tab="fields" id="tab-fields-btn">
+          <span class="tab-icon">⚙️</span> Fields & Categories
+        </button>
+        <button class="nav-tab" data-tab="rewards" id="tab-rewards-btn">
+          <span class="tab-icon">💰</span> Reward Selector
+        </button>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="btn btn-secondary" id="btn-audio-toggle" title="Toggle audio feedback">
+        <span id="audio-icon">🔊</span> Sound: ON
+      </button>
+      <button class="btn btn-primary" id="btn-download-excel">
+        <span>📥</span> Download Excel (.xlsx)
+      </button>
+      <button class="btn btn-outline" id="btn-reset-data" title="Reset all current month checkboxes">
+        <span>🔄</span> Reset Month
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="app-container">
+
+    <!-- ============================================== -->
+    <!-- TAB 1: MONTHLY HABITS -->
+    <!-- ============================================== -->
+    <section id="view-monthly" class="tab-content active">
+      <!-- Title Banner -->
+      <div class="sheet-banner">
+        <div class="banner-title-row">
+          <h2>ٱلِاسْتِقَامَة &mdash; MONTHLY HABITS</h2>
+          <span class="banner-tag" id="banner-subtext">'My habits' for October 2026 | Istiqamah Tracker</span>
+        </div>
+      </div>
+
+      <!-- Summary KPI Bar -->
+      <div class="summary-card-container">
+        <div class="summary-section-label">SUMMARY</div>
+        <div class="summary-kpis">
+          <div class="kpi-group">
+            <span class="kpi-label">EDIT RANGE</span>
+            <div class="kpi-input-box">
+              <span class="input-sub">View from</span>
+              <div class="select-wrapper">
+                <select id="month-picker" class="styled-select">
+                  <option value="0">January 2026</option>
+                  <option value="1">February 2026</option>
+                  <option value="2">March 2026</option>
+                  <option value="3">April 2026</option>
+                  <option value="4">May 2026</option>
+                  <option value="5">June 2026</option>
+                  <option value="6">July 2026</option>
+                  <option value="7">August 2026</option>
+                  <option value="8">September 2026</option>
+                  <option value="9" selected>October 2026</option>
+                  <option value="10">November 2026</option>
+                  <option value="11">December 2026</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="kpi-group">
+            <span class="kpi-label">COMPLETION RATE</span>
+            <div class="kpi-stat-box">
+              <span class="input-sub">Complete to date:</span>
+              <div class="kpi-val" id="kpi-completion-rate">0%</div>
+            </div>
+          </div>
+
+          <div class="kpi-group">
+            <span class="kpi-label">REWARD ECONOMY</span>
+            <div class="kpi-stat-box highlight">
+              <span class="input-sub">Total earned to date:</span>
+              <div class="kpi-val green" id="kpi-total-earned">$0.00</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Month View Matrix Section -->
+      <div class="section-title-bar">
+        <h3>MONTH VIEW</h3>
+        <div class="matrix-legend">
+          <span class="legend-chip week1">Week 1</span>
+          <span class="legend-chip week2">Week 2</span>
+          <span class="legend-chip week3">Week 3</span>
+          <span class="legend-chip week4">Week 4</span>
+          <span class="legend-chip week5">Week 5</span>
+        </div>
+      </div>
+
+      <!-- Main Spreadsheet Grid Table -->
+      <div class="table-responsive-container">
+        <table class="habit-sheet-table" id="daily-matrix-table">
+          <thead id="daily-matrix-thead">
+            <!-- Injected by JavaScript dynamically based on current Month days -->
+          </thead>
+          <tbody id="daily-matrix-tbody">
+            <!-- Habit Rows injected by JS -->
+          </tbody>
+          <tfoot id="daily-matrix-tfoot">
+            <!-- Footer rows: Week Completed %, Daily Reward Earned, Total Earned -->
+          </tfoot>
+        </table>
+      </div>
+
+      <!-- Weekly Habits & Monthly Habits Split Section -->
+      <div class="sub-trackers-grid">
+        <!-- Weekly Habits -->
+        <div class="tracker-card">
+          <div class="tracker-card-header">
+            <h4>WEEKLY HABITS</h4>
+            <span class="badge-soft">Weeks 1 – 5</span>
+          </div>
+          <table class="sub-sheet-table" id="weekly-habits-table">
+            <thead>
+              <tr>
+                <th class="th-task">Weekly tasks</th>
+                <th class="th-wk wk1">Wk 1</th>
+                <th class="th-wk wk2">Wk 2</th>
+                <th class="th-wk wk3">Wk 3</th>
+                <th class="th-wk wk4">Wk 4</th>
+                <th class="th-wk wk5">Wk 5</th>
+                <th class="th-rew">Earned</th>
+              </tr>
+            </thead>
+            <tbody id="weekly-habits-tbody">
+              <!-- Injected by JS -->
+            </tbody>
+            <tfoot>
+              <tr>
+                <td class="bold">Weekly Progress:</td>
+                <td colspan="5" class="center bold" id="weekly-progress-percent">0%</td>
+                <td class="green bold" id="weekly-total-reward">$0.00</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <!-- Monthly Habits & One-off Tasks -->
+        <div class="tracker-card">
+          <div class="tracker-card-header">
+            <h4>MONTHLY HABITS & ONE-OFF TASKS</h4>
+            <span class="badge-soft">Monthly Milestones</span>
+          </div>
+          <table class="sub-sheet-table" id="monthly-habits-table">
+            <thead>
+              <tr>
+                <th class="th-task">Monthly habits</th>
+                <th class="th-check">Status</th>
+                <th class="th-task">One-off tasks for this month</th>
+                <th class="th-check">Done</th>
+              </tr>
+            </thead>
+            <tbody id="monthly-habits-tbody">
+              <!-- Injected by JS -->
+            </tbody>
+            <tfoot>
+              <tr>
+                <td class="bold">Monthly Tasks Done:</td>
+                <td class="center bold green" id="monthly-tasks-reward">$0.00</td>
+                <td colspan="2" class="center text-muted" id="oneoff-tasks-status">0 / 0 completed</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- TAB 2: YEARLY HABITS VIEW (2026 - 2036) -->
+    <!-- ============================================== -->
+    <section id="view-yearly" class="tab-content">
+      <div class="sheet-banner">
+        <div class="banner-title-row">
+          <h2>ٱلِاسْتِقَامَة &mdash; YEARLY HABITS</h2>
+          <span class="banner-tag" id="yearly-banner-sub">'Habits 2026' through '2036' | Istiqamah Tracker</span>
+        </div>
+      </div>
+
+      <div class="summary-card-container">
+        <div class="summary-section-label">ANNUAL COMPOUND SUMMARY</div>
+        <div class="summary-kpis">
+          <div class="kpi-group">
+            <span class="kpi-label">YEAR SELECTOR</span>
+            <div class="kpi-input-box">
+              <span class="input-sub">View from</span>
+              <div class="select-wrapper">
+                <select id="year-picker" class="styled-select">
+                  <option value="2026" selected>2026</option>
+                  <option value="2027">2027</option>
+                  <option value="2028">2028</option>
+                  <option value="2029">2029</option>
+                  <option value="2030">2030</option>
+                  <option value="2031">2031</option>
+                  <option value="2032">2032</option>
+                  <option value="2033">2033</option>
+                  <option value="2034">2034</option>
+                  <option value="2035">2035</option>
+                  <option value="2036">2036</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="kpi-group">
+            <span class="kpi-label">ANNUAL COMPLETION</span>
+            <div class="kpi-stat-box">
+              <span class="input-sub">Complete to date (%):</span>
+              <div class="kpi-val" id="yearly-completion-rate">24%</div>
+            </div>
+          </div>
+
+          <div class="kpi-group">
+            <span class="kpi-label">YTD REWARDS ACCUMULATED</span>
+            <div class="kpi-stat-box highlight">
+              <span class="input-sub">Total earned to date ($):</span>
+              <div class="kpi-val green" id="yearly-total-earned">$1,752.00</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title-bar">
+        <h3>12-MONTH COMPOUND TRAJECTORY</h3>
+        <p class="section-subtext">James Clear: "1% improvement each day compounds to 37x better in 1 year."</p>
+      </div>
+
+      <div class="yearly-months-grid" id="yearly-months-container">
+        <!-- 12 Month Cards rendered by JS -->
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- TAB 3: FIELDS & COLOR SELECTOR -->
+    <!-- ============================================== -->
+    <section id="view-fields" class="tab-content">
+      <div class="sheet-banner">
+        <div class="banner-title-row">
+          <h2>ٱلِاسْتِقَامَة — FIELDS &amp; COLOR SELECTOR</h2>
+          <span class="banner-tag">Category Management &amp; Week Styling</span>
+        </div>
+      </div>
+
+      <div class="fields-grid-layout">
+        <!-- Left: Static Inputs & Color Configurator -->
+        <div class="card config-card">
+          <div class="card-title-row">
+            <h4>STATIC INPUTS</h4>
+          </div>
+          <div class="field-item">
+            <label>Report Name</label>
+            <input type="text" id="report-name-input" class="styled-input" value="My habits">
+          </div>
+          <div class="field-item">
+            <label>Start Date</label>
+            <input type="text" id="report-start-date" class="styled-input" value="Jan 1, 2026">
+          </div>
+
+          <div class="card-title-row mt-4">
+            <h4>WEEK COLOR SELECTOR</h4>
+          </div>
+          <div class="week-palette-grid">
+            <div class="palette-row">
+              <span class="color-swatch" style="background: #2563EB;"></span>
+              <span class="palette-name">Week 1</span>
+              <span class="palette-desc">Days 1 – 7</span>
+            </div>
+            <div class="palette-row">
+              <span class="color-swatch" style="background: #F59E0B;"></span>
+              <span class="palette-name">Week 2</span>
+              <span class="palette-desc">Days 8 – 14</span>
+            </div>
+            <div class="palette-row">
+              <span class="color-swatch" style="background: #FACC15;"></span>
+              <span class="palette-name">Week 3</span>
+              <span class="palette-desc">Days 15 – 21</span>
+            </div>
+            <div class="palette-row">
+              <span class="color-swatch" style="background: #C084FC;"></span>
+              <span class="palette-name">Week 4</span>
+              <span class="palette-desc">Days 22 – 28</span>
+            </div>
+            <div class="palette-row">
+              <span class="color-swatch" style="background: #06B6D4;"></span>
+              <span class="palette-name">Week 5</span>
+              <span class="palette-desc">Days 29 – 31 (Extra days)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Habit Categories & Habit Selector -->
+        <div class="card config-card">
+          <div class="card-title-row">
+            <h4>HABIT SELECTOR ACROSS FREQUENCIES</h4>
+            <span class="badge-soft">Daily / Weekly / Monthly</span>
+          </div>
+          <p class="text-sm text-muted mb-3">Define up to 10 habits per frequency across each of your 15 categories.</p>
+          
+          <div class="categories-list-container" id="categories-config-list">
+            <!-- Dynamically rendered categories with their assigned habits -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- TAB 4: REWARD SELECTOR -->
+    <!-- ============================================== -->
+    <section id="view-rewards" class="tab-content">
+      <div class="sheet-banner">
+        <div class="banner-title-row">
+          <h2>ٱلِاسْتِقَامَة — REWARD SELECTOR</h2>
+          <span class="banner-tag">Gamified Discipline &amp; Financial Milestones</span>
+        </div>
+      </div>
+
+      <div class="reward-selector-container">
+        <div class="reward-banner-info">
+          <div class="reward-info-text">
+            <h3>Gamify Your Istiqamah</h3>
+            <p>Assign a reward ($) for each habit. The Prophet said: <em>"The deeds most loved by Allah are those done consistently, even if small."</em> (Sahih Muslim) — reward every step of Istiqamah.</p>
+          </div>
+          <div class="reward-badge-total">
+            <span class="sub">Total Earned All Time</span>
+            <span class="amount" id="rewards-vault-total">$2,268.50</span>
+          </div>
+        </div>
+
+        <div class="table-responsive-container">
+          <table class="reward-table" id="rewards-settings-table">
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th>Daily Habit</th>
+                <th>Daily Reward ($)</th>
+                <th>Weekly Habit</th>
+                <th>Weekly Reward ($)</th>
+                <th>Monthly Habit</th>
+                <th>Monthly Reward ($)</th>
+              </tr>
+            </thead>
+            <tbody id="rewards-settings-tbody">
+              <!-- Injected by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Excel Download Modal / Notification Toast -->
+  <div id="toast-notification" class="toast-notification">
+    <span class="toast-icon">✨</span>
+    <span class="toast-msg" id="toast-message">Template ready!</span>
+  </div>
+
+  <script src="app.js?v=2026.2"></script>
+</body>
+</html>
