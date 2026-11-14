@@ -77,7 +77,7 @@ def build_habit_tracker_workbook(filename="Istiqamah_Tracker_2026_2036.xlsx"):
     ws_fields["A8"].fill = summary_card_fill
     ws_fields["A8"].font = Font(name="Calibri", size=10)
     ws_fields["A8"].alignment = Alignment(horizontal="center", vertical="center")
-    ws_fields["B8"] = "Jan 1, 2026"
+    ws_fields["B8"] = "Nov 15, 2026"
     ws_fields["B8"].font = Font(name="Calibri", size=10, bold=True, color="0000FF")
     ws_fields["B8"].alignment = Alignment(horizontal="center", vertical="center")
     ws_fields["B8"].border = cell_border

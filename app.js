@@ -207,7 +207,7 @@ function loadState() {
     monthlyChecks: {},
     oneOffChecks: {},
     reportName: "My habits",
-    startDate: "Jan 1, 2026"
+    startDate: "Nov 15, 2026"
   };
   const saved = localStorage.getItem(STORAGE_KEY);
   if (saved) {
@@ -220,7 +220,7 @@ function loadState() {
           monthlyChecks: parsed.monthlyChecks || {},
           oneOffChecks: parsed.oneOffChecks || {},
           reportName: parsed.reportName || "My habits",
-          startDate: parsed.startDate || "Jan 1, 2026"
+          startDate: parsed.startDate || "Nov 15, 2026"
         };
       }
     } catch (e) {}
@@ -333,6 +333,26 @@ function getCategoryMeta(catName) {
   return HABIT_DATABASE.categories.find(c => c.name === catName) || { color: "#CBD5E1", textColor: "#000000" };
 }
 
+// Date Locking Helpers (Tracking starts today: Nov 15, 2026; past dates blocked)
+function isDateBeforeToday(year, month, day) {
+  const target = new Date(year, month, day, 0, 0, 0, 0);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return target.getTime() < today.getTime();
+}
+
+function isDateToday(year, month, day) {
+  const today = new Date();
+  return year === today.getFullYear() && month === today.getMonth() && day === today.getDate();
+}
+
+function isMonthBeforeCurrent(year, month) {
+  const today = new Date();
+  const currentY = today.getFullYear();
+  const currentM = today.getMonth();
+  return year < currentY || (year === currentY && month < currentM);
+}
+
 // ===================================================
 // ACTIVE MONTH WEEKS CONFIGURATION
 // ===================================================
@@ -372,7 +392,11 @@ function renderDailyMatrix() {
   // 2. HEADER ROW 2: Daily completed (%)
   let rowPctHtml = `<tr class="row-completed-pct"><th class="th-habit-name" style="background:#F8FAFC; color:#64748B;">Daily completed (%)</th>`;
   for (let d = 1; d <= totalDays; d++) {
-    rowPctHtml += `<th id="th-pct-day-${d}" style="background:#F1F5F9; color:#1E293B;">0%</th>`;
+    const isPast = isDateBeforeToday(currentYear, currentMonth, d);
+    const isToday = isDateToday(currentYear, currentMonth, d);
+    const extraClass = isPast ? "col-past-blocked" : (isToday ? "col-today" : "");
+    const initialText = isPast ? "🔒" : "0%";
+    rowPctHtml += `<th id="th-pct-day-${d}" class="${extraClass}" style="background:#F1F5F9; color:#1E293B;">${initialText}</th>`;
   }
   rowPctHtml += `</tr>`;
 
@@ -381,7 +405,10 @@ function renderDailyMatrix() {
   for (let d = 1; d <= totalDays; d++) {
     const dayOfWeek = (firstDay + d - 1) % 7;
     const wkClass = getWeekClassForDay(d);
-    rowDaysHtml += `<th class="${wkClass}">${WEEKDAY_NAMES[dayOfWeek]}</th>`;
+    const isPast = isDateBeforeToday(currentYear, currentMonth, d);
+    const isToday = isDateToday(currentYear, currentMonth, d);
+    const extraClass = isPast ? "col-past-blocked" : (isToday ? "col-today" : "");
+    rowDaysHtml += `<th class="${wkClass} ${extraClass}">${WEEKDAY_NAMES[dayOfWeek]}${isToday ? '<span class="col-today-badge">Today</span>' : ''}</th>`;
   }
   rowDaysHtml += `</tr>`;
 
@@ -389,7 +416,10 @@ function renderDailyMatrix() {
   let rowNumsHtml = `<tr class="row-date-nums"><th class="th-habit-name" style="background:#F8FAFC;"></th>`;
   for (let d = 1; d <= totalDays; d++) {
     const wkClass = getWeekClassForDay(d);
-    rowNumsHtml += `<th class="${wkClass}">${d}</th>`;
+    const isPast = isDateBeforeToday(currentYear, currentMonth, d);
+    const isToday = isDateToday(currentYear, currentMonth, d);
+    const extraClass = isPast ? "col-past-blocked" : (isToday ? "col-today" : "");
+    rowNumsHtml += `<th class="${wkClass} ${extraClass}">${d}</th>`;
   }
   rowNumsHtml += `</tr>`;
 
@@ -403,9 +433,17 @@ function renderDailyMatrix() {
     tbodyHtml += `<td class="td-habit-name" style="background:${cat.color}; color:${cat.textColor};">${habit.name}</td>`;
 
     for (let d = 1; d <= totalDays; d++) {
+      const isPast = isDateBeforeToday(currentYear, currentMonth, d);
+      const isToday = isDateToday(currentYear, currentMonth, d);
       const key = `${currentYear}-${currentMonth}-${habit.id}-${d}`;
       const checked = trackerState.checks[key] ? "checked" : "";
-      tbodyHtml += `<td><input type="checkbox" class="sheet-check" data-habit="${habit.id}" data-day="${d}" aria-label="${habit.name} - Day ${d}" ${checked}></td>`;
+
+      if (isPast) {
+        tbodyHtml += `<td class="td-past-blocked" title="Locked: Past date prior to tracker start (Today)"><input type="checkbox" class="sheet-check" data-habit="${habit.id}" data-day="${d}" aria-label="${habit.name} - Day ${d} (Locked)" disabled></td>`;
+      } else {
+        const todayClass = isToday ? "td-today" : "";
+        tbodyHtml += `<td class="${todayClass}"><input type="checkbox" class="sheet-check" data-habit="${habit.id}" data-day="${d}" aria-label="${habit.name} - Day ${d}" ${checked}></td>`;
+      }
     }
     tbodyHtml += `</tr>`;
   });
@@ -421,7 +459,9 @@ function renderDailyMatrix() {
 
   let footRewHtml = `<tr class="row-daily-reward"><td class="tfoot-label bold">Daily reward earned ($):</td>`;
   for (let d = 1; d <= totalDays; d++) {
-    footRewHtml += `<td id="foot-day-rew-${d}">$0</td>`;
+    const isPast = isDateBeforeToday(currentYear, currentMonth, d);
+    const extraClass = isPast ? "col-past-blocked" : "";
+    footRewHtml += `<td id="foot-day-rew-${d}" class="${extraClass}">$0</td>`;
   }
   footRewHtml += `</tr>`;
 
@@ -450,6 +490,11 @@ function renderDailyMatrix() {
 function renderSubTrackers() {
   const totalDays = getDaysInMonth(currentYear, currentMonth);
   const numWeeks = totalDays >= 29 ? 5 : 4;
+  const isPastMonth = isMonthBeforeCurrent(currentYear, currentMonth);
+  const today = new Date();
+  const todayYear = today.getFullYear();
+  const todayMonth = today.getMonth();
+  const todayDate = today.getDate();
 
   // Weekly habits
   const weeklyTbody = document.getElementById("weekly-habits-tbody");
@@ -460,9 +505,18 @@ function renderSubTrackers() {
     wHtml += `<td style="background:${cat.color}; color:${cat.textColor}; font-weight:700;">${wHabit.name}</td>`;
     for (let wk = 1; wk <= 5; wk++) {
       if (wk <= numWeeks) {
+        const wEndDay = wk === 1 ? 7 : (wk === 2 ? 14 : (wk === 3 ? 21 : (wk === 4 ? 28 : totalDays)));
+        const isPastWeek = isDateBeforeToday(currentYear, currentMonth, wEndDay);
+        const isCurrentWeek = (currentYear === todayYear && currentMonth === todayMonth && todayDate >= (wEndDay - 6) && todayDate <= wEndDay);
         const key = `${currentYear}-${currentMonth}-${wHabit.id}-wk${wk}`;
         const checked = trackerState.weeklyChecks[key] ? "checked" : "";
-        wHtml += `<td class="center"><input type="checkbox" class="sheet-check weekly-check" data-habit="${wHabit.id}" data-week="${wk}" aria-label="${wHabit.name} - Week ${wk}" ${checked}></td>`;
+
+        if (isPastWeek) {
+          wHtml += `<td class="center td-past-blocked" title="Locked: Past week prior to tracker start"><input type="checkbox" class="sheet-check weekly-check" disabled></td>`;
+        } else {
+          const wkClass = isCurrentWeek ? "td-today" : "";
+          wHtml += `<td class="center ${wkClass}"><input type="checkbox" class="sheet-check weekly-check" data-habit="${wHabit.id}" data-week="${wk}" aria-label="${wHabit.name} - Week ${wk}" ${checked}></td>`;
+        }
       } else {
         wHtml += `<td class="center text-muted" style="background:#F8FAFC;">—</td>`;
       }
@@ -499,8 +553,13 @@ function renderSubTrackers() {
       const cat = getCategoryMeta(mHabit.category);
       const key = `${currentYear}-${currentMonth}-${mHabit.id}`;
       const checked = trackerState.monthlyChecks[key] ? "checked" : "";
-      mHtml += `<td style="background:${cat.color}; color:${cat.textColor}; font-weight:700;">${mHabit.name}</td>`;
-      mHtml += `<td class="center"><input type="checkbox" class="sheet-check monthly-check" data-habit="${mHabit.id}" aria-label="${mHabit.name}" ${checked}></td>`;
+      if (isPastMonth) {
+        mHtml += `<td style="background:${cat.color}; color:${cat.textColor}; font-weight:700; opacity:0.6;">${mHabit.name}</td>`;
+        mHtml += `<td class="center td-past-blocked" title="Locked: Past month"><input type="checkbox" class="sheet-check monthly-check" disabled></td>`;
+      } else {
+        mHtml += `<td style="background:${cat.color}; color:${cat.textColor}; font-weight:700;">${mHabit.name}</td>`;
+        mHtml += `<td class="center"><input type="checkbox" class="sheet-check monthly-check" data-habit="${mHabit.id}" aria-label="${mHabit.name}" ${checked}></td>`;
+      }
     } else {
       mHtml += `<td></td><td></td>`;
     }
@@ -508,8 +567,13 @@ function renderSubTrackers() {
     if (oTask) {
       const key = `${currentYear}-${currentMonth}-${oTask.id}`;
       const checked = trackerState.oneOffChecks[key] ? "checked" : "";
-      mHtml += `<td style="background:#F8FAFC;">${oTask.name}</td>`;
-      mHtml += `<td class="center"><input type="checkbox" class="sheet-check oneoff-check" data-task="${oTask.id}" aria-label="${oTask.name}" ${checked}></td>`;
+      if (isPastMonth) {
+        mHtml += `<td style="background:#F8FAFC; opacity:0.6;">${oTask.name}</td>`;
+        mHtml += `<td class="center td-past-blocked" title="Locked: Past month"><input type="checkbox" class="sheet-check oneoff-check" disabled></td>`;
+      } else {
+        mHtml += `<td style="background:#F8FAFC;">${oTask.name}</td>`;
+        mHtml += `<td class="center"><input type="checkbox" class="sheet-check oneoff-check" data-task="${oTask.id}" aria-label="${oTask.name}" ${checked}></td>`;
+      }
     } else {
       mHtml += `<td></td><td></td>`;
     }
@@ -552,9 +616,13 @@ function getMonthStats(year, month) {
 
   let dailyEarned = 0;
   let dailyChecked = 0;
-  const totalDailyPossible = daysInMonth * totalHabits;
+  let totalDailyPossible = 0;
 
   for (let d = 1; d <= daysInMonth; d++) {
+    const isPast = isDateBeforeToday(year, month, d);
+    if (!isPast) {
+      totalDailyPossible += totalHabits;
+    }
     HABIT_DATABASE.dailyHabits.forEach(habit => {
       const key = `${year}-${month}-${habit.id}-${d}`;
       if (trackerState.checks[key]) {
@@ -566,10 +634,15 @@ function getMonthStats(year, month) {
 
   let weeklyEarned = 0;
   let weeklyChecked = 0;
-  const totalWeeklyPossible = HABIT_DATABASE.weeklyHabits.length * numWeeks;
+  let totalWeeklyPossible = 0;
 
   HABIT_DATABASE.weeklyHabits.forEach(wHabit => {
     for (let wk = 1; wk <= numWeeks; wk++) {
+      const wEndDay = wk === 1 ? 7 : (wk === 2 ? 14 : (wk === 3 ? 21 : (wk === 4 ? 28 : daysInMonth)));
+      const isPastWeek = isDateBeforeToday(year, month, wEndDay);
+      if (!isPastWeek) {
+        totalWeeklyPossible++;
+      }
       const key = `${year}-${month}-${wHabit.id}-wk${wk}`;
       if (trackerState.weeklyChecks[key]) {
         weeklyChecked++;
@@ -580,7 +653,8 @@ function getMonthStats(year, month) {
 
   let monthlyEarned = 0;
   let monthlyChecked = 0;
-  const totalMonthlyPossible = HABIT_DATABASE.monthlyHabits.length;
+  const isPastMonth = isMonthBeforeCurrent(year, month);
+  const totalMonthlyPossible = isPastMonth ? 0 : HABIT_DATABASE.monthlyHabits.length;
 
   HABIT_DATABASE.monthlyHabits.forEach(mHabit => {
     const key = `${year}-${month}-${mHabit.id}`;
@@ -667,6 +741,7 @@ function recalculateMetrics() {
   for (let d = 1; d <= totalDays; d++) {
     let dayChecked = 0;
     let dayEarned = 0;
+    const isPast = isDateBeforeToday(currentYear, currentMonth, d);
 
     HABIT_DATABASE.dailyHabits.forEach(habit => {
       const key = `${currentYear}-${currentMonth}-${habit.id}-${d}`;
@@ -678,10 +753,10 @@ function recalculateMetrics() {
 
     const dayPct = totalHabits > 0 ? Math.round((dayChecked / totalHabits) * 100) : 0;
     const thPct = document.getElementById(`th-pct-day-${d}`);
-    if (thPct) thPct.innerText = `${dayPct}%`;
+    if (thPct) thPct.innerText = isPast ? "🔒" : `${dayPct}%`;
 
     const footRew = document.getElementById(`foot-day-rew-${d}`);
-    if (footRew) footRew.innerText = `$${dayEarned.toFixed(0)}`;
+    if (footRew) footRew.innerText = isPast ? "—" : `$${dayEarned.toFixed(0)}`;
 
     monthTotalDailyEarned += dayEarned;
     totalCheckedDaily += dayChecked;
@@ -704,19 +779,30 @@ function recalculateMetrics() {
   for (let w = 0; w < weeks.length; w++) {
     const footWk = document.getElementById(`foot-wk-pct-${w + 1}`);
     if (footWk) {
-      const avg = weekCounts[w] > 0 ? Math.round(weekSums[w] / weekCounts[w]) : 0;
-      footWk.innerText = `${avg}%`;
+      const wEndDay = (w === 0 ? 7 : (w === 1 ? 14 : (w === 2 ? 21 : (w === 3 ? 28 : totalDays))));
+      const isPastWk = isDateBeforeToday(currentYear, currentMonth, wEndDay);
+      if (isPastWk) {
+        footWk.innerText = "🔒";
+      } else {
+        const avg = weekCounts[w] > 0 ? Math.round(weekSums[w] / weekCounts[w]) : 0;
+        footWk.innerText = `${avg}%`;
+      }
     }
   }
 
   // 2. Weekly Habits
   let weeklyTotalEarned = 0;
   let totalWeeklyChecked = 0;
-  const totalWeeklyPossible = HABIT_DATABASE.weeklyHabits.length * numWeeks;
+  let totalWeeklyPossible = 0;
 
   HABIT_DATABASE.weeklyHabits.forEach(wHabit => {
     let hEarned = 0;
     for (let wk = 1; wk <= numWeeks; wk++) {
+      const wEndDay = wk === 1 ? 7 : (wk === 2 ? 14 : (wk === 3 ? 21 : (wk === 4 ? 28 : totalDays)));
+      const isPastWeek = isDateBeforeToday(currentYear, currentMonth, wEndDay);
+      if (!isPastWeek) {
+        totalWeeklyPossible++;
+      }
       const key = `${currentYear}-${currentMonth}-${wHabit.id}-wk${wk}`;
       if (trackerState.weeklyChecks[key]) {
         hEarned += wHabit.reward;
@@ -768,7 +854,12 @@ function recalculateMetrics() {
   const repName = trackerState.reportName || "My habits";
   const bannerEl = document.getElementById("banner-subtext");
   if (bannerEl) {
-    bannerEl.innerText = `\u0671\u0644\u0650\u0627\u0633\u0652\u062a\u0650\u0642\u064e\u0627\u0645\u064e\u0629 \u2014 '${repName}' for ${MONTH_NAMES[currentMonth]} ${currentYear}`;
+    const isPast = isMonthBeforeCurrent(currentYear, currentMonth);
+    if (isPast) {
+      bannerEl.innerHTML = `\u0671\u0644\u0650\u0627\u0633\u0652\u062a\u0650\u0642\u064e\u0627\u0645\u064e\u0629 \u2014 '${repName}' for ${MONTH_NAMES[currentMonth]} ${currentYear} <span class="locked-badge-banner">🔒 Past Month (Locked)</span>`;
+    } else {
+      bannerEl.innerHTML = `\u0671\u0644\u0650\u0627\u0633\u0652\u062a\u0650\u0642\u064e\u0627\u0645\u064e\u0629 \u2014 '${repName}' for ${MONTH_NAMES[currentMonth]} ${currentYear} <span style="font-size:11px; color:#10B981; font-weight:700; margin-left:8px;">📍 Started Nov 15, 2026</span>`;
+    }
   }
 }
 
