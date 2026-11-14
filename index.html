@@ -50,13 +50,6 @@
       <button class="btn btn-secondary" id="btn-audio-toggle" title="Toggle audio feedback">
         <span id="audio-icon">🔊</span> Sound: ON
       </button>
-      <button class="btn btn-secondary" id="btn-export-backup" title="Export habits data to JSON">
-        <span>💾</span> Export Backup
-      </button>
-      <button class="btn btn-secondary" id="btn-import-backup" title="Import habits data from JSON">
-        <span>📂</span> Import Backup
-      </button>
-      <input type="file" id="file-import-backup" accept=".json" style="display: none;">
       <button class="btn btn-primary" id="btn-download-excel" title="Download Excel template">
         <span>📥</span> Download Excel (.xlsx)
       </button>
@@ -350,6 +343,20 @@
               <span class="palette-name">Week 5</span>
               <span class="palette-desc">Days 29 – 31 (Extra days)</span>
             </div>
+          </div>
+
+          <div class="card-title-row mt-4">
+            <h4>OFFLINE BACKUP &amp; EXPORT</h4>
+          </div>
+          <p class="text-sm text-muted mb-3">Your habits sync live to Google Cloud. You can also export or restore local JSON copies anytime for offline safety.</p>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button class="btn btn-secondary" id="btn-export-backup" title="Export habits data to JSON">
+              <span>💾</span> Export JSON
+            </button>
+            <button class="btn btn-secondary" id="btn-import-backup" title="Import habits data from JSON">
+              <span>📂</span> Import JSON
+            </button>
+            <input type="file" id="file-import-backup" accept=".json" style="display: none;">
           </div>
         </div>
 
