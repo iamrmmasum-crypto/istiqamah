@@ -731,4 +731,6 @@ def build_habit_tracker_workbook(filename="Istiqamah_Tracker_2026_2036.xlsx"):
     print(f"Successfully generated: {filename}")
 
 if __name__ == "__main__":
-    build_habit_tracker_workbook("d:/MyProject/Istiqamah/Istiqamah_Tracker_2026_2036.xlsx")
+    import os
+    output_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Istiqamah_Tracker_2026_2036.xlsx")
+    build_habit_tracker_workbook(output_path)

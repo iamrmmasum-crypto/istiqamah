@@ -5,10 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Istiqāmah — ٱلِاسْتِقَامَة | Daily & Yearly Consistency Tracker</title>
   <meta name="description" content="Istiqamah: A Quranic-inspired daily, weekly and monthly habit tracker with reward gamification and Excel sync. Steadfast on a right course as commanded. Surah Hud 11:112.">
+  <meta name="theme-color" content="#0F172A">
+  <meta property="og:title" content="Istiqāmah — ٱلِاسْتِقَامَة | Daily & Yearly Consistency Tracker">
+  <meta property="og:description" content="Quranic-inspired daily, weekly and monthly habit tracker with reward gamification and Excel sync for 2026–2036.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://istiqamah-murex.vercel.app/">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=2026.3">
+  <link rel="stylesheet" href="style.css?v=2026.4">
 </head>
 <body>
   <!-- Header Bar -->
@@ -40,7 +47,14 @@
       <button class="btn btn-secondary" id="btn-audio-toggle" title="Toggle audio feedback">
         <span id="audio-icon">🔊</span> Sound: ON
       </button>
-      <button class="btn btn-primary" id="btn-download-excel">
+      <button class="btn btn-secondary" id="btn-export-backup" title="Export habits data to JSON">
+        <span>💾</span> Export Backup
+      </button>
+      <button class="btn btn-secondary" id="btn-import-backup" title="Import habits data from JSON">
+        <span>📂</span> Import Backup
+      </button>
+      <input type="file" id="file-import-backup" accept=".json" style="display: none;">
+      <button class="btn btn-primary" id="btn-download-excel" title="Download Excel template">
         <span>📥</span> Download Excel (.xlsx)
       </button>
       <button class="btn btn-outline" id="btn-reset-data" title="Reset all current month checkboxes">

@@ -51,8 +51,10 @@ const HABIT_DATABASE = {
 };
 
 // Application State
-let currentYear = 2026;
-let currentMonth = 9; // 0 = Jan, 9 = Oct
+const _initialNow = new Date();
+const _initYear = _initialNow.getFullYear();
+let currentYear = (_initYear >= 2026 && _initYear <= 2036) ? _initYear : 2026;
+let currentMonth = (_initYear >= 2026 && _initYear <= 2036) ? _initialNow.getMonth() : 0;
 let soundEnabled = true;
 
 // Key for LocalStorage
@@ -234,7 +236,7 @@ function renderDailyMatrix() {
     for (let d = 1; d <= totalDays; d++) {
       const key = `${currentYear}-${currentMonth}-${habit.id}-${d}`;
       const checked = trackerState.checks[key] ? "checked" : "";
-      tbodyHtml += `<td><input type="checkbox" class="sheet-check" data-habit="${habit.id}" data-day="${d}" ${checked}></td>`;
+      tbodyHtml += `<td><input type="checkbox" class="sheet-check" data-habit="${habit.id}" data-day="${d}" aria-label="${habit.name} - Day ${d}" ${checked}></td>`;
     }
     tbodyHtml += `</tr>`;
   });
@@ -291,7 +293,7 @@ function renderSubTrackers() {
       if (wk <= numWeeks) {
         const key = `${currentYear}-${currentMonth}-${wHabit.id}-wk${wk}`;
         const checked = trackerState.weeklyChecks[key] ? "checked" : "";
-        wHtml += `<td class="center"><input type="checkbox" class="sheet-check weekly-check" data-habit="${wHabit.id}" data-week="${wk}" ${checked}></td>`;
+        wHtml += `<td class="center"><input type="checkbox" class="sheet-check weekly-check" data-habit="${wHabit.id}" data-week="${wk}" aria-label="${wHabit.name} - Week ${wk}" ${checked}></td>`;
       } else {
         wHtml += `<td class="center text-muted" style="background:#F8FAFC;">—</td>`;
       }
@@ -329,7 +331,7 @@ function renderSubTrackers() {
       const key = `${currentYear}-${currentMonth}-${mHabit.id}`;
       const checked = trackerState.monthlyChecks[key] ? "checked" : "";
       mHtml += `<td style="background:${cat.color}; color:${cat.textColor}; font-weight:700;">${mHabit.name}</td>`;
-      mHtml += `<td class="center"><input type="checkbox" class="sheet-check monthly-check" data-habit="${mHabit.id}" ${checked}></td>`;
+      mHtml += `<td class="center"><input type="checkbox" class="sheet-check monthly-check" data-habit="${mHabit.id}" aria-label="${mHabit.name}" ${checked}></td>`;
     } else {
       mHtml += `<td></td><td></td>`;
     }
@@ -338,7 +340,7 @@ function renderSubTrackers() {
       const key = `${currentYear}-${currentMonth}-${oTask.id}`;
       const checked = trackerState.oneOffChecks[key] ? "checked" : "";
       mHtml += `<td style="background:#F8FAFC;">${oTask.name}</td>`;
-      mHtml += `<td class="center"><input type="checkbox" class="sheet-check oneoff-check" data-task="${oTask.id}" ${checked}></td>`;
+      mHtml += `<td class="center"><input type="checkbox" class="sheet-check oneoff-check" data-task="${oTask.id}" aria-label="${oTask.name}" ${checked}></td>`;
     } else {
       mHtml += `<td></td><td></td>`;
     }
@@ -586,7 +588,8 @@ function recalculateMetrics() {
 
   // 4. Overall Monthly Totals
   const totalCombinedEarned = monthTotalDailyEarned + weeklyTotalEarned + monthlyHabitsEarned;
-  const overallCompletion = totalPossibleDaily > 0 ? Math.round((totalCheckedDaily / totalPossibleDaily) * 100) : 0;
+  const monthStats = getMonthStats(currentYear, currentMonth);
+  const overallCompletion = monthStats.completionPct;
 
   const kpiCompletionEl = document.getElementById("kpi-completion-rate");
   if (kpiCompletionEl) kpiCompletionEl.innerText = `${overallCompletion}%`;
@@ -879,6 +882,62 @@ document.addEventListener("DOMContentLoaded", () => {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+    });
+  }
+
+  // Export JSON Backup
+  const btnExportBackup = document.getElementById("btn-export-backup");
+  if (btnExportBackup) {
+    btnExportBackup.addEventListener("click", () => {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(trackerState, null, 2));
+      const link = document.createElement("a");
+      link.setAttribute("href", dataStr);
+      link.setAttribute("download", `istiqamah_backup_${currentYear}_${MONTH_NAMES[currentMonth].toLowerCase()}.json`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast("Habits backup exported as JSON.");
+    });
+  }
+
+  // Import JSON Backup
+  const btnImportBackup = document.getElementById("btn-import-backup");
+  const fileImportBackup = document.getElementById("file-import-backup");
+  if (btnImportBackup && fileImportBackup) {
+    btnImportBackup.addEventListener("click", () => {
+      fileImportBackup.value = "";
+      fileImportBackup.click();
+    });
+
+    fileImportBackup.addEventListener("change", (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (readEvent) => {
+        try {
+          const parsed = JSON.parse(readEvent.target.result);
+          if (parsed && typeof parsed === "object") {
+            trackerState = {
+              checks: parsed.checks || {},
+              weeklyChecks: parsed.weeklyChecks || {},
+              monthlyChecks: parsed.monthlyChecks || {},
+              oneOffChecks: parsed.oneOffChecks || {},
+              reportName: parsed.reportName || "My habits",
+              startDate: parsed.startDate || "Jan 1, 2026"
+            };
+            saveState();
+            renderDailyMatrix();
+            renderSubTrackers();
+            renderYearlyView();
+            showToast("Backup restored successfully!");
+          } else {
+            alert("Invalid backup JSON format.");
+          }
+        } catch (err) {
+          alert("Failed to parse backup file: " + err.message);
+        }
+      };
+      reader.readAsText(file);
     });
   }
 
