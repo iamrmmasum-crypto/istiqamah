@@ -61,6 +61,145 @@ let soundEnabled = true;
 const STORAGE_KEY = "istiqamah_tracker_state_2026";
 let trackerState = loadState();
 
+// ===================================================
+// FIREBASE FIRESTORE CLOUD VAULT (LIFETIME STORAGE)
+// ===================================================
+const firebaseConfig = {
+  apiKey: "AIzaSyABy9Iy1g6AEBb_Jhgu2FpZvigKtvaSd0A",
+  authDomain: "istiqamah-tracker-adc12.firebaseapp.com",
+  projectId: "istiqamah-tracker-adc12",
+  storageBucket: "istiqamah-tracker-adc12.firebasestorage.app",
+  messagingSenderId: "252739933577",
+  appId: "1:252739933577:web:fde1b6a19f61c12677bd58",
+  measurementId: "G-XHKMB46MNZ"
+};
+
+let db = null;
+let currentPinHash = localStorage.getItem("istiqamah_pin_hash") || null;
+let firestoreUnsub = null;
+let syncDebounceTimer = null;
+let isRemoteUpdate = false;
+let cloudSyncState = "disconnected"; // "synced", "syncing", "disconnected", "offline"
+
+function initFirebase() {
+  try {
+    if (typeof firebase !== "undefined" && !firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+      db = firebase.firestore();
+      db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
+    } else if (typeof firebase !== "undefined") {
+      db = firebase.firestore();
+    }
+  } catch (err) {
+    console.warn("Firebase initialization warning:", err);
+  }
+}
+
+async function hashPin(pin) {
+  const clean = (pin || "").trim();
+  if (!clean) return "";
+  try {
+    if (window.crypto && crypto.subtle) {
+      const enc = new TextEncoder();
+      const data = enc.encode("istiqamah_salt_v1_" + clean);
+      const hashBuf = await crypto.subtle.digest("SHA-256", data);
+      return Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, "0")).join("").slice(0, 32);
+    }
+  } catch (e) {}
+  let hash = 0;
+  for (let i = 0; i < clean.length; i++) {
+    hash = ((hash << 5) - hash) + clean.charCodeAt(i);
+    hash |= 0;
+  }
+  return "h_" + Math.abs(hash).toString(16);
+}
+
+function updateCloudStatus(status, text) {
+  cloudSyncState = status;
+  const btn = document.getElementById("btn-cloud-status");
+  const icon = document.getElementById("cloud-status-icon");
+  const txt = document.getElementById("cloud-status-text");
+  if (!btn || !icon || !txt) return;
+
+  btn.classList.remove("synced", "syncing", "offline");
+  if (status === "synced") {
+    btn.classList.add("synced");
+    icon.innerText = "🟢";
+    txt.innerText = text || "Cloud Synced";
+  } else if (status === "syncing") {
+    btn.classList.add("syncing");
+    icon.innerText = "🔄";
+    txt.innerText = text || "Syncing...";
+  } else if (status === "offline") {
+    btn.classList.add("offline");
+    icon.innerText = "⚠️";
+    txt.innerText = text || "Offline";
+  } else {
+    icon.innerText = "☁️";
+    txt.innerText = text || "Enter PIN";
+  }
+}
+
+function connectCloudSync(pinHash) {
+  initFirebase();
+  if (!db || !pinHash) {
+    updateCloudStatus("disconnected");
+    return;
+  }
+  if (firestoreUnsub) {
+    firestoreUnsub();
+    firestoreUnsub = null;
+  }
+
+  updateCloudStatus("syncing");
+  const docRef = db.collection("vaults").doc(pinHash);
+
+  firestoreUnsub = docRef.onSnapshot((doc) => {
+    if (doc.exists) {
+      const data = doc.data();
+      if (data && !isRemoteUpdate) {
+        trackerState = {
+          checks: { ...trackerState.checks, ...(data.checks || {}) },
+          weeklyChecks: { ...trackerState.weeklyChecks, ...(data.weeklyChecks || {}) },
+          monthlyChecks: { ...trackerState.monthlyChecks, ...(data.monthlyChecks || {}) },
+          oneOffChecks: { ...trackerState.oneOffChecks, ...(data.oneOffChecks || {}) },
+          reportName: data.reportName || trackerState.reportName || "My habits",
+          startDate: data.startDate || trackerState.startDate || "Jan 1, 2026"
+        };
+        saveLocalOnly();
+        renderDailyMatrix();
+        renderSubTrackers();
+        renderYearlyView();
+      }
+      updateCloudStatus("synced");
+    } else {
+      // First time initialization for this PIN in Firestore!
+      isRemoteUpdate = true;
+      docRef.set({
+        checks: trackerState.checks,
+        weeklyChecks: trackerState.weeklyChecks,
+        monthlyChecks: trackerState.monthlyChecks,
+        oneOffChecks: trackerState.oneOffChecks,
+        reportName: trackerState.reportName,
+        startDate: trackerState.startDate,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(() => {
+        updateCloudStatus("synced");
+        showToast("✨ Cloud Vault initialized with your lifetime habits!");
+      }).catch(err => {
+        console.error("Firestore init error:", err);
+        updateCloudStatus("offline");
+      }).finally(() => {
+        setTimeout(() => { isRemoteUpdate = false; }, 300);
+      });
+    }
+  }, (err) => {
+    console.error("Firestore onSnapshot error:", err);
+    updateCloudStatus("offline");
+  });
+}
+
 function loadState() {
   const defaults = {
     checks: {},
@@ -89,8 +228,38 @@ function loadState() {
   return defaults;
 }
 
-function saveState() {
+function saveLocalOnly() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(trackerState));
+}
+
+function saveState() {
+  saveLocalOnly();
+
+  // If connected to Firestore Cloud Vault, push changes in real-time
+  if (db && currentPinHash) {
+    updateCloudStatus("syncing");
+    clearTimeout(syncDebounceTimer);
+    syncDebounceTimer = setTimeout(() => {
+      isRemoteUpdate = true;
+      const docRef = db.collection("vaults").doc(currentPinHash);
+      docRef.set({
+        checks: trackerState.checks,
+        weeklyChecks: trackerState.weeklyChecks,
+        monthlyChecks: trackerState.monthlyChecks,
+        oneOffChecks: trackerState.oneOffChecks,
+        reportName: trackerState.reportName,
+        startDate: trackerState.startDate,
+        lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true }).then(() => {
+        updateCloudStatus("synced");
+      }).catch((err) => {
+        console.error("Firestore push error:", err);
+        updateCloudStatus("offline");
+      }).finally(() => {
+        setTimeout(() => { isRemoteUpdate = false; }, 300);
+      });
+    }, 400);
+  }
 }
 
 // Procedural Audio Synthesizer (Lazy-loaded to comply with browser autoplay policies)
@@ -939,6 +1108,91 @@ document.addEventListener("DOMContentLoaded", () => {
       };
       reader.readAsText(file);
     });
+  }
+
+  // PIN Modal Controls & Cloud Vault Auth
+  function openPinModal() {
+    const modal = document.getElementById("pin-modal");
+    const input = document.getElementById("master-pin-input");
+    if (modal) modal.classList.add("active");
+    if (input) {
+      input.value = "";
+      setTimeout(() => input.focus(), 100);
+    }
+  }
+
+  function closePinModal() {
+    const modal = document.getElementById("pin-modal");
+    if (modal) modal.classList.remove("active");
+  }
+
+  const btnCloudStatus = document.getElementById("btn-cloud-status");
+  if (btnCloudStatus) {
+    btnCloudStatus.addEventListener("click", () => {
+      if (currentPinHash) {
+        if (confirm("Currently synced with Firestore. Click OK to unlock with a different Master PIN, or Cancel to stay connected.")) {
+          openPinModal();
+        }
+      } else {
+        openPinModal();
+      }
+    });
+  }
+
+  const btnSubmitPin = document.getElementById("btn-submit-pin");
+  const masterPinInput = document.getElementById("master-pin-input");
+  if (btnSubmitPin && masterPinInput) {
+    const handlePinSubmit = async () => {
+      const pin = masterPinInput.value.trim();
+      if (!pin) {
+        alert("Please enter a Master PIN (e.g. 1234).");
+        return;
+      }
+      const hash = await hashPin(pin);
+      currentPinHash = hash;
+      localStorage.setItem("istiqamah_pin_hash", hash);
+      closePinModal();
+      showToast("Connecting to Firestore Vault...");
+      connectCloudSync(hash);
+    };
+
+    btnSubmitPin.addEventListener("click", handlePinSubmit);
+    masterPinInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        handlePinSubmit();
+      }
+    });
+  }
+
+  const btnCancelPin = document.getElementById("btn-cancel-pin");
+  if (btnCancelPin) {
+    btnCancelPin.addEventListener("click", () => {
+      closePinModal();
+      showToast("Working in local mode.");
+    });
+  }
+
+  const btnToggleEye = document.getElementById("btn-toggle-pin-visibility");
+  if (btnToggleEye && masterPinInput) {
+    btnToggleEye.addEventListener("click", () => {
+      if (masterPinInput.type === "password") {
+        masterPinInput.type = "text";
+        btnToggleEye.innerText = "🙈";
+      } else {
+        masterPinInput.type = "password";
+        btnToggleEye.innerText = "👁️";
+      }
+    });
+  }
+
+  // Auto-connect to Cloud Sync if PIN hash exists, else open PIN prompt
+  if (currentPinHash) {
+    connectCloudSync(currentPinHash);
+  } else {
+    setTimeout(() => {
+      openPinModal();
+    }, 450);
   }
 
   // Initial Renders

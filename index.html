@@ -44,6 +44,9 @@
       </div>
     </div>
     <div class="header-right">
+      <button class="btn btn-secondary cloud-status-btn" id="btn-cloud-status" title="Firestore Lifetime Sync">
+        <span id="cloud-status-icon">☁️</span> <span id="cloud-status-text">Cloud Sync</span>
+      </button>
       <button class="btn btn-secondary" id="btn-audio-toggle" title="Toggle audio feedback">
         <span id="audio-icon">🔊</span> Sound: ON
       </button>
@@ -417,6 +420,35 @@
     <span class="toast-msg" id="toast-message">Template ready!</span>
   </div>
 
-  <script src="app.js?v=2026.3"></script>
+  <!-- Master PIN Cloud Modal -->
+  <div id="pin-modal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-badge">🔒</div>
+        <h3>Istiqāmah Cloud Vault</h3>
+        <p id="pin-modal-desc">Enter your secret Master PIN to unlock and sync your lifetime habits across all devices.</p>
+      </div>
+      <div class="modal-body">
+        <div class="pin-input-group">
+          <input type="password" id="master-pin-input" class="pin-input" placeholder="Enter Master PIN (e.g. 1234)" maxlength="20" autocomplete="current-password">
+          <button type="button" id="btn-toggle-pin-visibility" class="btn-pin-eye" title="Show/Hide PIN">👁️</button>
+        </div>
+        <p class="pin-hint" id="pin-hint-text">✨ Your data is permanently synced in Google Cloud Firestore. Enter your PIN on your phone, laptop, or any browser to instantly load your habits.</p>
+        <div class="modal-actions">
+          <button class="btn btn-primary btn-block" id="btn-submit-pin">
+            <span>⚡</span> Unlock &amp; Sync Cloud Data
+          </button>
+        </div>
+        <div style="margin-top: 14px; text-align: center;">
+          <button type="button" id="btn-cancel-pin" class="btn btn-secondary" style="font-size: 11px; padding: 6px 12px;">Work Offline (Local Only)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase App & Firestore Compat SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="app.js?v=2026.5"></script>
 </body>
 </html>
