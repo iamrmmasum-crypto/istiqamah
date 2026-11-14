@@ -160,35 +160,35 @@ def build_habit_tracker_workbook(filename="Istiqamah_Tracker_2026_2036.xlsx"):
         {
             "category": "Spiritual",
             "color": "10B981",
-            "daily": ["🌅 Fajr Prayer (5:00 AM)", "🌞 Dhuhr Prayer [Jummah on Fri] (1:00 PM)", "🌤️ Asr Prayer (4:15 PM)", "🌇 Maghrib Prayer (5:45 PM)", "🌙 Isha Prayer & Reflection (7:45 PM)"],
+            "daily": ["🌅 Fajr Prayer (5:00 AM)", "🌞 Dhuhr Prayer [Jummah on Fri] (1:00 PM)", "🌤️ Asr Prayer (4:15 PM)", "🌇 Maghrib Prayer & Evening Dhikr (5:45 PM)", "🌙 Isha Prayer & Reflection (7:45 PM)"],
             "weekly": ["🕌 Jummah Prayer & Surah Al-Kahf (Friday)", "📖 Weekly Quran & Islamic Lecture"],
             "monthly": ["🌙 Fast 3 White Days (Ayyam al-Beed)", "🤝 Sadaqah & Charitable Giving"]
         },
         {
             "category": "Study & Work",
             "color": "3B82F6",
-            "daily": ["📚 Deep Study - Session 1 (6:00–9:00 AM)", "📰 Newspaper & Reading (9:00–9:30 AM)", "📝 Deep Study - Session 2 (10:00 AM–12:00 PM)"],
+            "daily": ["📚 Deep Study - Session 1 (6:00–9:00 AM)", "📰 News & Knowledge Reading (9:00–9:30 AM)", "📝 Deep Study - Session 2 (10:00 AM–12:00 PM)"],
             "weekly": ["📊 Weekly Habit Audit & Next Week Planning", "Research new growth topics"],
             "monthly": ["📚 Finish Reading 1 Complete Book", "📈 Monthly Financial & Savings Audit"]
         },
         {
             "category": "Health & Routine",
             "color": "F59E0B",
-            "daily": ["☀️ Early Wake Up (4:45 AM)", "🥗 Breakfast & Rest (9:30–10:00 AM)", "🚿 Bath & Grooming (12:00–1:00 PM)", "🛏️ Afternoon Nap / Qaylulah (2:00–4:00 PM)", "💧 Drink 2.5L+ Water (All Day)", "😴 Night Sleep on Time (11:30 PM–12:00 AM)"],
+            "daily": ["☀️ Early Wake Up (4:45 AM)", "🥗 Healthy Breakfast & Rest (9:30–10:00 AM)", "🚿 Bath, Grooming & Prep (12:00–1:00 PM)", "🛏️ Sunnah Qaylulah / Power Nap (1:45–2:30 PM)", "🏃 Daily Movement & Outdoor Sun (4:30–5:15 PM)", "💧 Drink 2.5L+ Pure Water (All Day)", "😴 Sleep on Time & Wudu (10:30–11:00 PM)"],
             "weekly": ["🏃 5km Run / Outdoor Fitness Session", "🧹 Room & Digital Workspace Deep Clean"],
             "monthly": ["🩺 Complete Routine Health Audit", "Deep rest & rejuvenation weekend"]
         },
         {
             "category": "Mindfulness",
             "color": "8B5CF6",
-            "daily": ["🧘 Meditation & Morning Dhikr (5:30 AM)"],
+            "daily": ["🧘 Meditation & Morning Dhikr (5:30 AM)", "📖 Growth Reading & Family Time (8:15–9:30 PM)"],
             "weekly": ["👨‍👩‍👧 Family Quality Time & Silat ar-Rahim"],
             "monthly": ["🎯 Goals & Self-Accountability Review"]
         },
         {
             "category": "Self-Discipline",
             "color": "EC4899",
-            "daily": ["🛡️ Screen Purity & Chastity / No Porn (All Day)"],
+            "daily": ["📵 Digital Sunset / Screen Curfew (10:00 PM)", "🛡️ Screen Purity & Chastity / No Porn (All Day)"],
             "weekly": ["Digital Detox Sunday afternoon"],
             "monthly": ["Review Screen Discipline Milestones"]
         }
