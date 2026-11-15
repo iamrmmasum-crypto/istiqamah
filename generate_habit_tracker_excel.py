@@ -160,7 +160,7 @@ def build_habit_tracker_workbook(filename="Istiqamah_Tracker_2026_2036.xlsx"):
         {
             "category": "Spiritual",
             "color": "10B981",
-            "daily": ["🌅 Fajr Prayer (5:00 AM)", "🌞 Dhuhr Prayer [Jummah on Fri] (1:00 PM)", "🌤️ Asr Prayer (3:45 PM)", "🌇 Maghrib Prayer & Evening Dhikr (5:45 PM)", "🌙 Isha Prayer & Reflection (7:45 PM)"],
+            "daily": ["🌅 Fajr Prayer (5:00 AM)", "🌞 Dhuhr Prayer [Jummah on Fri] (1:00 PM)", "🌤️ Asr Prayer (3:45 PM)", "🌇 Maghrib Prayer & Evening Dhikr (5:45 PM)", "🌙 Isha Prayer & Reflection (7:15 PM)"],
             "weekly": ["🕌 Jummah Prayer & Surah Al-Kahf (Friday)", "📖 Weekly Quran & Islamic Lecture"],
             "monthly": ["🌙 Fast 3 White Days (Ayyam al-Beed)", "🤝 Sadaqah & Charitable Giving"]
         },
@@ -181,7 +181,7 @@ def build_habit_tracker_workbook(filename="Istiqamah_Tracker_2026_2036.xlsx"):
         {
             "category": "Mindfulness",
             "color": "8B5CF6",
-            "daily": ["🧘 Meditation & Morning Dhikr (5:30 AM)", "📖 Growth Reading & Family Time (8:15–9:30 PM)"],
+            "daily": ["🧘 Meditation & Morning Dhikr (5:30 AM)", "📖 Growth Reading & Family Time (7:45–9:30 PM)"],
             "weekly": ["👨‍👩‍👧 Family Quality Time & Silat ar-Rahim"],
             "monthly": ["🎯 Goals & Self-Accountability Review"]
         },
