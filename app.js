@@ -27,11 +27,12 @@ const HABIT_DATABASE = {
     { id: "d14", name: "📱 Controlled Social Media (4:45–5:15 PM)", category: "Self-Discipline", reward: 3.0 },
     { id: "d15", name: "🌇 Maghrib Prayer & Evening Dhikr (5:45 PM)", category: "Spiritual", reward: 5.0 },
     { id: "d16", name: "🌙 Isha Prayer & Reflection (7:15 PM)", category: "Spiritual", reward: 5.0 },
-    { id: "d17", name: "📖 Growth Reading & Family Time (7:45–9:30 PM)", category: "Mindfulness", reward: 4.0 },
-    { id: "d18", name: "📵 Digital Sunset / Screen Curfew (10:00 PM)", category: "Self-Discipline", reward: 5.0 },
-    { id: "d19", name: "🛡️ Screen Purity & Chastity / No Porn (All Day)", category: "Self-Discipline", reward: 10.0 },
-    { id: "d20", name: "💧 Drink 2.5L+ Pure Water (All Day)", category: "Health & Routine", reward: 2.0 },
-    { id: "d21", name: "😴 Sleep on Time & Wudu (10:30–11:00 PM)", category: "Health & Routine", reward: 4.0 }
+    { id: "d17", name: "📖 Growth Reading & Knowledge (7:45–9:00 PM)", category: "Mindfulness", reward: 4.0 },
+    { id: "d18", name: "🍽️ Healthy Dinner & Family Time (9:00–9:45 PM)", category: "Health & Routine", reward: 3.0 },
+    { id: "d19", name: "📵 Digital Sunset / Screen Curfew (10:00 PM)", category: "Self-Discipline", reward: 5.0 },
+    { id: "d20", name: "🛡️ Screen Purity & Chastity / No Porn (All Day)", category: "Self-Discipline", reward: 10.0 },
+    { id: "d21", name: "💧 Drink 2.5L+ Pure Water (All Day)", category: "Health & Routine", reward: 2.0 },
+    { id: "d22", name: "😴 Sleep on Time & Wudu (10:30–11:00 PM)", category: "Health & Routine", reward: 4.0 }
   ],
   weeklyHabits: [
     { id: "w1", name: "🕌 Jummah Prayer & Surah Al-Kahf (Friday)", category: "Spiritual", reward: 10.0 },

@@ -174,14 +174,14 @@ def build_habit_tracker_workbook(filename="Istiqamah_Tracker_2026_2036.xlsx"):
         {
             "category": "Health & Routine",
             "color": "F59E0B",
-            "daily": ["☀️ Early Wake Up (4:45 AM)", "🥗 Healthy Breakfast & Rest (9:30–10:00 AM)", "🚿 Bath, Grooming & Prep (12:00–1:00 PM)", "🛏️ Sunnah Qaylulah / Power Nap (1:45–2:30 PM)", "🏃 Daily Movement & Outdoor Sun (4:00–4:45 PM)", "💧 Drink 2.5L+ Pure Water (All Day)", "😴 Sleep on Time & Wudu (10:30–11:00 PM)"],
+            "daily": ["☀️ Early Wake Up (4:45 AM)", "🥗 Healthy Breakfast & Rest (9:30–10:00 AM)", "🚿 Bath, Grooming & Prep (12:00–1:00 PM)", "🛏️ Sunnah Qaylulah / Power Nap (1:45–2:30 PM)", "🏃 Daily Movement & Outdoor Sun (4:00–4:45 PM)", "🍽️ Healthy Dinner & Family Time (9:00–9:45 PM)", "💧 Drink 2.5L+ Pure Water (All Day)", "😴 Sleep on Time & Wudu (10:30–11:00 PM)"],
             "weekly": ["🏃 5km Run / Outdoor Fitness Session", "🧹 Room & Digital Workspace Deep Clean"],
             "monthly": ["🩺 Complete Routine Health Audit", "Deep rest & rejuvenation weekend"]
         },
         {
             "category": "Mindfulness",
             "color": "8B5CF6",
-            "daily": ["🧘 Meditation & Morning Dhikr (5:30 AM)", "📖 Growth Reading & Family Time (7:45–9:30 PM)"],
+            "daily": ["🧘 Meditation & Morning Dhikr (5:30 AM)", "📖 Growth Reading & Knowledge (7:45–9:00 PM)"],
             "weekly": ["👨‍👩‍👧 Family Quality Time & Silat ar-Rahim"],
             "monthly": ["🎯 Goals & Self-Accountability Review"]
         },
