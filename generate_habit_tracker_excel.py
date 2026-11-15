@@ -167,7 +167,7 @@ def build_habit_tracker_workbook(filename="Istiqamah_Tracker_2026_2036.xlsx"):
         {
             "category": "Study & Work",
             "color": "3B82F6",
-            "daily": ["📚 Deep Study - Session 1 (6:00–9:00 AM)", "📰 News & Knowledge Reading (9:00–9:30 AM)", "📝 Deep Study - Session 2 (10:00 AM–12:00 PM)"],
+            "daily": ["📚 Deep Study - Session 1 (6:00–9:00 AM)", "📰 News & Knowledge Reading (9:00–9:30 AM)", "📝 Deep Study - Session 2 (10:00 AM–12:00 PM)", "📚 Deep Study - Session 3 (2:30–3:30 PM)"],
             "weekly": ["📊 Weekly Habit Audit & Next Week Planning", "Research new growth topics"],
             "monthly": ["📚 Finish Reading 1 Complete Book", "📈 Monthly Financial & Savings Audit"]
         },
@@ -188,7 +188,7 @@ def build_habit_tracker_workbook(filename="Istiqamah_Tracker_2026_2036.xlsx"):
         {
             "category": "Self-Discipline",
             "color": "EC4899",
-            "daily": ["📵 Digital Sunset / Screen Curfew (10:00 PM)", "🛡️ Screen Purity & Chastity / No Porn (All Day)"],
+            "daily": ["📱 Controlled Social Media (3:30–4:15 PM)", "📵 Digital Sunset / Screen Curfew (10:00 PM)", "🛡️ Screen Purity & Chastity / No Porn (All Day)"],
             "weekly": ["Digital Detox Sunday afternoon"],
             "monthly": ["Review Screen Discipline Milestones"]
         }
