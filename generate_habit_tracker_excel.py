@@ -160,7 +160,7 @@ def build_habit_tracker_workbook(filename="Istiqamah_Tracker_2026_2036.xlsx"):
         {
             "category": "Spiritual",
             "color": "10B981",
-            "daily": ["🌅 Fajr Prayer (5:00 AM)", "🌞 Dhuhr Prayer [Jummah on Fri] (1:00 PM)", "🌤️ Asr Prayer (4:15 PM)", "🌇 Maghrib Prayer & Evening Dhikr (5:45 PM)", "🌙 Isha Prayer & Reflection (7:45 PM)"],
+            "daily": ["🌅 Fajr Prayer (5:00 AM)", "🌞 Dhuhr Prayer [Jummah on Fri] (1:00 PM)", "🌤️ Asr Prayer (3:45 PM)", "🌇 Maghrib Prayer & Evening Dhikr (5:45 PM)", "🌙 Isha Prayer & Reflection (7:45 PM)"],
             "weekly": ["🕌 Jummah Prayer & Surah Al-Kahf (Friday)", "📖 Weekly Quran & Islamic Lecture"],
             "monthly": ["🌙 Fast 3 White Days (Ayyam al-Beed)", "🤝 Sadaqah & Charitable Giving"]
         },
@@ -174,7 +174,7 @@ def build_habit_tracker_workbook(filename="Istiqamah_Tracker_2026_2036.xlsx"):
         {
             "category": "Health & Routine",
             "color": "F59E0B",
-            "daily": ["☀️ Early Wake Up (4:45 AM)", "🥗 Healthy Breakfast & Rest (9:30–10:00 AM)", "🚿 Bath, Grooming & Prep (12:00–1:00 PM)", "🛏️ Sunnah Qaylulah / Power Nap (1:45–2:30 PM)", "🏃 Daily Movement & Outdoor Sun (4:30–5:15 PM)", "💧 Drink 2.5L+ Pure Water (All Day)", "😴 Sleep on Time & Wudu (10:30–11:00 PM)"],
+            "daily": ["☀️ Early Wake Up (4:45 AM)", "🥗 Healthy Breakfast & Rest (9:30–10:00 AM)", "🚿 Bath, Grooming & Prep (12:00–1:00 PM)", "🛏️ Sunnah Qaylulah / Power Nap (1:45–2:30 PM)", "🏃 Daily Movement & Outdoor Sun (4:00–4:45 PM)", "💧 Drink 2.5L+ Pure Water (All Day)", "😴 Sleep on Time & Wudu (10:30–11:00 PM)"],
             "weekly": ["🏃 5km Run / Outdoor Fitness Session", "🧹 Room & Digital Workspace Deep Clean"],
             "monthly": ["🩺 Complete Routine Health Audit", "Deep rest & rejuvenation weekend"]
         },
@@ -188,7 +188,7 @@ def build_habit_tracker_workbook(filename="Istiqamah_Tracker_2026_2036.xlsx"):
         {
             "category": "Self-Discipline",
             "color": "EC4899",
-            "daily": ["📱 Controlled Social Media (3:30–4:15 PM)", "📵 Digital Sunset / Screen Curfew (10:00 PM)", "🛡️ Screen Purity & Chastity / No Porn (All Day)"],
+            "daily": ["📱 Controlled Social Media (4:45–5:15 PM)", "📵 Digital Sunset / Screen Curfew (10:00 PM)", "🛡️ Screen Purity & Chastity / No Porn (All Day)"],
             "weekly": ["Digital Detox Sunday afternoon"],
             "monthly": ["Review Screen Discipline Milestones"]
         }
