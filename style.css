@@ -993,39 +993,41 @@ body {
 
 /* ===================================================
    LOCKED PAST DATES & TODAY HIGHLIGHT
+   Past dates are locked (read-only/disabled) to preserve integrity,
+   while all completed habits, percentages, and earned rewards
+   remain 100% visible, clean, and crystal-clear.
    =================================================== */
+.col-past-locked,
 .col-past-blocked {
-  opacity: 0.45 !important;
-  filter: grayscale(80%);
-  background: #E2E8F0 !important;
-  color: #94A3B8 !important;
-  cursor: not-allowed;
+  background: #F1F5F9 !important;
+  color: #334155 !important;
+  cursor: default;
 }
 
+.td-past-locked,
 .td-past-blocked {
-  background: #F8FAFC !important;
+  background: #FAFAFA !important;
   position: relative;
-  cursor: not-allowed;
+  cursor: default;
 }
 
+.td-past-locked input.sheet-check,
 .td-past-blocked input.sheet-check {
-  opacity: 0.22 !important;
   cursor: not-allowed !important;
   pointer-events: none !important;
 }
 
-.td-past-blocked::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(
-    45deg,
-    rgba(148, 163, 184, 0.08),
-    rgba(148, 163, 184, 0.08) 4px,
-    transparent 4px,
-    transparent 8px
-  );
-  pointer-events: none;
+.td-past-locked input.sheet-check:not(:checked),
+.td-past-blocked input.sheet-check:not(:checked) {
+  opacity: 0.65 !important;
+  border-color: #CBD5E1 !important;
+}
+
+.td-past-locked input.sheet-check:checked,
+.td-past-blocked input.sheet-check:checked {
+  opacity: 1 !important;
+  accent-color: #10B981 !important;
+  filter: drop-shadow(0 1px 2px rgba(16, 185, 129, 0.25));
 }
 
 .col-today {

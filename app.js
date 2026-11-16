@@ -400,9 +400,8 @@ function renderDailyMatrix() {
   for (let d = 1; d <= totalDays; d++) {
     const isPast = isDateBeforeToday(currentYear, currentMonth, d);
     const isToday = isDateToday(currentYear, currentMonth, d);
-    const extraClass = isPast ? "col-past-blocked" : (isToday ? "col-today" : "");
-    const initialText = isPast ? "🔒" : "0%";
-    rowPctHtml += `<th id="th-pct-day-${d}" class="${extraClass}" style="background:#F1F5F9; color:#1E293B;">${initialText}</th>`;
+    const extraClass = isPast ? "col-past-locked" : (isToday ? "col-today" : "");
+    rowPctHtml += `<th id="th-pct-day-${d}" class="${extraClass}" style="background:#F1F5F9; color:#1E293B;">0%</th>`;
   }
   rowPctHtml += `</tr>`;
 
@@ -413,7 +412,7 @@ function renderDailyMatrix() {
     const wkClass = getWeekClassForDay(d);
     const isPast = isDateBeforeToday(currentYear, currentMonth, d);
     const isToday = isDateToday(currentYear, currentMonth, d);
-    const extraClass = isPast ? "col-past-blocked" : (isToday ? "col-today" : "");
+    const extraClass = isPast ? "col-past-locked" : (isToday ? "col-today" : "");
     rowDaysHtml += `<th class="${wkClass} ${extraClass}">${WEEKDAY_NAMES[dayOfWeek]}${isToday ? '<span class="col-today-badge">Today</span>' : ''}</th>`;
   }
   rowDaysHtml += `</tr>`;
@@ -424,7 +423,7 @@ function renderDailyMatrix() {
     const wkClass = getWeekClassForDay(d);
     const isPast = isDateBeforeToday(currentYear, currentMonth, d);
     const isToday = isDateToday(currentYear, currentMonth, d);
-    const extraClass = isPast ? "col-past-blocked" : (isToday ? "col-today" : "");
+    const extraClass = isPast ? "col-past-locked" : (isToday ? "col-today" : "");
     rowNumsHtml += `<th class="${wkClass} ${extraClass}">${d}</th>`;
   }
   rowNumsHtml += `</tr>`;
@@ -445,7 +444,7 @@ function renderDailyMatrix() {
       const checked = trackerState.checks[key] ? "checked" : "";
 
       if (isPast) {
-        tbodyHtml += `<td class="td-past-blocked" title="Locked: Past date prior to tracker start (Today)"><input type="checkbox" class="sheet-check" data-habit="${habit.id}" data-day="${d}" aria-label="${habit.name} - Day ${d} (Locked)" disabled></td>`;
+        tbodyHtml += `<td class="td-past-locked" title="Locked: Past date (${d} ${MONTH_NAMES[currentMonth]}) - View Only"><input type="checkbox" class="sheet-check" data-habit="${habit.id}" data-day="${d}" aria-label="${habit.name} - Day ${d} (Locked)" ${checked} disabled></td>`;
       } else {
         const todayClass = isToday ? "td-today" : "";
         tbodyHtml += `<td class="${todayClass}"><input type="checkbox" class="sheet-check" data-habit="${habit.id}" data-day="${d}" aria-label="${habit.name} - Day ${d}" ${checked}></td>`;
@@ -466,7 +465,7 @@ function renderDailyMatrix() {
   let footRewHtml = `<tr class="row-daily-reward"><td class="tfoot-label bold">Daily reward earned ($):</td>`;
   for (let d = 1; d <= totalDays; d++) {
     const isPast = isDateBeforeToday(currentYear, currentMonth, d);
-    const extraClass = isPast ? "col-past-blocked" : "";
+    const extraClass = isPast ? "col-past-locked" : "";
     footRewHtml += `<td id="foot-day-rew-${d}" class="${extraClass}">$0</td>`;
   }
   footRewHtml += `</tr>`;
@@ -518,7 +517,7 @@ function renderSubTrackers() {
         const checked = trackerState.weeklyChecks[key] ? "checked" : "";
 
         if (isPastWeek) {
-          wHtml += `<td class="center td-past-blocked" title="Locked: Past week prior to tracker start"><input type="checkbox" class="sheet-check weekly-check" disabled></td>`;
+          wHtml += `<td class="center td-past-locked" title="Locked: Past week - View Only"><input type="checkbox" class="sheet-check weekly-check" ${checked} disabled></td>`;
         } else {
           const wkClass = isCurrentWeek ? "td-today" : "";
           wHtml += `<td class="center ${wkClass}"><input type="checkbox" class="sheet-check weekly-check" data-habit="${wHabit.id}" data-week="${wk}" aria-label="${wHabit.name} - Week ${wk}" ${checked}></td>`;
@@ -560,8 +559,8 @@ function renderSubTrackers() {
       const key = `${currentYear}-${currentMonth}-${mHabit.id}`;
       const checked = trackerState.monthlyChecks[key] ? "checked" : "";
       if (isPastMonth) {
-        mHtml += `<td style="background:${cat.color}; color:${cat.textColor}; font-weight:700; opacity:0.6;">${mHabit.name}</td>`;
-        mHtml += `<td class="center td-past-blocked" title="Locked: Past month"><input type="checkbox" class="sheet-check monthly-check" disabled></td>`;
+        mHtml += `<td style="background:${cat.color}; color:${cat.textColor}; font-weight:700;">${mHabit.name}</td>`;
+        mHtml += `<td class="center td-past-locked" title="Locked: Past month - View Only"><input type="checkbox" class="sheet-check monthly-check" ${checked} disabled></td>`;
       } else {
         mHtml += `<td style="background:${cat.color}; color:${cat.textColor}; font-weight:700;">${mHabit.name}</td>`;
         mHtml += `<td class="center"><input type="checkbox" class="sheet-check monthly-check" data-habit="${mHabit.id}" aria-label="${mHabit.name}" ${checked}></td>`;
@@ -574,8 +573,8 @@ function renderSubTrackers() {
       const key = `${currentYear}-${currentMonth}-${oTask.id}`;
       const checked = trackerState.oneOffChecks[key] ? "checked" : "";
       if (isPastMonth) {
-        mHtml += `<td style="background:#F8FAFC; opacity:0.6;">${oTask.name}</td>`;
-        mHtml += `<td class="center td-past-blocked" title="Locked: Past month"><input type="checkbox" class="sheet-check oneoff-check" disabled></td>`;
+        mHtml += `<td style="background:#F8FAFC;">${oTask.name}</td>`;
+        mHtml += `<td class="center td-past-locked" title="Locked: Past month - View Only"><input type="checkbox" class="sheet-check oneoff-check" ${checked} disabled></td>`;
       } else {
         mHtml += `<td style="background:#F8FAFC;">${oTask.name}</td>`;
         mHtml += `<td class="center"><input type="checkbox" class="sheet-check oneoff-check" data-task="${oTask.id}" aria-label="${oTask.name}" ${checked}></td>`;
@@ -759,10 +758,10 @@ function recalculateMetrics() {
 
     const dayPct = totalHabits > 0 ? Math.round((dayChecked / totalHabits) * 100) : 0;
     const thPct = document.getElementById(`th-pct-day-${d}`);
-    if (thPct) thPct.innerText = isPast ? "🔒" : `${dayPct}%`;
+    if (thPct) thPct.innerText = `${dayPct}%`;
 
     const footRew = document.getElementById(`foot-day-rew-${d}`);
-    if (footRew) footRew.innerText = isPast ? "—" : `$${dayEarned.toFixed(0)}`;
+    if (footRew) footRew.innerText = `$${dayEarned.toFixed(0)}`;
 
     monthTotalDailyEarned += dayEarned;
     totalCheckedDaily += dayChecked;
