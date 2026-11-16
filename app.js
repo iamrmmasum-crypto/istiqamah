@@ -25,7 +25,7 @@ const HABIT_DATABASE = {
     { id: "d12", name: "🌤️ Asr Prayer (3:45 PM)", category: "Spiritual", reward: 5.0 },
     { id: "d13", name: "🏃 Daily Movement & Outdoor Sun (4:00–4:45 PM)", category: "Health & Routine", reward: 4.0 },
     { id: "d14", name: "📱 Controlled Social Media (4:45–5:15 PM)", category: "Self-Discipline", reward: 3.0 },
-    { id: "d15", name: "🌇 Maghrib Prayer & Evening Dhikr (5:45 PM)", category: "Spiritual", reward: 5.0 },
+    { id: "d15", name: "🌇 Maghrib Prayer & Evening Dhikr (5:15 PM)", category: "Spiritual", reward: 5.0 },
     { id: "d16", name: "🌙 Isha Prayer & Reflection (7:15 PM)", category: "Spiritual", reward: 5.0 },
     { id: "d17", name: "📖 Growth Reading & Knowledge (7:45–9:00 PM)", category: "Mindfulness", reward: 4.0 },
     { id: "d18", name: "🍽️ Healthy Dinner & Family Time (9:00–9:45 PM)", category: "Health & Routine", reward: 3.0 },

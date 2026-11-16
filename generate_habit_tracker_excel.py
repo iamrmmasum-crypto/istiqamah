@@ -160,7 +160,7 @@ def build_habit_tracker_workbook(filename="Istiqamah_Tracker_2026_2036.xlsx"):
         {
             "category": "Spiritual",
             "color": "10B981",
-            "daily": ["🌅 Fajr Prayer (5:00 AM)", "🌞 Dhuhr Prayer [Jummah on Fri] (1:00 PM)", "🌤️ Asr Prayer (3:45 PM)", "🌇 Maghrib Prayer & Evening Dhikr (5:45 PM)", "🌙 Isha Prayer & Reflection (7:15 PM)"],
+            "daily": ["🌅 Fajr Prayer (5:00 AM)", "🌞 Dhuhr Prayer [Jummah on Fri] (1:00 PM)", "🌤️ Asr Prayer (3:45 PM)", "🌇 Maghrib Prayer & Evening Dhikr (5:15 PM)", "🌙 Isha Prayer & Reflection (7:15 PM)"],
             "weekly": ["🕌 Jummah Prayer & Surah Al-Kahf (Friday)", "📖 Weekly Quran & Islamic Lecture"],
             "monthly": ["🌙 Fast 3 White Days (Ayyam al-Beed)", "🤝 Sadaqah & Charitable Giving"]
         },
@@ -256,7 +256,7 @@ def build_habit_tracker_workbook(filename="Istiqamah_Tracker_2026_2036.xlsx"):
         ("🌞 Dhuhr Prayer [Jummah on Fri] (1:00 PM)", 5.0, "-", 0.0, "-", 0.0),
         ("🛏️ Afternoon Nap / Qaylulah (2:00–4:00 PM)", 3.0, "-", 0.0, "-", 0.0),
         ("🌤️ Asr Prayer (4:15 PM)", 5.0, "-", 0.0, "-", 0.0),
-        ("🌇 Maghrib Prayer (5:45 PM)", 5.0, "-", 0.0, "-", 0.0),
+        ("🌇 Maghrib Prayer (5:15 PM)", 5.0, "-", 0.0, "-", 0.0),
         ("🌙 Isha Prayer & Reflection (7:45 PM)", 5.0, "-", 0.0, "-", 0.0),
         ("💧 Drink 2.5L+ Water (All Day)", 2.0, "-", 0.0, "-", 0.0),
         ("🛡️ Screen Purity & Chastity / No Porn (All Day)", 10.0, "-", 0.0, "-", 0.0),
@@ -389,7 +389,7 @@ def build_habit_tracker_workbook(filename="Istiqamah_Tracker_2026_2036.xlsx"):
         ("🌞 Dhuhr Prayer [Jummah on Fri] (1:00 PM)", "Spiritual", "10B981", 5.0),
         ("🛏️ Afternoon Nap / Qaylulah (2:00–4:00 PM)", "Health & Routine", "F59E0B", 3.0),
         ("🌤️ Asr Prayer (4:15 PM)", "Spiritual", "10B981", 5.0),
-        ("🌇 Maghrib Prayer (5:45 PM)", "Spiritual", "10B981", 5.0),
+        ("🌇 Maghrib Prayer (5:15 PM)", "Spiritual", "10B981", 5.0),
         ("🌙 Isha Prayer & Reflection (7:45 PM)", "Spiritual", "10B981", 5.0),
         ("💧 Drink 2.5L+ Water (All Day)", "Health & Routine", "F59E0B", 2.0),
         ("🛡️ Screen Purity & Chastity / No Porn (All Day)", "Self-Discipline", "EC4899", 10.0),
