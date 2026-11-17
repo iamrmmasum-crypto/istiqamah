@@ -531,6 +531,52 @@ const I18N = {
     "Health & Routine": "স্বাস্থ্য ও রুটিন",
     "Mindfulness": "মননশীলতা",
     "Self-Discipline": "আত্মনিয়ন্ত্রণ"
+  },
+  swot_en: {
+    "s1": "5 Daily Prayers strictly on time with Sunnah Dhikr",
+    "s2": "Disciplined 6-hour Deep Study Sessions (1, 2, and 3)",
+    "s3": "Consistent early morning wake-up at 4:45 AM before Fajr",
+    "s4": "Screen Purity & Chastity commitment (zero tolerance)",
+    "w1": "Temptation to stretch social media beyond 5:15 PM Maghrib",
+    "w2": "Water hydration dip during high-intensity study blocks",
+    "w3": "Slight delay adhering to 10:00 PM digital curfew / screen sunset",
+    "o1": "Golden 3-hour morning window (6:00–9:00 AM) for deep work",
+    "o2": "Fasting 3 White Days (Ayyam al-Beed) for spiritual elevation",
+    "o3": "Post-Isha (7:45–9:00 PM) growth reading & Quran reflection",
+    "o4": "Weekly 5km outdoor run / fitness session for stamina",
+    "t1": "Late-night screen stimulation disrupting 10:30 PM sleep",
+    "t2": "Burnout fatigue if Sunnah Qaylulah (1:45–2:30 PM) is skipped",
+    "t3": "Unplanned social interruptions during scheduled study blocks"
+  },
+  swot_bn: {
+    "s1": "৫ ওয়াক্ত নামাজ জামাত ও সুন্নাহসহ সময়মতো আদায়",
+    "s2": "সুশৃঙ্খল ৬ ঘণ্টার ৩টি গভীর স্টাডি সেশন (১, ২, ৩)",
+    "s3": "নিয়মিত ফজরের পূর্বে ভোর ৪:৪৫-এ ঘুম থেকে ওঠা",
+    "s4": "দৃষ্টি ও স্ক্রিনের কঠোর পবিত্রতা / নো পর্ন কমিটমেন্ট",
+    "w1": "মাগরিবের (৫:১৫ PM) আগে অপ্রয়োজনে অতিরিক্ত সোশ্যাল মিডিয়া ব্রাউজিং",
+    "w2": "টানা পড়ার সময় পর্যাপ্ত বিশুদ্ধ পানি পান না করা",
+    "w3": "রাত ১০:০০ টার ডিজিটাল স্ক্রিন কার্ফু মানতে মাঝে মাঝে দেরি হওয়া",
+    "o1": "সকালের ৩ ঘণ্টার গোল্ডেন আওয়ার (৬:০০–৯:০০ AM) পড়াশোনায় সেরা আউটপুট",
+    "o2": "আইয়ামে বীজের ৩টি সুন্নতি রোজা রেখে আত্মশুদ্ধি অর্জন",
+    "o3": "এশার পর (৭:৪৫–৯:০০ PM) কুরআন তাদাব্বুর ও গঠনমূলক বই পাঠ",
+    "o4": "সাপ্তাহিক ৫ কিমি দৌড় ও ফিটনেস দিয়ে শারীরিক স্ট্যামিনা বৃদ্ধি",
+    "t1": "দেরি করে মোবাইল ব্যবহার করে রাত ১০:৩০ টার ঘুম ব্যাহত হওয়া",
+    "t2": "দুপুরের সুন্নতি কায়লুলাহ (১:৪৫–২:৩০ PM) মিস হলে বিকেলের ক্লান্তি ও বার্নআউট",
+    "t3": "পড়ার সময় ডিজিটাল নোটিফিকেশন ও অপ্রত্যাশিত সামাজিক ব্যাঘাত"
+  },
+  swot_tags_bn: {
+    "Spiritual": "আধ্যাত্মিক",
+    "Study": "পড়াশোনা",
+    "Routine": "রুটিন",
+    "Self-Discipline": "আত্মনিয়ন্ত্রণ",
+    "Discipline": "আত্মনিয়ন্ত্রণ",
+    "Health": "স্বাস্থ্য",
+    "Career": "ক্যারিয়ার",
+    "Mindfulness": "মননশীলতা",
+    "Environment": "পরিবেশ",
+    "Energy": "শারীরিক শক্তি",
+    "Focus": "মনোযোগ",
+    "General": "সাধারণ"
   }
 };
 
@@ -552,6 +598,24 @@ function getCategoryName(catName) {
     return I18N.categories_bn[catName];
   }
   return catName;
+}
+
+function getSwotItemText(item) {
+  if (!item) return "";
+  if (currentLang === "bn") {
+    if (I18N.swot_bn[item.id]) return I18N.swot_bn[item.id];
+  } else {
+    if (I18N.swot_en[item.id]) return I18N.swot_en[item.id];
+  }
+  return item.text;
+}
+
+function getSwotItemTag(tag) {
+  if (!tag) return currentLang === "bn" ? "সাধারণ" : "General";
+  if (currentLang === "bn" && I18N.swot_tags_bn[tag]) {
+    return I18N.swot_tags_bn[tag];
+  }
+  return tag;
 }
 
 function getWeekClassForDay(day) {
@@ -1312,14 +1376,18 @@ function renderSwotView() {
     if (!listEl) return;
 
     if (items.length === 0) {
-      listEl.innerHTML = `<div class="swot-empty-hint"><span>No factors recorded yet.<br>Click <strong>+</strong> or <strong>Add Factor</strong> to log one.</span></div>`;
+      const emptyMsg = currentLang === "bn"
+        ? `<span>এখনও কোনো বিষয় যুক্ত করা হয়নি।<br>নতুন বিষয় লিখতে <strong>+</strong> অথবা <strong>নতুন বিষয় যোগ</strong> বোতামে ক্লিক করুন।</span>`
+        : `<span>No factors recorded yet.<br>Click <strong>+</strong> or <strong>Add Factor</strong> to log one.</span>`;
+      listEl.innerHTML = `<div class="swot-empty-hint">${emptyMsg}</div>`;
       return;
     }
 
     let html = "";
     items.forEach(item => {
-      const cleanText = escapeHtml(item.text);
-      const cleanTag = escapeHtml(item.tag || "General");
+      const cleanText = escapeHtml(getSwotItemText(item));
+      const cleanTag = escapeHtml(getSwotItemTag(item.tag));
+      const delTitle = currentLang === "bn" ? "মুছে ফেলুন" : "Delete factor";
       html += `
         <div class="swot-item">
           <div class="swot-item-body">
@@ -1327,7 +1395,7 @@ function renderSwotView() {
             <span class="swot-item-text">${cleanText}</span>
             <span class="swot-tag">${cleanTag}</span>
           </div>
-          <button class="swot-delete-btn" data-quad="${quad}" data-id="${item.id}" title="Delete factor">🗑️</button>
+          <button class="swot-delete-btn" data-quad="${quad}" data-id="${item.id}" title="${delTitle}">🗑️</button>
         </div>
       `;
     });
@@ -1344,7 +1412,7 @@ function renderSwotView() {
         saveState();
         playBeep(false);
         renderSwotView();
-        showToast("Factor removed from SWOT.");
+        showToast(currentLang === "bn" ? "সোয়াট থেকে বিষয়টি সরানো হয়েছে।" : "Factor removed from SWOT.");
       }
     });
   });
@@ -1590,6 +1658,66 @@ function updateStaticTexts() {
 
   const btnResetTemplate = document.getElementById("btn-swot-reset");
   if (btnResetTemplate) btnResetTemplate.innerHTML = `<span>🔄</span> ${t("btn_reset_template")}`;
+
+  // SWOT 4 Quadrant Headers & Subtitles
+  const swotH4s = document.querySelectorAll(".swot-card-header h4");
+  if (swotH4s.length >= 4) {
+    swotH4s[0].innerHTML = `${t("swot_strengths_title")} <span class="swot-arabic">قُوَّة</span>`;
+    swotH4s[1].innerHTML = `${t("swot_weaknesses_title")} <span class="swot-arabic">ضَعْف</span>`;
+    swotH4s[2].innerHTML = `${t("swot_opps_title")} <span class="swot-arabic">فُرَص</span>`;
+    swotH4s[3].innerHTML = `${t("swot_threats_title")} <span class="swot-arabic">مَخَاطِر</span>`;
+  }
+  const swotSubs = document.querySelectorAll(".swot-card-header .swot-sub");
+  if (swotSubs.length >= 4) {
+    swotSubs[0].innerText = t("swot_strengths_sub");
+    swotSubs[1].innerText = t("swot_weaknesses_sub");
+    swotSubs[2].innerText = t("swot_opps_sub");
+    swotSubs[3].innerText = t("swot_threats_sub");
+  }
+
+  // TOWS Strategy Matrix Section
+  const towsH4 = document.querySelector(".swot-strategy-header h4");
+  if (towsH4) towsH4.innerText = currentLang === "bn" ? "💡 ইস্তিকামাহ অ্যাকশন স্ট্র্যাটেজি মেট্রিক্স (TOWS)" : "💡 ISTIQĀMAH ACTION STRATEGY MATRIX (TOWS)";
+
+  const towsP = document.querySelector(".swot-strategy-header p");
+  if (towsP) towsP.innerText = currentLang === "bn" ? "সোয়াট বিশ্লেষণকে সুশৃঙ্খল দৈনিক পদক্ষেপে রূপান্তর করার কার্যকরী গাইডলাইন" : "How to synthesize your SWOT analysis into disciplined daily action";
+
+  const stratTags = document.querySelectorAll(".strategy-card .strategy-tag");
+  const stratH5s = document.querySelectorAll(".strategy-card h5");
+  if (stratTags.length >= 4 && stratH5s.length >= 4) {
+    if (currentLang === "bn") {
+      stratTags[0].innerText = "SO কৌশল (ম্যাক্সি-ম্যাক্সি)";
+      stratH5s[0].innerText = "শক্তি দিয়ে সুযোগ জয়";
+      stratTags[1].innerText = "WO কৌশল (মিনি-ম্যাক্সি)";
+      stratH5s[1].innerText = "সুযোগ দিয়ে দুর্বলতা দূর";
+      stratTags[2].innerText = "ST কৌশল (ম্যাক্সি-মিনি)";
+      stratH5s[2].innerText = "শক্তি দিয়ে ঝুঁকি প্রতিহত";
+      stratTags[3].innerText = "WT কৌশল (মিনি-মিনি)";
+      stratH5s[3].innerText = "সুরক্ষামূলক পদক্ষেপ";
+    } else {
+      stratTags[0].innerText = "SO Strategy (Maxi-Maxi)";
+      stratH5s[0].innerText = "Capitalize with Strength";
+      stratTags[1].innerText = "WO Strategy (Mini-Maxi)";
+      stratH5s[1].innerText = "Overcome via Opportunity";
+      stratTags[2].innerText = "ST Strategy (Maxi-Mini)";
+      stratH5s[2].innerText = "Shield Against Threats";
+      stratTags[3].innerText = "WT Strategy (Mini-Mini)";
+      stratH5s[3].innerText = "Defensive Safeguards";
+    }
+  }
+
+  // SWOT Modal
+  const swotModalH3 = document.querySelector("#swot-modal .modal-header h3");
+  if (swotModalH3) swotModalH3.innerText = currentLang === "bn" ? "সোয়াট ফ্যাক্টর যোগ করুন" : "Add SWOT Factor";
+
+  const swotModalP = document.querySelector("#swot-modal .modal-header p");
+  if (swotModalP) swotModalP.innerText = currentLang === "bn" ? "আপনার অভ্যাস ও আত্মশাসন নিরীক্ষা করার জন্য একটি কৌশলগত বিষয় যুক্ত করুন।" : "Record a strategic factor to audit your habit system and discipline.";
+
+  const btnSwotSave = document.getElementById("btn-swot-save-item");
+  if (btnSwotSave) btnSwotSave.innerHTML = `<span>💾</span> ${currentLang === "bn" ? "সংরক্ষণ করুন" : "Save Factor"}`;
+
+  const btnSwotClose = document.getElementById("btn-swot-close-modal");
+  if (btnSwotClose) btnSwotClose.innerText = currentLang === "bn" ? "বাতিল" : "Cancel";
 }
 
 function setLanguage(lang) {
