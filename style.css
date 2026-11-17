@@ -178,6 +178,17 @@ body {
   color: #F8FAFC;
   border: 1px solid #334155;
 }
+
+#btn-lang-toggle {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #FFFFFF;
+  font-weight: 700;
+}
+#btn-lang-toggle:hover {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.4);
+}
 .btn-secondary:hover {
   background: #334155;
 }

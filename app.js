@@ -90,6 +90,7 @@ const _initYear = _initialNow.getFullYear();
 let currentYear = (_initYear >= 2026 && _initYear <= 2036) ? _initYear : 2026;
 let currentMonth = (_initYear >= 2026 && _initYear <= 2036) ? _initialNow.getMonth() : 0;
 let soundEnabled = true;
+let currentLang = localStorage.getItem("istiqamah_lang") || "en";
 
 // Key for LocalStorage
 const STORAGE_KEY = "istiqamah_tracker_state_2026";
@@ -355,11 +356,203 @@ function getFirstDayWeekday(year, month) {
   return new Date(year, month, 1).getDay(); // 0 = Sun, 1 = Mon ...
 }
 
-const MONTH_NAMES = [
+const MONTH_NAMES_EN = [
   "January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December"
 ];
-const WEEKDAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const MONTH_NAMES_BN = [
+  "জানুয়ারি", "ফেব্রুয়ারি", "মার্চ", "এপ্রিল", "মে", "জুন",
+  "জুলাই", "আগস্ট", "সেপ্টেম্বর", "অক্টোবর", "নভেম্বর", "ডিসেম্বর"
+];
+const MONTH_NAMES = MONTH_NAMES_EN;
+
+const WEEKDAY_NAMES_EN = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const WEEKDAY_NAMES_BN = ["রবি", "সোম", "মঙ্গল", "বুধ", "বৃহঃ", "শুক্র", "শনি"];
+const WEEKDAY_NAMES = WEEKDAY_NAMES_EN;
+
+function getMonthName(monthIdx) {
+  return currentLang === "bn" ? MONTH_NAMES_BN[monthIdx] : MONTH_NAMES_EN[monthIdx];
+}
+function getWeekdayName(dayIdx) {
+  return currentLang === "bn" ? WEEKDAY_NAMES_BN[dayIdx] : WEEKDAY_NAMES_EN[dayIdx];
+}
+
+// ===================================================
+// I18N BILINGUAL SYSTEM (ENGLISH ⇄ বাংলা)
+// ===================================================
+const I18N = {
+  en: {
+    lang_btn: "বাংলা",
+    nav_monthly: "Monthly Habits",
+    nav_yearly: "Yearly View (2026–2036)",
+    nav_fields: "Fields & Categories",
+    nav_rewards: "Reward Selector",
+    nav_swot: "SWOT Analysis",
+    banner_monthly_title: "ٱلِاسْتِقَامَة — MONTHLY HABITS",
+    summary_label: "SUMMARY",
+    edit_range: "EDIT RANGE",
+    view_from: "View from",
+    completion_rate: "COMPLETION RATE",
+    complete_to_date: "Complete to date:",
+    reward_economy: "REWARD ECONOMY",
+    total_earned_to_date: "Total earned to date:",
+    month_view: "MONTH VIEW",
+    week_prefix: "Week",
+    daily_habits: "Daily habits",
+    daily_completed_pct: "Daily completed (%)",
+    week_completed_pct: "Week completed (%):",
+    daily_reward_earned: "Daily reward earned ($):",
+    today_badge: "Today",
+    locked_past_date: "Locked: Past date ({day} {month}) - View Only",
+    weekly_habits_title: "WEEKLY HABITS",
+    weekly_badge: "Weeks 1 – 5",
+    weekly_tasks_th: "Weekly tasks",
+    earned_th: "Earned",
+    weekly_progress: "Weekly Progress:",
+    monthly_habits_title: "MONTHLY HABITS & ONE-OFF TASKS",
+    monthly_badge: "Monthly Milestones",
+    monthly_habits_th: "Monthly habits",
+    status_th: "Status",
+    oneoff_tasks_th: "One-off tasks for this month",
+    done_th: "Done",
+    monthly_tasks_done: "Monthly Tasks Done:",
+    yearly_banner_title: "ٱلِاسْتِقَامَة — ANNUAL CONSISTENCY HEATMAPS",
+    swot_banner_title: "ٱلِاسْتِقَامَة — PERSONAL SWOT ANALYSIS",
+    swot_banner_sub: "Strategic Self-Audit & Habit Alignment Framework",
+    swot_audit_title: "Habit & Character Audit",
+    swot_audit_desc: "Analyze your internal habits (Strengths & Weaknesses) and external dynamics (Opportunities & Threats) to sustain true Istiqāmah.",
+    btn_auto_audit: "Auto-Audit From Habits",
+    btn_add_factor: "Add Factor",
+    btn_reset_template: "Reset Template",
+    btn_sound_on: "Sound: ON",
+    btn_sound_off: "Sound: OFF",
+    btn_download_excel: "Download Excel (.xlsx)",
+    btn_reset_month: "Reset Month",
+    cloud_synced: "Cloud Synced",
+    cloud_syncing: "Syncing...",
+    cloud_offline: "Offline"
+  },
+  bn: {
+    lang_btn: "English",
+    nav_monthly: "মাসিক অভ্যাস",
+    nav_yearly: "বার্ষিক ভিউ (২০২৬–২০৩৬)",
+    nav_fields: "ক্যাটাগরি ও ব্যাকআপ",
+    nav_rewards: "রিওয়ার্ড সিলেক্টর",
+    nav_swot: "সোয়াট অ্যানালাইসিস",
+    banner_monthly_title: "ٱلِاسْتِقَامَة — মাসিক অভ্যাস",
+    summary_label: "সারাংশ",
+    edit_range: "রেঞ্জ নির্বাচন",
+    view_from: "মাস নির্বাচন",
+    completion_rate: "সম্পন্নের হার",
+    complete_to_date: "আজ পর্যন্ত সম্পন্ন:",
+    reward_economy: "অর্জিত রিওয়ার্ড",
+    total_earned_to_date: "সর্বমোট অর্জিত:",
+    month_view: "মাসিক ভিউ",
+    week_prefix: "সপ্তাহ",
+    daily_habits: "দৈনিক অভ্যাসসমূহ",
+    daily_completed_pct: "দৈনিক সম্পন্ন (%)",
+    week_completed_pct: "সপ্তাহ সম্পন্ন (%):",
+    daily_reward_earned: "দৈনিক অর্জিত রিওয়ার্ড ($):",
+    today_badge: "আজ",
+    locked_past_date: "লক করা: পূর্ববর্তী তারিখ ({day} {month}) - শুধু দেখার জন্য",
+    weekly_habits_title: "সাপ্তাহিক অভ্যাসসমূহ",
+    weekly_badge: "সপ্তাহ ১ – ৫",
+    weekly_tasks_th: "সাপ্তাহিক কাজসমূহ",
+    earned_th: "অর্জিত",
+    weekly_progress: "সাপ্তাহিক অগ্রগতি:",
+    monthly_habits_title: "মাসিক অভ্যাস ও এককালীন কাজসমূহ",
+    monthly_badge: "মাসিক মাইলফলক",
+    monthly_habits_th: "মাসিক অভ্যাসসমূহ",
+    status_th: "স্ট্যাটাস",
+    oneoff_tasks_th: "চলতি মাসের এককালীন কাজসমূহ",
+    done_th: "সম্পন্ন",
+    monthly_tasks_done: "মাসিক কাজ সম্পন্ন:",
+    yearly_banner_title: "ٱلِاسْتِقَامَة — বার্ষিক ধারাবাহিকতা হিটম্যাপ",
+    swot_banner_title: "ٱلِاسْتِقَامَة — ব্যক্তিগত সোয়াট অ্যানালাইসিস",
+    swot_banner_sub: "কৌশলগত আত্ম-অডিট ও অভ্যাস বিন্যাস ফ্রেমওয়ার্ক",
+    swot_audit_title: "অভ্যাস ও চরিত্র অডিট",
+    swot_audit_desc: "ধারাবাহিক ইস্তিকামাহ বজায় রাখতে আপনার অভ্যন্তরীণ অভ্যাস (শক্তি ও দুর্বলতা) এবং বাহ্যিক সুযোগ ও ঝুঁকি বিশ্লেষণ করুন।",
+    btn_auto_audit: "অভ্যাস থেকে অটো-অডিট",
+    btn_add_factor: "নতুন বিষয় যোগ",
+    btn_reset_template: "টেমপ্লেট রিসেট",
+    btn_sound_on: "সাউন্ড: চালু",
+    btn_sound_off: "সাউন্ড: বন্ধ",
+    btn_download_excel: "এক্সেল ডাউনলোড (.xlsx)",
+    btn_reset_month: "মাস রিসেট",
+    cloud_synced: "ক্লাউড সিঙ্কড",
+    cloud_syncing: "সিঙ্ক হচ্ছে...",
+    cloud_offline: "অফলাইন"
+  },
+  habits_bn: {
+    // Daily Habits
+    "d1": "☀️ ভোর ৪:৪৫-এ ঘুম থেকে ওঠা",
+    "d2": "🌅 ফজর নামাজ (৫:০০ AM)",
+    "d3": "🧘 ধ্যান ও সকালের যিকির (৫:৩০ AM)",
+    "d4": "📚 ডিপ স্টাডি - সেশন ১ (৬:০০–৯:০০ AM)",
+    "d5": "📰 খবর ও জ্ঞানমূলক পাঠ (৯:০০–৯:৩০ AM)",
+    "d6": "🥗 স্বাস্থ্যকর সকালের নাস্তা (৯:৩০–১০:০০ AM)",
+    "d7": "📝 ডিপ স্টাডি - সেশন ২ (১০:০০ AM–১২:০০ PM)",
+    "d8": "🚿 গোসল ও ব্যক্তিগত প্রস্তুতি (১২:০০–১:০০ PM)",
+    "d9": "🌞 জোহর নামাজ [শুক্রবারে জুমুআ] (১:০০ PM)",
+    "d10": "🛏️ সুন্নতি কায়লুলাহ / পাওয়ার ন্যাপ (১:৪৫–২:৩০ PM)",
+    "d11": "📚 ডিপ স্টাডি - সেশন ৩ (২:৩০–৩:৩০ PM)",
+    "d12": "🌤️ আসর নামাজ (৩:৪৫ PM)",
+    "d13": "🏃 শারীরিক ব্যায়াম ও রোদ গ্রহণ (৪:০০–৪:৪৫ PM)",
+    "d14": "📱 নিয়ন্ত্রিত সোশ্যাল মিডিয়া (৪:৪৫–৫:১৫ PM)",
+    "d15": "🌇 মাগরিব নামাজ ও সন্ধ্যার যিকির (৫:১৫ PM)",
+    "d16": "🌙 এশা নামাজ ও আত্মবিশ্লেষণ (৭:১৫ PM)",
+    "d17": "📖 গঠনমূলক পাঠ ও জ্ঞানার্জন (৭:৪৫–৯:০০ PM)",
+    "d18": "🍽️ স্বাস্থ্যকর রাতের খাবার ও পরিবার (৯:০০–৯:৪৫ PM)",
+    "d19": "📵 ডিজিটাল স্ক্রিন কার্ফু (১০:০০ PM)",
+    "d20": "🛡️ দৃষ্টি ও স্ক্রিন পবিত্রতা / নো পর্ন (সারাদিন)",
+    "d21": "💧 ২.৫ লিটার+ বিশুদ্ধ পানি পান (সারাদিন)",
+    "d22": "😴 ওজুসহ সময়মতো ঘুম (১০:৩০–১১:০০ PM)",
+    // Weekly Habits
+    "w1": "🕌 জুমুআ নামাজ ও সূরা আল-কাহাফ (শুক্রবার)",
+    "w2": "📖 সাপ্তাহিক কুরআন তেলাওয়াত ও ইসলামী লেকচার",
+    "w3": "🏃 ৫ কিমি দৌড় / ফিটনেস সেশন",
+    "w4": "👨‍👩‍👧 পরিবারের সাথে গুণগত সময় ও আত্মীয়তার সম্পর্ক",
+    "w5": "🧹 ঘর ও ডিজিটাল ওয়ার্কস্পেস পরিচ্ছন্নকরণ",
+    "w6": "📊 সাপ্তাহিক অভ্যাস অডিট ও পরিকল্পনা",
+    // Monthly Habits
+    "m1": "🌙 আইয়ামে বীজের ৩টি রোজা পালন",
+    "m2": "📚 ১টি পূর্ণাঙ্গ বই পড়ে শেষ করা",
+    "m3": "🤝 সাদাকাহ ও দান-খয়রাত",
+    "m4": "📈 মাসিক আর্থিক হিসাব ও সঞ্চয় অডিট",
+    "m5": "🎯 লক্ষ্য ও আত্মজবাবদিহিতা পর্যালোচনা",
+    // One-Off Tasks
+    "o1": "🩺 বার্ষিক স্বাস্থ্য ও ডেন্টাল চেকআপ",
+    "o2": "📁 ডিজিটাল স্টোরেজ ও স্টাডি নোট ব্যাকআপ",
+    "o3": "🤲 ত্রৈমাসিক নিয়ত ও দোয়ার তালিকা তৈরি"
+  },
+  categories_bn: {
+    "Spiritual": "আধ্যাত্মিক",
+    "Study & Work": "পড়াশোনা ও কাজ",
+    "Health & Routine": "স্বাস্থ্য ও রুটিন",
+    "Mindfulness": "মননশীলতা",
+    "Self-Discipline": "আত্মনিয়ন্ত্রণ"
+  }
+};
+
+function t(key) {
+  const dict = I18N[currentLang] || I18N.en;
+  return dict[key] || I18N.en[key] || key;
+}
+
+function getHabitName(habit) {
+  if (!habit) return "";
+  if (currentLang === "bn" && I18N.habits_bn[habit.id]) {
+    return I18N.habits_bn[habit.id];
+  }
+  return habit.name;
+}
+
+function getCategoryName(catName) {
+  if (currentLang === "bn" && I18N.categories_bn[catName]) {
+    return I18N.categories_bn[catName];
+  }
+  return catName;
+}
 
 function getWeekClassForDay(day) {
   if (day <= 7) return "bg-wk1";
@@ -397,14 +590,15 @@ function isMonthBeforeCurrent(year, month) {
 // ACTIVE MONTH WEEKS CONFIGURATION
 // ===================================================
 function getMonthWeeksConfig(totalDays) {
+  const pfx = t("week_prefix");
   const weeks = [
-    { name: "Week 1 (%)", start: 1, end: 7, class: "bg-wk1" },
-    { name: "Week 2 (%)", start: 8, end: 14, class: "bg-wk2" },
-    { name: "Week 3 (%)", start: 15, end: 21, class: "bg-wk3" },
-    { name: "Week 4 (%)", start: 22, end: 28, class: "bg-wk4" }
+    { name: `${pfx} 1 (%)`, start: 1, end: 7, class: "bg-wk1" },
+    { name: `${pfx} 2 (%)`, start: 8, end: 14, class: "bg-wk2" },
+    { name: `${pfx} 3 (%)`, start: 15, end: 21, class: "bg-wk3" },
+    { name: `${pfx} 4 (%)`, start: 22, end: 28, class: "bg-wk4" }
   ];
   if (totalDays >= 29) {
-    weeks.push({ name: "Week 5 (%)", start: 29, end: totalDays, class: "bg-wk5" });
+    weeks.push({ name: `${pfx} 5 (%)`, start: 29, end: totalDays, class: "bg-wk5" });
   }
   return weeks;
 }
@@ -422,7 +616,7 @@ function renderDailyMatrix() {
   const weeks = getMonthWeeksConfig(totalDays);
 
   // 1. HEADER ROW 1: Week Banners
-  let rowWeeksHtml = `<tr class="row-weeks"><th class="th-habit-name">Daily habits</th>`;
+  let rowWeeksHtml = `<tr class="row-weeks"><th class="th-habit-name">${t("daily_habits")}</th>`;
   weeks.forEach(w => {
     const span = w.end - w.start + 1;
     rowWeeksHtml += `<th colspan="${span}" class="${w.class}">${w.name}</th>`;
@@ -430,7 +624,7 @@ function renderDailyMatrix() {
   rowWeeksHtml += `</tr>`;
 
   // 2. HEADER ROW 2: Daily completed (%)
-  let rowPctHtml = `<tr class="row-completed-pct"><th class="th-habit-name" style="background:#F8FAFC; color:#64748B;">Daily completed (%)</th>`;
+  let rowPctHtml = `<tr class="row-completed-pct"><th class="th-habit-name" style="background:#F8FAFC; color:#64748B;">${t("daily_completed_pct")}</th>`;
   for (let d = 1; d <= totalDays; d++) {
     const isPast = isDateBeforeToday(currentYear, currentMonth, d);
     const isToday = isDateToday(currentYear, currentMonth, d);
@@ -447,7 +641,7 @@ function renderDailyMatrix() {
     const isPast = isDateBeforeToday(currentYear, currentMonth, d);
     const isToday = isDateToday(currentYear, currentMonth, d);
     const extraClass = isPast ? "col-past-locked" : (isToday ? "col-today" : "");
-    rowDaysHtml += `<th class="${wkClass} ${extraClass}">${WEEKDAY_NAMES[dayOfWeek]}${isToday ? '<span class="col-today-badge">Today</span>' : ''}</th>`;
+    rowDaysHtml += `<th class="${wkClass} ${extraClass}">${getWeekdayName(dayOfWeek)}${isToday ? `<span class="col-today-badge">${t("today_badge")}</span>` : ''}</th>`;
   }
   rowDaysHtml += `</tr>`;
 
@@ -469,7 +663,7 @@ function renderDailyMatrix() {
   HABIT_DATABASE.dailyHabits.forEach(habit => {
     const cat = getCategoryMeta(habit.category);
     tbodyHtml += `<tr>`;
-    tbodyHtml += `<td class="td-habit-name" style="background:${cat.color}; color:${cat.textColor};">${habit.name}</td>`;
+    tbodyHtml += `<td class="td-habit-name" style="background:${cat.color}; color:${cat.textColor};">${getHabitName(habit)}</td>`;
 
     for (let d = 1; d <= totalDays; d++) {
       const isPast = isDateBeforeToday(currentYear, currentMonth, d);
@@ -478,10 +672,10 @@ function renderDailyMatrix() {
       const checked = trackerState.checks[key] ? "checked" : "";
 
       if (isPast) {
-        tbodyHtml += `<td class="td-past-locked" title="Locked: Past date (${d} ${MONTH_NAMES[currentMonth]}) - View Only"><input type="checkbox" class="sheet-check" data-habit="${habit.id}" data-day="${d}" aria-label="${habit.name} - Day ${d} (Locked)" ${checked} disabled></td>`;
+        tbodyHtml += `<td class="td-past-locked" title="${t('locked_past_date').replace('{day}', d).replace('{month}', getMonthName(currentMonth))}"><input type="checkbox" class="sheet-check" data-habit="${habit.id}" data-day="${d}" aria-label="${getHabitName(habit)} - Day ${d} (Locked)" ${checked} disabled></td>`;
       } else {
         const todayClass = isToday ? "td-today" : "";
-        tbodyHtml += `<td class="${todayClass}"><input type="checkbox" class="sheet-check" data-habit="${habit.id}" data-day="${d}" aria-label="${habit.name} - Day ${d}" ${checked}></td>`;
+        tbodyHtml += `<td class="${todayClass}"><input type="checkbox" class="sheet-check" data-habit="${habit.id}" data-day="${d}" aria-label="${getHabitName(habit)} - Day ${d}" ${checked}></td>`;
       }
     }
     tbodyHtml += `</tr>`;
@@ -489,14 +683,14 @@ function renderDailyMatrix() {
   tbody.innerHTML = tbodyHtml;
 
   // 6. FOOTER: Week completed %, Daily reward earned ($)
-  let footWkPctHtml = `<tr class="row-week-pct"><td class="tfoot-label bold">Week completed (%):</td>`;
+  let footWkPctHtml = `<tr class="row-week-pct"><td class="tfoot-label bold">${t("week_completed_pct")}</td>`;
   weeks.forEach((w, idx) => {
     const span = w.end - w.start + 1;
     footWkPctHtml += `<td colspan="${span}" id="foot-wk-pct-${idx + 1}" class="${w.class}">0%</td>`;
   });
   footWkPctHtml += `</tr>`;
 
-  let footRewHtml = `<tr class="row-daily-reward"><td class="tfoot-label bold">Daily reward earned ($):</td>`;
+  let footRewHtml = `<tr class="row-daily-reward"><td class="tfoot-label bold">${t("daily_reward_earned")}</td>`;
   for (let d = 1; d <= totalDays; d++) {
     const isPast = isDateBeforeToday(currentYear, currentMonth, d);
     const extraClass = isPast ? "col-past-locked" : "";
@@ -541,7 +735,7 @@ function renderSubTrackers() {
   HABIT_DATABASE.weeklyHabits.forEach(wHabit => {
     const cat = getCategoryMeta(wHabit.category);
     wHtml += `<tr>`;
-    wHtml += `<td style="background:${cat.color}; color:${cat.textColor}; font-weight:700;">${wHabit.name}</td>`;
+    wHtml += `<td style="background:${cat.color}; color:${cat.textColor}; font-weight:700;">${getHabitName(wHabit)}</td>`;
     for (let wk = 1; wk <= 5; wk++) {
       if (wk <= numWeeks) {
         const wEndDay = wk === 1 ? 7 : (wk === 2 ? 14 : (wk === 3 ? 21 : (wk === 4 ? 28 : totalDays)));
@@ -554,7 +748,7 @@ function renderSubTrackers() {
           wHtml += `<td class="center td-past-locked" title="Locked: Past week - View Only"><input type="checkbox" class="sheet-check weekly-check" ${checked} disabled></td>`;
         } else {
           const wkClass = isCurrentWeek ? "td-today" : "";
-          wHtml += `<td class="center ${wkClass}"><input type="checkbox" class="sheet-check weekly-check" data-habit="${wHabit.id}" data-week="${wk}" aria-label="${wHabit.name} - Week ${wk}" ${checked}></td>`;
+          wHtml += `<td class="center ${wkClass}"><input type="checkbox" class="sheet-check weekly-check" data-habit="${wHabit.id}" data-week="${wk}" aria-label="${getHabitName(wHabit)} - Week ${wk}" ${checked}></td>`;
         }
       } else {
         wHtml += `<td class="center text-muted" style="background:#F8FAFC;">—</td>`;
@@ -593,11 +787,11 @@ function renderSubTrackers() {
       const key = `${currentYear}-${currentMonth}-${mHabit.id}`;
       const checked = trackerState.monthlyChecks[key] ? "checked" : "";
       if (isPastMonth) {
-        mHtml += `<td style="background:${cat.color}; color:${cat.textColor}; font-weight:700;">${mHabit.name}</td>`;
+        mHtml += `<td style="background:${cat.color}; color:${cat.textColor}; font-weight:700;">${getHabitName(mHabit)}</td>`;
         mHtml += `<td class="center td-past-locked" title="Locked: Past month - View Only"><input type="checkbox" class="sheet-check monthly-check" ${checked} disabled></td>`;
       } else {
-        mHtml += `<td style="background:${cat.color}; color:${cat.textColor}; font-weight:700;">${mHabit.name}</td>`;
-        mHtml += `<td class="center"><input type="checkbox" class="sheet-check monthly-check" data-habit="${mHabit.id}" aria-label="${mHabit.name}" ${checked}></td>`;
+        mHtml += `<td style="background:${cat.color}; color:${cat.textColor}; font-weight:700;">${getHabitName(mHabit)}</td>`;
+        mHtml += `<td class="center"><input type="checkbox" class="sheet-check monthly-check" data-habit="${mHabit.id}" aria-label="${getHabitName(mHabit)}" ${checked}></td>`;
       }
     } else {
       mHtml += `<td></td><td></td>`;
@@ -607,11 +801,11 @@ function renderSubTrackers() {
       const key = `${currentYear}-${currentMonth}-${oTask.id}`;
       const checked = trackerState.oneOffChecks[key] ? "checked" : "";
       if (isPastMonth) {
-        mHtml += `<td style="background:#F8FAFC;">${oTask.name}</td>`;
+        mHtml += `<td style="background:#F8FAFC;">${getHabitName(oTask)}</td>`;
         mHtml += `<td class="center td-past-locked" title="Locked: Past month - View Only"><input type="checkbox" class="sheet-check oneoff-check" ${checked} disabled></td>`;
       } else {
-        mHtml += `<td style="background:#F8FAFC;">${oTask.name}</td>`;
-        mHtml += `<td class="center"><input type="checkbox" class="sheet-check oneoff-check" data-task="${oTask.id}" aria-label="${oTask.name}" ${checked}></td>`;
+        mHtml += `<td style="background:#F8FAFC;">${getHabitName(oTask)}</td>`;
+        mHtml += `<td class="center"><input type="checkbox" class="sheet-check oneoff-check" data-task="${oTask.id}" aria-label="${getHabitName(oTask)}" ${checked}></td>`;
       }
     } else {
       mHtml += `<td></td><td></td>`;
@@ -890,14 +1084,19 @@ function recalculateMetrics() {
   const kpiTotalEl = document.getElementById("kpi-total-earned");
   if (kpiTotalEl) kpiTotalEl.innerText = `$${totalCombinedEarned.toFixed(2)}`;
 
-  const repName = trackerState.reportName || "My habits";
+  const repName = trackerState.reportName || (currentLang === "bn" ? "আমার অভ্যাস" : "My habits");
   const bannerEl = document.getElementById("banner-subtext");
   if (bannerEl) {
     const isPast = isMonthBeforeCurrent(currentYear, currentMonth);
+    const mName = getMonthName(currentMonth);
     if (isPast) {
-      bannerEl.innerHTML = `\u0671\u0644\u0650\u0627\u0633\u0652\u062a\u0650\u0642\u064e\u0627\u0645\u064e\u0629 \u2014 '${repName}' for ${MONTH_NAMES[currentMonth]} ${currentYear} <span class="locked-badge-banner">🔒 Past Month (Locked)</span>`;
+      bannerEl.innerHTML = currentLang === "bn"
+        ? `\u0671\u0644\u0650\u0627\u0633\u0652\u062a\u0650\u0642\u064e\u0627\u0645\u064e\u0629 — '${repName}' (${mName} ${currentYear}) <span class="locked-badge-banner">🔒 পূর্ববর্তী মাস (লক করা)</span>`
+        : `\u0671\u0644\u0650\u0627\u0633\u0652\u062a\u0650\u0642\u064e\u0627\u0645\u064e\u0629 — '${repName}' for ${mName} ${currentYear} <span class="locked-badge-banner">🔒 Past Month (Locked)</span>`;
     } else {
-      bannerEl.innerHTML = `\u0671\u0644\u0650\u0627\u0633\u0652\u062a\u0650\u0642\u064e\u0627\u0645\u064e\u0629 \u2014 '${repName}' for ${MONTH_NAMES[currentMonth]} ${currentYear} <span style="font-size:11px; color:#10B981; font-weight:700; margin-left:8px;">📍 Started Nov 15, 2026</span>`;
+      bannerEl.innerHTML = currentLang === "bn"
+        ? `\u0671\u0644\u0650\u0627\u0633\u0652\u062a\u0650\u0642\u064e\u0627\u0645\u064e\u0629 — '${repName}' (${mName} ${currentYear}) <span style="font-size:11px; color:#10B981; font-weight:700; margin-left:8px;">📍 শুরু: ১৫ নভেম্বর ২০২৬</span>`
+        : `\u0671\u0644\u0650\u0627\u0633\u0652\u062a\u0650\u0642\u064e\u0627\u0645\u064e\u0629 — '${repName}' for ${mName} ${currentYear} <span style="font-size:11px; color:#10B981; font-weight:700; margin-left:8px;">📍 Started Nov 15, 2026</span>`;
     }
   }
 }
@@ -913,29 +1112,34 @@ function renderYearlyView() {
   let yearlyEarnedSum = 0;
   let yearlyPctSum = 0;
 
-  MONTH_NAMES.forEach((mName, idx) => {
+  MONTH_NAMES_EN.forEach((_, idx) => {
     const isCurrent = idx === currentMonth;
     const stats = getMonthStats(currentYear, idx);
+    const mName = getMonthName(idx);
 
     yearlyEarnedSum += stats.totalEarned;
     yearlyPctSum += stats.completionPct;
+
+    const activeText = isCurrent ? (currentLang === "bn" ? "চলতি" : "ACTIVE") : "";
+    const compLabel = currentLang === "bn" ? "মাসিক সম্পন্ন:" : "Monthly Completion:";
+    const rewLabel = currentLang === "bn" ? "অর্জিত রিওয়ার্ড:" : "Rewards Accumulated:";
 
     html += `
       <div class="year-month-card ${isCurrent ? 'active-month' : ''}" data-month="${idx}" style="cursor: pointer;" title="Click to view ${mName}">
         <div class="year-month-header" style="background: ${isCurrent ? '#2563EB' : '#475569'};">
           <h5>${mName.toUpperCase()}</h5>
-          <span style="font-size:10px; font-weight:700;">${isCurrent ? 'ACTIVE' : ''}</span>
+          <span style="font-size:10px; font-weight:700;">${activeText}</span>
         </div>
         <div class="year-month-body">
           <div class="stat-row">
-            <span class="text-muted">Monthly Completion:</span>
+            <span class="text-muted">${compLabel}</span>
             <span class="bold">${stats.completionPct}%</span>
           </div>
           <div class="progress-bar-bg">
             <div class="progress-bar-fill" style="width: ${stats.completionPct}%;"></div>
           </div>
           <div class="stat-row mt-2">
-            <span class="text-muted">Rewards Accumulated:</span>
+            <span class="text-muted">${rewLabel}</span>
             <span class="bold green">$${stats.totalEarned.toFixed(2)}</span>
           </div>
         </div>
@@ -988,12 +1192,15 @@ function renderFieldsAndRewards() {
       const dailyCount = HABIT_DATABASE.dailyHabits.filter(h => h.category === cat.name).length;
       const weeklyCount = HABIT_DATABASE.weeklyHabits.filter(h => h.category === cat.name).length;
       const monthlyCount = HABIT_DATABASE.monthlyHabits.filter(h => h.category === cat.name).length;
+      const countLabel = currentLang === "bn"
+        ? `${dailyCount}টি দৈনিক · ${weeklyCount}টি সাপ্তাহিক · ${monthlyCount}টি মাসিক`
+        : `${dailyCount} Daily · ${weeklyCount} Weekly · ${monthlyCount} Monthly`;
 
       catHtml += `
         <div class="category-config-item">
           <div class="cat-config-header">
-            <span class="cat-chip" style="background:${cat.color}; color:${cat.textColor};">${cat.name}</span>
-            <span class="text-muted text-sm ml-auto">${dailyCount} Daily · ${weeklyCount} Weekly · ${monthlyCount} Monthly</span>
+            <span class="cat-chip" style="background:${cat.color}; color:${cat.textColor};">${getCategoryName(cat.name)}</span>
+            <span class="text-muted text-sm ml-auto">${countLabel}</span>
           </div>
         </div>
       `;
@@ -1013,12 +1220,12 @@ function renderFieldsAndRewards() {
       const mH = HABIT_DATABASE.monthlyHabits[i];
 
       rHtml += `<tr>`;
-      rHtml += `<td class="bold">${dH ? `<span class="badge-soft" style="background:${getCategoryMeta(dH.category).color}; color:${getCategoryMeta(dH.category).textColor}; padding:2px 6px; border-radius:3px;">${dH.category}</span>` : '—'}</td>`;
-      rHtml += `<td>${dH ? dH.name : '—'}</td>`;
+      rHtml += `<td class="bold">${dH ? `<span class="badge-soft" style="background:${getCategoryMeta(dH.category).color}; color:${getCategoryMeta(dH.category).textColor}; padding:2px 6px; border-radius:3px;">${getCategoryName(dH.category)}</span>` : '—'}</td>`;
+      rHtml += `<td>${dH ? getHabitName(dH) : '—'}</td>`;
       rHtml += `<td class="green bold">${dH ? '$' + dH.reward.toFixed(2) : '—'}</td>`;
-      rHtml += `<td>${wH ? wH.name : '—'}</td>`;
+      rHtml += `<td>${wH ? getHabitName(wH) : '—'}</td>`;
       rHtml += `<td class="green bold">${wH ? '$' + wH.reward.toFixed(2) : '—'}</td>`;
-      rHtml += `<td>${mH ? mH.name : '—'}</td>`;
+      rHtml += `<td>${mH ? getHabitName(mH) : '—'}</td>`;
       rHtml += `<td class="green bold">${mH ? '$' + mH.reward.toFixed(2) : '—'}</td>`;
       rHtml += `</tr>`;
     }
@@ -1245,9 +1452,174 @@ function autoAuditFromHabits() {
 }
 
 // ===================================================
+// BILINGUAL LANGUAGE CONTROLLER (ENGLISH ⇄ বাংলা)
+// ===================================================
+function updateStaticTexts() {
+  const langText = document.getElementById("lang-text");
+  if (langText) langText.innerText = currentLang === "bn" ? "English" : "বাংলা";
+
+  // Tabs
+  const tabMonthly = document.getElementById("tab-monthly-btn");
+  if (tabMonthly) tabMonthly.innerHTML = `<span class="tab-icon">📊</span> ${t("nav_monthly")}`;
+
+  const tabYearly = document.getElementById("tab-yearly-btn");
+  if (tabYearly) tabYearly.innerHTML = `<span class="tab-icon">📅</span> ${t("nav_yearly")}`;
+
+  const tabFields = document.getElementById("tab-fields-btn");
+  if (tabFields) tabFields.innerHTML = `<span class="tab-icon">⚙️</span> ${t("nav_fields")}`;
+
+  const tabRewards = document.getElementById("tab-rewards-btn");
+  if (tabRewards) tabRewards.innerHTML = `<span class="tab-icon">💰</span> ${t("nav_rewards")}`;
+
+  const tabSwot = document.getElementById("tab-swot-btn");
+  if (tabSwot) tabSwot.innerHTML = `<span class="tab-icon">🎯</span> ${t("nav_swot")}`;
+
+  // Header buttons
+  const btnAudio = document.getElementById("btn-audio-toggle");
+  if (btnAudio) btnAudio.innerHTML = `<span id="audio-icon">${soundEnabled ? "🔊" : "🔇"}</span> ${soundEnabled ? t("btn_sound_on") : t("btn_sound_off")}`;
+
+  const btnExcel = document.getElementById("btn-download-excel");
+  if (btnExcel) btnExcel.innerHTML = `<span>📥</span> ${t("btn_download_excel")}`;
+
+  const btnReset = document.getElementById("btn-reset-data");
+  if (btnReset) btnReset.innerHTML = `<span>🔄</span> ${t("btn_reset_month")}`;
+
+  // Month Picker Dropdown Options
+  const monthPicker = document.getElementById("month-picker");
+  if (monthPicker) {
+    const selectedVal = monthPicker.value;
+    for (let i = 0; i < 12; i++) {
+      if (monthPicker.options[i]) {
+        monthPicker.options[i].text = getMonthName(i);
+      }
+    }
+    monthPicker.value = selectedVal;
+  }
+
+  // Monthly View Banners & KPI Labels
+  const monthlyBannerH2 = document.querySelector("#view-monthly .banner-title-row h2");
+  if (monthlyBannerH2) monthlyBannerH2.innerText = t("banner_monthly_title");
+
+  const summaryLabel = document.querySelector(".summary-section-label");
+  if (summaryLabel) summaryLabel.innerText = t("summary_label");
+
+  const kpiLabels = document.querySelectorAll(".kpi-label");
+  if (kpiLabels.length >= 3) {
+    kpiLabels[0].innerText = t("edit_range");
+    kpiLabels[1].innerText = t("completion_rate");
+    kpiLabels[2].innerText = t("reward_economy");
+  }
+
+  const inputSubs = document.querySelectorAll(".kpi-stat-box .input-sub");
+  if (inputSubs.length >= 2) {
+    inputSubs[0].innerText = t("complete_to_date");
+    inputSubs[1].innerText = t("total_earned_to_date");
+  }
+  const viewFromSub = document.querySelector(".kpi-input-box .input-sub");
+  if (viewFromSub) viewFromSub.innerText = t("view_from");
+
+  const monthViewH3 = document.querySelector(".section-title-bar h3");
+  if (monthViewH3) monthViewH3.innerText = t("month_view");
+
+  const legendChips = document.querySelectorAll(".matrix-legend .legend-chip");
+  legendChips.forEach((chip, idx) => {
+    chip.innerText = `${t("week_prefix")} ${idx + 1}`;
+  });
+
+  // Sub-trackers Headers
+  const trackerHeaders = document.querySelectorAll(".tracker-card-header h4");
+  if (trackerHeaders.length >= 2) {
+    trackerHeaders[0].innerText = t("weekly_habits_title");
+    trackerHeaders[1].innerText = t("monthly_habits_title");
+  }
+  const trackerBadges = document.querySelectorAll(".tracker-card-header .badge-soft");
+  if (trackerBadges.length >= 2) {
+    trackerBadges[0].innerText = t("weekly_badge");
+    trackerBadges[1].innerText = t("monthly_badge");
+  }
+
+  const thWeeklyTask = document.querySelector("#weekly-habits-table .th-task");
+  if (thWeeklyTask) thWeeklyTask.innerText = t("weekly_tasks_th");
+
+  const thWeeklyRew = document.querySelector("#weekly-habits-table .th-rew");
+  if (thWeeklyRew) thWeeklyRew.innerText = t("earned_th");
+
+  const tdWeeklyProg = document.querySelector("#weekly-habits-table tfoot td:first-child");
+  if (tdWeeklyProg) tdWeeklyProg.innerText = t("weekly_progress");
+
+  const thMonthly = document.querySelectorAll("#monthly-habits-table thead th");
+  if (thMonthly.length >= 4) {
+    thMonthly[0].innerText = t("monthly_habits_th");
+    thMonthly[1].innerText = t("status_th");
+    thMonthly[2].innerText = t("oneoff_tasks_th");
+    thMonthly[3].innerText = t("done_th");
+  }
+
+  const tdMonthlyDone = document.querySelector("#monthly-habits-table tfoot td:first-child");
+  if (tdMonthlyDone) tdMonthlyDone.innerText = t("monthly_tasks_done");
+
+  // Yearly View
+  const yearlyBannerTitle = document.querySelector("#view-yearly .banner-title-row h2");
+  if (yearlyBannerTitle) yearlyBannerTitle.innerText = t("yearly_banner_title");
+
+  const yearlyBannerSub = document.getElementById("yearly-banner-sub");
+  if (yearlyBannerSub) {
+    yearlyBannerSub.innerText = currentLang === "bn"
+      ? `ٱلِاسْتِقَامَة — অভ্যাস ${currentYear} থেকে ${currentYear + 10}`
+      : `ٱلِاسْتِقَامَة — 'Habits ${currentYear}' through '${currentYear + 10}'`;
+  }
+
+  // SWOT View
+  const swotBannerTitle = document.querySelector("#view-swot .banner-title-row h2");
+  if (swotBannerTitle) swotBannerTitle.innerText = t("swot_banner_title");
+
+  const swotBannerTag = document.querySelector("#view-swot .banner-tag");
+  if (swotBannerTag) swotBannerTag.innerText = t("swot_banner_sub");
+
+  const swotCtrlH3 = document.querySelector(".swot-control-info h3");
+  if (swotCtrlH3) swotCtrlH3.innerText = t("swot_audit_title");
+
+  const swotCtrlP = document.querySelector(".swot-control-info p");
+  if (swotCtrlP) swotCtrlP.innerText = t("swot_audit_desc");
+
+  const btnAutoAudit = document.getElementById("btn-swot-auto-audit");
+  if (btnAutoAudit) btnAutoAudit.innerHTML = `<span>⚡</span> ${t("btn_auto_audit")}`;
+
+  const btnAddFactor = document.getElementById("btn-swot-add-modal");
+  if (btnAddFactor) btnAddFactor.innerHTML = `<span>➕</span> ${t("btn_add_factor")}`;
+
+  const btnResetTemplate = document.getElementById("btn-swot-reset");
+  if (btnResetTemplate) btnResetTemplate.innerHTML = `<span>🔄</span> ${t("btn_reset_template")}`;
+}
+
+function setLanguage(lang) {
+  currentLang = lang;
+  localStorage.setItem("istiqamah_lang", lang);
+  updateStaticTexts();
+  renderDailyMatrix();
+  renderSubTrackers();
+  renderYearlyView();
+  renderFieldsAndRewards();
+  renderSwotView();
+  showToast(currentLang === "bn" ? "ভাষা বাংলায় পরিবর্তন করা হয়েছে।" : "Language switched to English.");
+}
+
+function toggleLanguage() {
+  const newLang = currentLang === "bn" ? "en" : "bn";
+  setLanguage(newLang);
+}
+
+// ===================================================
 // EVENT LISTENERS & INITIALIZATION
 // ===================================================
 document.addEventListener("DOMContentLoaded", () => {
+  // Initialize language UI
+  updateStaticTexts();
+
+  const btnLangToggle = document.getElementById("btn-lang-toggle");
+  if (btnLangToggle) {
+    btnLangToggle.addEventListener("click", toggleLanguage);
+  }
   // Tab Switching
   document.querySelectorAll(".nav-tab").forEach(tab => {
     tab.addEventListener("click", () => {
