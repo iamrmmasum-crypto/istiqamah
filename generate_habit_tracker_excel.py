@@ -727,6 +727,177 @@ def build_habit_tracker_workbook(filename="Istiqamah_Tracker_2026_2036.xlsx"):
     for c in range(5, 45):
         ws_year.column_dimensions[get_column_letter(c)].width = 5.5
 
+    # ==========================================
+    # SHEET 4: SWOT ANALYSIS
+    # ==========================================
+    ws_swot = wb.create_sheet(title="SWOT Analysis")
+    ws_swot.views.sheetView[0].showGridLines = True
+
+    # Title Banner
+    ws_swot.merge_cells("A1:K1")
+    ws_swot["A1"] = "ٱلِاسْتِقَامَة — PERSONAL SWOT ANALYSIS"
+    ws_swot["A1"].font = Font(name="Calibri", size=16, bold=True, color="FFFFFF")
+    ws_swot["A1"].fill = header_fill
+    ws_swot["A1"].alignment = Alignment(horizontal="left", vertical="center", indent=1)
+    ws_swot.row_dimensions[1].height = 32
+
+    # Subtitle
+    ws_swot.merge_cells("A2:K2")
+    ws_swot["A2"] = "Strategic Habit Alignment & Self-Audit Framework (قُوَّة، ضَعْف، فُرَص، مَخَاطِر)"
+    ws_swot["A2"].font = Font(name="Calibri", size=11, bold=True, color="FFFFFF")
+    ws_swot["A2"].fill = sub_header_fill
+    ws_swot["A2"].alignment = Alignment(horizontal="left", vertical="center", indent=1)
+    ws_swot.row_dimensions[2].height = 22
+
+    # Quadrant Styles
+    fill_strengths = PatternFill(start_color="ECFDF5", end_color="ECFDF5", fill_type="solid")
+    fill_strengths_hdr = PatternFill(start_color="10B981", end_color="10B981", fill_type="solid")
+    fill_weaknesses = PatternFill(start_color="FFFBEB", end_color="FFFBEB", fill_type="solid")
+    fill_weaknesses_hdr = PatternFill(start_color="F59E0B", end_color="F59E0B", fill_type="solid")
+    fill_opps = PatternFill(start_color="EFF6FF", end_color="EFF6FF", fill_type="solid")
+    fill_opps_hdr = PatternFill(start_color="3B82F6", end_color="3B82F6", fill_type="solid")
+    fill_threats = PatternFill(start_color="FEF2F2", end_color="FEF2F2", fill_type="solid")
+    fill_threats_hdr = PatternFill(start_color="EF4444", end_color="EF4444", fill_type="solid")
+
+    # Row 4: Top row quadrant headers (Strengths & Weaknesses)
+    ws_swot.merge_cells("B4:E4")
+    ws_swot["B4"] = "💪 STRENGTHS (قُوَّة) — Internal Mastery"
+    ws_swot["B4"].font = Font(size=12, bold=True, color="FFFFFF")
+    ws_swot["B4"].fill = fill_strengths_hdr
+    ws_swot["B4"].alignment = Alignment(horizontal="center", vertical="center")
+
+    ws_swot.merge_cells("G4:J4")
+    ws_swot["G4"] = "⚠️ WEAKNESSES (ضَعْف) — Internal Friction"
+    ws_swot["G4"].font = Font(size=12, bold=True, color="FFFFFF")
+    ws_swot["G4"].fill = fill_weaknesses_hdr
+    ws_swot["G4"].alignment = Alignment(horizontal="center", vertical="center")
+    ws_swot.row_dimensions[4].height = 26
+
+    sample_s = [
+        "5 Daily Prayers strictly on time with Sunnah Dhikr",
+        "Disciplined 6-hour Deep Study Sessions (1, 2, and 3)",
+        "Early morning wake-up at 4:45 AM before Fajr",
+        "Screen Purity & Chastity commitment (zero tolerance)",
+        "Consistent daily journaling and Istiqamah tracking"
+    ]
+    sample_w = [
+        "Temptation to stretch social media beyond 5:15 PM Maghrib",
+        "Water hydration dips during high-intensity study blocks",
+        "Slight delay adhering to 10:00 PM digital screen sunset",
+        "Occasional afternoon lethargy if Qaylulah is delayed",
+        "Mindless tab switching during break intervals"
+    ]
+
+    for idx in range(max(len(sample_s), len(sample_w))):
+        r = 5 + idx
+        ws_swot.row_dimensions[r].height = 22
+        ws_swot.merge_cells(f"B{r}:E{r}")
+        ws_swot[f"B{r}"] = f"• {sample_s[idx]}" if idx < len(sample_s) else ""
+        ws_swot[f"B{r}"].font = Font(size=10)
+        ws_swot[f"B{r}"].fill = fill_strengths
+        ws_swot[f"B{r}"].alignment = Alignment(horizontal="left", vertical="center", indent=1)
+        for col in range(2, 6):
+            ws_swot.cell(row=r, column=col).border = cell_border
+
+        ws_swot.merge_cells(f"G{r}:J{r}")
+        ws_swot[f"G{r}"] = f"• {sample_w[idx]}" if idx < len(sample_w) else ""
+        ws_swot[f"G{r}"].font = Font(size=10)
+        ws_swot[f"G{r}"].fill = fill_weaknesses
+        ws_swot[f"G{r}"].alignment = Alignment(horizontal="left", vertical="center", indent=1)
+        for col in range(7, 11):
+            ws_swot.cell(row=r, column=col).border = cell_border
+
+    # Row 12: Bottom row quadrant headers (Opportunities & Threats)
+    r_hdr2 = 12
+    ws_swot.merge_cells(f"B{r_hdr2}:E{r_hdr2}")
+    ws_swot[f"B{r_hdr2}"] = "🚀 OPPORTUNITIES (فُرَص) — High-Growth Zones"
+    ws_swot[f"B{r_hdr2}"].font = Font(size=12, bold=True, color="FFFFFF")
+    ws_swot[f"B{r_hdr2}"].fill = fill_opps_hdr
+    ws_swot[f"B{r_hdr2}"].alignment = Alignment(horizontal="center", vertical="center")
+
+    ws_swot.merge_cells(f"G{r_hdr2}:J{r_hdr2}")
+    ws_swot[f"G{r_hdr2}"] = "🛡️ THREATS (مَخَاطِر) — Derailment Triggers"
+    ws_swot[f"G{r_hdr2}"].font = Font(size=12, bold=True, color="FFFFFF")
+    ws_swot[f"G{r_hdr2}"].fill = fill_threats_hdr
+    ws_swot[f"G{r_hdr2}"].alignment = Alignment(horizontal="center", vertical="center")
+    ws_swot.row_dimensions[r_hdr2].height = 26
+
+    sample_o = [
+        "Golden 3-hour morning window (6:00–9:00 AM) for deep work",
+        "Sunnah Fasting on 3 White Days (Ayyam al-Beed)",
+        "Post-Isha (7:45–9:00 PM) growth reading & Quran reflection",
+        "Weekly 5km outdoor run / fitness session for stamina",
+        "Developing high-income skills & spiritual character"
+    ]
+    sample_t = [
+        "Late-night screen stimulation disrupting 10:30 PM sleep",
+        "Burnout fatigue if Sunnah Qaylulah (1:45–2:30 PM) is skipped",
+        "Unplanned social interruptions during scheduled study blocks",
+        "Procrastination traps on social media before Maghrib",
+        "Negative environmental influences and distractions"
+    ]
+
+    for idx in range(max(len(sample_o), len(sample_t))):
+        r = r_hdr2 + 1 + idx
+        ws_swot.row_dimensions[r].height = 22
+        ws_swot.merge_cells(f"B{r}:E{r}")
+        ws_swot[f"B{r}"] = f"• {sample_o[idx]}" if idx < len(sample_o) else ""
+        ws_swot[f"B{r}"].font = Font(size=10)
+        ws_swot[f"B{r}"].fill = fill_opps
+        ws_swot[f"B{r}"].alignment = Alignment(horizontal="left", vertical="center", indent=1)
+        for col in range(2, 6):
+            ws_swot.cell(row=r, column=col).border = cell_border
+
+        ws_swot.merge_cells(f"G{r}:J{r}")
+        ws_swot[f"G{r}"] = f"• {sample_t[idx]}" if idx < len(sample_t) else ""
+        ws_swot[f"G{r}"].font = Font(size=10)
+        ws_swot[f"G{r}"].fill = fill_threats
+        ws_swot[f"G{r}"].alignment = Alignment(horizontal="left", vertical="center", indent=1)
+        for col in range(7, 11):
+            ws_swot.cell(row=r, column=col).border = cell_border
+
+    # Strategic Synthesis TOWS Box below
+    r_tows = 20
+    ws_swot.merge_cells(f"B{r_tows}:J{r_tows}")
+    ws_swot[f"B{r_tows}"] = "💡 ISTIQĀMAH ACTION STRATEGY MATRIX (TOWS)"
+    ws_swot[f"B{r_tows}"].font = Font(size=12, bold=True, color="1E3A8A")
+    ws_swot[f"B{r_tows}"].alignment = Alignment(horizontal="center", vertical="center")
+    ws_swot.row_dimensions[r_tows].height = 24
+
+    tows_strategies = [
+        ("SO Strategy (Maxi-Maxi)", "Leverage 4:45 AM wake-up and Fajr discipline to dominate 3h Morning Deep Study (6:00–9:00 AM)."),
+        ("WO Strategy (Mini-Maxi)", "Eliminate mindless phone browsing by replacing 4:45–5:15 PM downtime with designated Dhikr/reading."),
+        ("ST Strategy (Maxi-Mini)", "Use strict Screen Curfew (10:00 PM) to neutralize digital insomnia and preserve 10:30 PM sleep."),
+        ("WT Strategy (Mini-Mini)", "Strictly honor Sunnah Qaylulah (1:45–2:30 PM) to prevent afternoon burnout during Study Session 3.")
+    ]
+
+    for idx, (stag, sdesc) in enumerate(tows_strategies):
+        r = r_tows + 1 + idx
+        ws_swot.row_dimensions[r].height = 22
+        ws_swot.cell(row=r, column=2, value=stag).font = Font(size=9, bold=True, color="1E3A8A")
+        ws_swot.cell(row=r, column=2).fill = summary_card_fill
+        ws_swot.cell(row=r, column=2).alignment = Alignment(horizontal="left", vertical="center", indent=1)
+        ws_swot.cell(row=r, column=2).border = cell_border
+
+        ws_swot.merge_cells(f"C{r}:J{r}")
+        ws_swot[f"C{r}"] = sdesc
+        ws_swot[f"C{r}"].font = Font(size=9)
+        ws_swot[f"C{r}"].alignment = Alignment(horizontal="left", vertical="center", indent=1)
+        for col in range(3, 11):
+            ws_swot.cell(row=r, column=col).border = cell_border
+
+    ws_swot.column_dimensions["A"].width = 4
+    ws_swot.column_dimensions["B"].width = 24
+    ws_swot.column_dimensions["C"].width = 16
+    ws_swot.column_dimensions["D"].width = 16
+    ws_swot.column_dimensions["E"].width = 16
+    ws_swot.column_dimensions["F"].width = 4
+    ws_swot.column_dimensions["G"].width = 24
+    ws_swot.column_dimensions["H"].width = 16
+    ws_swot.column_dimensions["I"].width = 16
+    ws_swot.column_dimensions["J"].width = 16
+    ws_swot.column_dimensions["K"].width = 4
+
     wb.save(filename)
     print(f"Successfully generated: {filename}")
 

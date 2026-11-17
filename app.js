@@ -56,6 +56,34 @@ const HABIT_DATABASE = {
   ]
 };
 
+// ===================================================
+// SWOT ANALYSIS TEMPLATE (قُوَّة، ضَعْف، فُرَص، مَخَاطِر)
+// ===================================================
+const DEFAULT_SWOT = {
+  strengths: [
+    { id: "s1", text: "5 Daily Prayers strictly on time with Sunnah Dhikr", tag: "Spiritual" },
+    { id: "s2", text: "Disciplined 6-hour Deep Study Sessions (1, 2, and 3)", tag: "Study" },
+    { id: "s3", text: "Consistent early morning wake-up at 4:45 AM before Fajr", tag: "Routine" },
+    { id: "s4", text: "Screen Purity & Chastity commitment (zero tolerance)", tag: "Self-Discipline" }
+  ],
+  weaknesses: [
+    { id: "w1", text: "Temptation to stretch social media beyond 5:15 PM Maghrib", tag: "Discipline" },
+    { id: "w2", text: "Water hydration dip during high-intensity study blocks", tag: "Health" },
+    { id: "w3", text: "Slight delay adhering to 10:00 PM digital curfew / screen sunset", tag: "Routine" }
+  ],
+  opportunities: [
+    { id: "o1", text: "Golden 3-hour morning window (6:00–9:00 AM) for deep work", tag: "Career" },
+    { id: "o2", text: "Fasting 3 White Days (Ayyam al-Beed) for spiritual elevation", tag: "Spiritual" },
+    { id: "o3", text: "Post-Isha (7:45–9:00 PM) growth reading & Quran reflection", tag: "Mindfulness" },
+    { id: "o4", text: "Weekly 5km outdoor run / fitness session for stamina", tag: "Health" }
+  ],
+  threats: [
+    { id: "t1", text: "Late-night screen stimulation disrupting 10:30 PM sleep", tag: "Environment" },
+    { id: "t2", text: "Burnout fatigue if Sunnah Qaylulah (1:45–2:30 PM) is skipped", tag: "Energy" },
+    { id: "t3", text: "Unplanned social interruptions during scheduled study blocks", tag: "Focus" }
+  ]
+};
+
 // Application State
 const _initialNow = new Date();
 const _initYear = _initialNow.getFullYear();
@@ -169,6 +197,7 @@ function connectCloudSync(pinHash) {
           weeklyChecks: { ...trackerState.weeklyChecks, ...(data.weeklyChecks || {}) },
           monthlyChecks: { ...trackerState.monthlyChecks, ...(data.monthlyChecks || {}) },
           oneOffChecks: { ...trackerState.oneOffChecks, ...(data.oneOffChecks || {}) },
+          swot: data.swot || trackerState.swot || JSON.parse(JSON.stringify(DEFAULT_SWOT)),
           reportName: data.reportName || trackerState.reportName || "My habits",
           startDate: data.startDate || trackerState.startDate || "Jan 1, 2026"
         };
@@ -176,6 +205,7 @@ function connectCloudSync(pinHash) {
         renderDailyMatrix();
         renderSubTrackers();
         renderYearlyView();
+        renderSwotView();
       }
       updateCloudStatus("synced");
     } else {
@@ -186,6 +216,7 @@ function connectCloudSync(pinHash) {
         weeklyChecks: trackerState.weeklyChecks,
         monthlyChecks: trackerState.monthlyChecks,
         oneOffChecks: trackerState.oneOffChecks,
+        swot: trackerState.swot || DEFAULT_SWOT,
         reportName: trackerState.reportName,
         startDate: trackerState.startDate,
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -212,6 +243,7 @@ function loadState() {
     weeklyChecks: {},
     monthlyChecks: {},
     oneOffChecks: {},
+    swot: JSON.parse(JSON.stringify(DEFAULT_SWOT)),
     reportName: "My habits",
     startDate: "Nov 15, 2026"
   };
@@ -225,6 +257,7 @@ function loadState() {
           weeklyChecks: parsed.weeklyChecks || {},
           monthlyChecks: parsed.monthlyChecks || {},
           oneOffChecks: parsed.oneOffChecks || {},
+          swot: (parsed.swot && parsed.swot.strengths) ? parsed.swot : JSON.parse(JSON.stringify(DEFAULT_SWOT)),
           reportName: parsed.reportName || "My habits",
           startDate: parsed.startDate || "Nov 15, 2026"
         };
@@ -253,6 +286,7 @@ function saveState() {
         weeklyChecks: trackerState.weeklyChecks,
         monthlyChecks: trackerState.monthlyChecks,
         oneOffChecks: trackerState.oneOffChecks,
+        swot: trackerState.swot || DEFAULT_SWOT,
         reportName: trackerState.reportName,
         startDate: trackerState.startDate,
         lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
@@ -1044,6 +1078,173 @@ function updateYear(newYear) {
 }
 
 // ===================================================
+// SWOT ANALYSIS LOGIC & RENDERING
+// ===================================================
+function escapeHtml(str) {
+  if (!str) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function renderSwotView() {
+  if (!trackerState.swot) {
+    trackerState.swot = JSON.parse(JSON.stringify(DEFAULT_SWOT));
+  }
+  const quadrants = ["strengths", "weaknesses", "opportunities", "threats"];
+
+  quadrants.forEach(quad => {
+    const listEl = document.getElementById(`swot-list-${quad}`);
+    const countEl = document.getElementById(`swot-count-${quad}`);
+    const items = trackerState.swot[quad] || [];
+
+    if (countEl) countEl.innerText = items.length;
+    if (!listEl) return;
+
+    if (items.length === 0) {
+      listEl.innerHTML = `<div class="swot-empty-hint"><span>No factors recorded yet.<br>Click <strong>+</strong> or <strong>Add Factor</strong> to log one.</span></div>`;
+      return;
+    }
+
+    let html = "";
+    items.forEach(item => {
+      const cleanText = escapeHtml(item.text);
+      const cleanTag = escapeHtml(item.tag || "General");
+      html += `
+        <div class="swot-item">
+          <div class="swot-item-body">
+            <span class="swot-item-bullet">•</span>
+            <span class="swot-item-text">${cleanText}</span>
+            <span class="swot-tag">${cleanTag}</span>
+          </div>
+          <button class="swot-delete-btn" data-quad="${quad}" data-id="${item.id}" title="Delete factor">🗑️</button>
+        </div>
+      `;
+    });
+    listEl.innerHTML = html;
+  });
+
+  // Attach delete handlers
+  document.querySelectorAll(".swot-delete-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const quad = btn.getAttribute("data-quad");
+      const id = btn.getAttribute("data-id");
+      if (trackerState.swot && trackerState.swot[quad]) {
+        trackerState.swot[quad] = trackerState.swot[quad].filter(i => i.id !== id);
+        saveState();
+        playBeep(false);
+        renderSwotView();
+        showToast("Factor removed from SWOT.");
+      }
+    });
+  });
+}
+
+function openSwotModal(defaultQuadrant = "strengths") {
+  const modal = document.getElementById("swot-modal");
+  const quadSelect = document.getElementById("swot-input-quadrant");
+  const textInput = document.getElementById("swot-input-text");
+  const tagInput = document.getElementById("swot-input-tag");
+  if (!modal) return;
+  if (quadSelect) quadSelect.value = defaultQuadrant;
+  if (textInput) textInput.value = "";
+  if (tagInput) tagInput.value = "";
+  modal.classList.add("active");
+  setTimeout(() => textInput && textInput.focus(), 100);
+}
+
+function closeSwotModal() {
+  const modal = document.getElementById("swot-modal");
+  if (modal) modal.classList.remove("active");
+}
+
+function saveSwotFactorFromModal() {
+  const quadSelect = document.getElementById("swot-input-quadrant");
+  const textInput = document.getElementById("swot-input-text");
+  const tagInput = document.getElementById("swot-input-tag");
+
+  const quad = quadSelect ? quadSelect.value : "strengths";
+  const text = textInput ? textInput.value.trim() : "";
+  const tag = tagInput ? tagInput.value.trim() : "General";
+
+  if (!text) {
+    alert("Please enter a factor or habit description.");
+    return;
+  }
+
+  if (!trackerState.swot) trackerState.swot = JSON.parse(JSON.stringify(DEFAULT_SWOT));
+  if (!trackerState.swot[quad]) trackerState.swot[quad] = [];
+
+  trackerState.swot[quad].push({
+    id: quad[0] + "_" + Date.now(),
+    text: text,
+    tag: tag || "General"
+  });
+
+  saveState();
+  playBeep(true);
+  closeSwotModal();
+  renderSwotView();
+  showToast(`Added to ${quad.toUpperCase()}!`);
+}
+
+function autoAuditFromHabits() {
+  const totalDays = getDaysInMonth(currentYear, currentMonth);
+  const now = new Date();
+  const todayDay = (currentYear === now.getFullYear() && currentMonth === now.getMonth()) ? now.getDate() : totalDays;
+  const daysEvaluated = Math.max(1, todayDay);
+
+  let addedStrengths = 0;
+  let addedWeaknesses = 0;
+
+  if (!trackerState.swot) trackerState.swot = JSON.parse(JSON.stringify(DEFAULT_SWOT));
+  if (!trackerState.swot.strengths) trackerState.swot.strengths = [];
+  if (!trackerState.swot.weaknesses) trackerState.swot.weaknesses = [];
+
+  HABIT_DATABASE.dailyHabits.forEach(habit => {
+    let checkedCount = 0;
+    for (let d = 1; d <= daysEvaluated; d++) {
+      const key = `${currentYear}-${currentMonth}-${habit.id}-${d}`;
+      if (trackerState.checks[key]) checkedCount++;
+    }
+    const pct = Math.round((checkedCount / daysEvaluated) * 100);
+    const shortName = habit.name.split("(")[0].trim();
+
+    // If >= 75% consistency -> Strength
+    if (pct >= 75) {
+      const exists = trackerState.swot.strengths.some(s => s.text.includes(shortName));
+      if (!exists) {
+        trackerState.swot.strengths.push({
+          id: "s_" + Date.now() + "_" + Math.floor(Math.random() * 1000),
+          text: `High consistency: ${habit.name} (${pct}% completed this month)`,
+          tag: habit.category
+        });
+        addedStrengths++;
+      }
+    } else if (pct < 45 && daysEvaluated >= 3) {
+      // If < 45% after at least 3 days -> Weakness
+      const exists = trackerState.swot.weaknesses.some(w => w.text.includes(shortName));
+      if (!exists) {
+        trackerState.swot.weaknesses.push({
+          id: "w_" + Date.now() + "_" + Math.floor(Math.random() * 1000),
+          text: `Needs reinforcement: ${habit.name} (only ${pct}% completed)`,
+          tag: habit.category
+        });
+        addedWeaknesses++;
+      }
+    }
+  });
+
+  saveState();
+  playBeep(true);
+  renderSwotView();
+  showToast(`⚡ Auto-Audit: Evaluated ${daysEvaluated} days. +${addedStrengths} Strengths, +${addedWeaknesses} Weaknesses!`);
+}
+
+// ===================================================
 // EVENT LISTENERS & INITIALIZATION
 // ===================================================
 document.addEventListener("DOMContentLoaded", () => {
@@ -1061,6 +1262,8 @@ document.addEventListener("DOMContentLoaded", () => {
         renderYearlyView();
       } else if (target === "rewards") {
         renderYearlyView(); // Updates total vault amount
+      } else if (target === "swot") {
+        renderSwotView();
       }
     });
   });
@@ -1187,6 +1390,7 @@ document.addEventListener("DOMContentLoaded", () => {
               weeklyChecks: parsed.weeklyChecks || {},
               monthlyChecks: parsed.monthlyChecks || {},
               oneOffChecks: parsed.oneOffChecks || {},
+              swot: (parsed.swot && parsed.swot.strengths) ? parsed.swot : JSON.parse(JSON.stringify(DEFAULT_SWOT)),
               reportName: parsed.reportName || "My habits",
               startDate: parsed.startDate || "Jan 1, 2026"
             };
@@ -1194,6 +1398,7 @@ document.addEventListener("DOMContentLoaded", () => {
             renderDailyMatrix();
             renderSubTrackers();
             renderYearlyView();
+            renderSwotView();
             showToast("Backup restored successfully!");
           } else {
             alert("Invalid backup JSON format.");
@@ -1296,4 +1501,56 @@ document.addEventListener("DOMContentLoaded", () => {
   renderSubTrackers();
   renderYearlyView();
   renderFieldsAndRewards();
+  renderSwotView();
+
+  // SWOT Event Listeners
+  const btnSwotAutoAudit = document.getElementById("btn-swot-auto-audit");
+  if (btnSwotAutoAudit) {
+    btnSwotAutoAudit.addEventListener("click", autoAuditFromHabits);
+  }
+
+  const btnSwotAddModal = document.getElementById("btn-swot-add-modal");
+  if (btnSwotAddModal) {
+    btnSwotAddModal.addEventListener("click", () => openSwotModal("strengths"));
+  }
+
+  const btnSwotReset = document.getElementById("btn-swot-reset");
+  if (btnSwotReset) {
+    btnSwotReset.addEventListener("click", () => {
+      if (confirm("Reset SWOT Analysis to the default high-performance Istiqamah template?")) {
+        trackerState.swot = JSON.parse(JSON.stringify(DEFAULT_SWOT));
+        saveState();
+        playBeep(false);
+        renderSwotView();
+        showToast("SWOT Analysis reset to default template.");
+      }
+    });
+  }
+
+  document.querySelectorAll(".btn-swot-quick-add").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const quad = btn.getAttribute("data-quadrant") || "strengths";
+      openSwotModal(quad);
+    });
+  });
+
+  const btnSwotSave = document.getElementById("btn-swot-save-item");
+  if (btnSwotSave) {
+    btnSwotSave.addEventListener("click", saveSwotFactorFromModal);
+  }
+
+  const btnSwotClose = document.getElementById("btn-swot-close-modal");
+  if (btnSwotClose) {
+    btnSwotClose.addEventListener("click", closeSwotModal);
+  }
+
+  const swotTextInput = document.getElementById("swot-input-text");
+  if (swotTextInput) {
+    swotTextInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        saveSwotFactorFromModal();
+      }
+    });
+  }
 });

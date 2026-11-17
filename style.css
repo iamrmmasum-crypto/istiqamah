@@ -1125,10 +1125,346 @@ body {
   .reward-badge-total {
     text-align: left;
   }
+  .swot-grid {
+    grid-template-columns: 1fr;
+  }
+  .swot-strategy-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 550px) {
+  .swot-strategy-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 480px) {
   .yearly-months-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* ===================================================
+   SWOT ANALYSIS DASHBOARD
+   =================================================== */
+.swot-dashboard-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.swot-control-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 18px 24px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.swot-control-info h3 {
+  margin: 0 0 4px 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.swot-control-info p {
+  margin: 0;
+  font-size: 13px;
+  color: #64748B;
+}
+
+.swot-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.swot-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.swot-card {
+  background: #FFFFFF;
+  border-radius: 12px;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.swot-card:hover {
+  box-shadow: 0 6px 16px rgba(0,0,0,0.07);
+}
+
+.swot-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #F1F5F9;
+}
+
+.swot-strengths .swot-card-header {
+  background: #ECFDF5;
+  border-bottom-color: #A7F3D0;
+}
+
+.swot-weaknesses .swot-card-header {
+  background: #FFFBEB;
+  border-bottom-color: #FDE68A;
+}
+
+.swot-opportunities .swot-card-header {
+  background: #EFF6FF;
+  border-bottom-color: #BFDBFE;
+}
+
+.swot-threats .swot-card-header {
+  background: #FEF2F2;
+  border-bottom-color: #FECACA;
+}
+
+.swot-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.swot-badge-icon {
+  font-size: 24px;
+}
+
+.swot-header-left h4 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.swot-strengths h4 { color: #065F46; }
+.swot-weaknesses h4 { color: #92400E; }
+.swot-opportunities h4 { color: #1E40AF; }
+.swot-threats h4 { color: #991B1B; }
+
+.swot-arabic {
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 0.85;
+}
+
+.swot-sub {
+  font-size: 11px;
+  color: #64748B;
+  display: block;
+}
+
+.swot-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.swot-count-pill {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 9999px;
+  background: #FFFFFF;
+  border: 1px solid rgba(0,0,0,0.1);
+  color: #334155;
+}
+
+.btn-swot-quick-add {
+  background: #FFFFFF;
+  border: 1px solid rgba(0,0,0,0.15);
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  color: #1E293B;
+  transition: all 0.2s ease;
+}
+
+.btn-swot-quick-add:hover {
+  background: #0F172A;
+  color: #FFFFFF;
+  transform: scale(1.1);
+}
+
+.swot-list {
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 180px;
+}
+
+.swot-empty-hint {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 140px;
+  color: #94A3B8;
+  font-size: 12px;
+  text-align: center;
+  border: 2px dashed #E2E8F0;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.swot-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 10px 14px;
+  gap: 12px;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.swot-item:hover {
+  background: #F1F5F9;
+  border-color: #CBD5E1;
+}
+
+.swot-item-body {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.swot-item-bullet {
+  font-size: 12px;
+  color: #64748B;
+}
+
+.swot-item-text {
+  font-size: 13px;
+  color: #1E293B;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.swot-tag {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  background: #E2E8F0;
+  color: #334155;
+  text-transform: uppercase;
+}
+
+.swot-strengths .swot-tag { background: #D1FAE5; color: #065F46; }
+.swot-weaknesses .swot-tag { background: #FEF3C7; color: #92400E; }
+.swot-opportunities .swot-tag { background: #DBEAFE; color: #1E40AF; }
+.swot-threats .swot-tag { background: #FEE2E2; color: #991B1B; }
+
+.swot-delete-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: #94A3B8;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+}
+
+.swot-delete-btn:hover {
+  color: #EF4444;
+  background: #FEE2E2;
+}
+
+/* Strategic TOWS Box */
+.swot-strategy-box {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.swot-strategy-header {
+  margin-bottom: 18px;
+}
+
+.swot-strategy-header h4 {
+  margin: 0 0 4px 0;
+  font-size: 16px;
+  font-weight: 800;
+  color: #0F172A;
+}
+
+.swot-strategy-header p {
+  margin: 0;
+  font-size: 13px;
+  color: #64748B;
+}
+
+.swot-strategy-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.strategy-card {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.strategy-tag {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 4px;
+  width: fit-content;
+}
+
+.tag-so { background: #D1FAE5; color: #065F46; }
+.tag-wo { background: #FEF3C7; color: #92400E; }
+.tag-st { background: #DBEAFE; color: #1E40AF; }
+.tag-wt { background: #FEE2E2; color: #991B1B; }
+
+.strategy-card h5 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.strategy-card p {
+  margin: 0;
+  font-size: 12px;
+  color: #475569;
+  line-height: 1.45;
 }

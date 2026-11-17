@@ -41,6 +41,9 @@
         <button class="nav-tab" data-tab="rewards" id="tab-rewards-btn">
           <span class="tab-icon">💰</span> Reward Selector
         </button>
+        <button class="nav-tab" data-tab="swot" id="tab-swot-btn">
+          <span class="tab-icon">🎯</span> SWOT Analysis
+        </button>
       </div>
     </div>
     <div class="header-right">
@@ -419,7 +422,191 @@
       </div>
     </section>
 
+    <!-- ============================================== -->
+    <!-- TAB 5: SWOT ANALYSIS -->
+    <!-- ============================================== -->
+    <section id="view-swot" class="tab-content">
+      <div class="sheet-banner">
+        <div class="banner-title-row">
+          <h2>ٱلِاسْتِقَامَة — PERSONAL SWOT ANALYSIS</h2>
+          <span class="banner-tag">Strategic Self-Audit &amp; Habit Alignment Framework</span>
+        </div>
+      </div>
+
+      <div class="swot-dashboard-container">
+        <!-- Top Action / Control Bar -->
+        <div class="swot-control-bar">
+          <div class="swot-control-info">
+            <h3>Habit &amp; Character Audit</h3>
+            <p>Analyze your internal habits (Strengths &amp; Weaknesses) and external dynamics (Opportunities &amp; Threats) to sustain true Istiqāmah.</p>
+          </div>
+          <div class="swot-actions">
+            <button class="btn btn-primary" id="btn-swot-auto-audit" title="Auto-audit from current month habit completion rates">
+              <span>⚡</span> Auto-Audit From Habits
+            </button>
+            <button class="btn btn-secondary" id="btn-swot-add-modal" title="Add a custom SWOT factor">
+              <span>➕</span> Add Factor
+            </button>
+            <button class="btn btn-outline" id="btn-swot-reset" title="Reset SWOT to default high-performance template">
+              <span>🔄</span> Reset Template
+            </button>
+          </div>
+        </div>
+
+        <!-- 4-Quadrant Visual Grid -->
+        <div class="swot-grid">
+          <!-- STRENGTHS -->
+          <div class="swot-card swot-strengths">
+            <div class="swot-card-header">
+              <div class="swot-header-left">
+                <span class="swot-badge-icon">💪</span>
+                <div>
+                  <h4>STRENGTHS <span class="swot-arabic">قُوَّة</span></h4>
+                  <span class="swot-sub">Internal mastery &amp; consistent habits</span>
+                </div>
+              </div>
+              <div class="swot-header-right">
+                <span class="swot-count-pill" id="swot-count-strengths">0</span>
+                <button class="btn-swot-quick-add" data-quadrant="strengths" title="Quick add Strength">+</button>
+              </div>
+            </div>
+            <div class="swot-list" id="swot-list-strengths">
+              <!-- Injected by JS -->
+            </div>
+          </div>
+
+          <!-- WEAKNESSES -->
+          <div class="swot-card swot-weaknesses">
+            <div class="swot-card-header">
+              <div class="swot-header-left">
+                <span class="swot-badge-icon">⚠️</span>
+                <div>
+                  <h4>WEAKNESSES <span class="swot-arabic">ضَعْف</span></h4>
+                  <span class="swot-sub">Internal friction points &amp; vulnerabilities</span>
+                </div>
+              </div>
+              <div class="swot-header-right">
+                <span class="swot-count-pill" id="swot-count-weaknesses">0</span>
+                <button class="btn-swot-quick-add" data-quadrant="weaknesses" title="Quick add Weakness">+</button>
+              </div>
+            </div>
+            <div class="swot-list" id="swot-list-weaknesses">
+              <!-- Injected by JS -->
+            </div>
+          </div>
+
+          <!-- OPPORTUNITIES -->
+          <div class="swot-card swot-opportunities">
+            <div class="swot-card-header">
+              <div class="swot-header-left">
+                <span class="swot-badge-icon">🚀</span>
+                <div>
+                  <h4>OPPORTUNITIES <span class="swot-arabic">فُرَص</span></h4>
+                  <span class="swot-sub">External leverage &amp; high-growth zones</span>
+                </div>
+              </div>
+              <div class="swot-header-right">
+                <span class="swot-count-pill" id="swot-count-opportunities">0</span>
+                <button class="btn-swot-quick-add" data-quadrant="opportunities" title="Quick add Opportunity">+</button>
+              </div>
+            </div>
+            <div class="swot-list" id="swot-list-opportunities">
+              <!-- Injected by JS -->
+            </div>
+          </div>
+
+          <!-- THREATS -->
+          <div class="swot-card swot-threats">
+            <div class="swot-card-header">
+              <div class="swot-header-left">
+                <span class="swot-badge-icon">🛡️</span>
+                <div>
+                  <h4>THREATS <span class="swot-arabic">مَخَاطِر</span></h4>
+                  <span class="swot-sub">Triggers, temptations &amp; derailment risks</span>
+                </div>
+              </div>
+              <div class="swot-header-right">
+                <span class="swot-count-pill" id="swot-count-threats">0</span>
+                <button class="btn-swot-quick-add" data-quadrant="threats" title="Quick add Threat">+</button>
+              </div>
+            </div>
+            <div class="swot-list" id="swot-list-threats">
+              <!-- Injected by JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Strategic Matrix / Action Guide -->
+        <div class="swot-strategy-box">
+          <div class="swot-strategy-header">
+            <h4>💡 ISTIQĀMAH ACTION STRATEGY MATRIX (TOWS)</h4>
+            <p>How to synthesize your SWOT analysis into disciplined daily action</p>
+          </div>
+          <div class="swot-strategy-grid">
+            <div class="strategy-card">
+              <div class="strategy-tag tag-so">SO Strategy (Maxi-Maxi)</div>
+              <h5>Capitalize with Strength</h5>
+              <p>Leverage your early wake-up (4:45 AM) and Fajr discipline to dominate the 3-hour Morning Deep Study Session (6:00–9:00 AM).</p>
+            </div>
+            <div class="strategy-card">
+              <div class="strategy-tag tag-wo">WO Strategy (Mini-Maxi)</div>
+              <h5>Overcome via Opportunity</h5>
+              <p>Eliminate mindless phone browsing by replacing 4:45–5:15 PM downtime with designated reading or Dhikr before Maghrib (5:15 PM).</p>
+            </div>
+            <div class="strategy-card">
+              <div class="strategy-tag tag-st">ST Strategy (Maxi-Mini)</div>
+              <h5>Shield Against Threats</h5>
+              <p>Use your strict Screen Curfew (10:00 PM) to neutralize the threat of late-night digital insomnia and preserve 10:30 PM sleep.</p>
+            </div>
+            <div class="strategy-card">
+              <div class="strategy-tag tag-wt">WT Strategy (Mini-Mini)</div>
+              <h5>Defensive Safeguards</h5>
+              <p>Strictly honor the Sunnah Qaylulah (1:45–2:30 PM) to prevent afternoon burnout and sluggishness during Deep Study Session 3.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
   </main>
+
+  <!-- SWOT Item Add / Edit Modal -->
+  <div id="swot-modal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-badge">🎯</div>
+        <h3>Add SWOT Factor</h3>
+        <p>Record a strategic factor to audit your habit system and discipline.</p>
+      </div>
+      <div class="modal-body">
+        <div style="margin-bottom: 12px;">
+          <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">Quadrant</label>
+          <select id="swot-input-quadrant" class="styled-select" style="width:100%; padding:10px;">
+            <option value="strengths">💪 Strength (قُوَّة) — Internal mastery</option>
+            <option value="weaknesses">⚠️ Weakness (ضَعْف) — Internal vulnerability</option>
+            <option value="opportunities">🚀 Opportunity (فُرَص) — External growth</option>
+            <option value="threats">🛡️ Threat (مَخَاطِر) — External derailment</option>
+          </select>
+        </div>
+        <div style="margin-bottom: 12px;">
+          <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">Factor / Observation</label>
+          <input type="text" id="swot-input-text" class="pin-input" style="font-size:14px; text-align:left; letter-spacing:normal;" placeholder="e.g. Consistent 6h study daily, high focus" maxlength="120">
+        </div>
+        <div style="margin-bottom: 16px;">
+          <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">Category Tag</label>
+          <input type="text" id="swot-input-tag" class="pin-input" style="font-size:14px; text-align:left; letter-spacing:normal;" placeholder="e.g. Spiritual, Study, Routine, Health" maxlength="25">
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-primary btn-block" id="btn-swot-save-item">
+            <span>💾</span> Save Factor
+          </button>
+        </div>
+        <div style="margin-top: 10px; text-align: center;">
+          <button type="button" id="btn-swot-close-modal" class="btn btn-secondary" style="font-size: 11px; padding: 6px 14px;">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Excel Download Modal / Notification Toast -->
   <div id="toast-notification" class="toast-notification">
