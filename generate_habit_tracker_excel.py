@@ -865,10 +865,10 @@ def build_habit_tracker_workbook(filename="Istiqamah_Tracker_2026_2036.xlsx"):
     ws_swot.row_dimensions[r_tows].height = 24
 
     tows_strategies = [
-        ("SO Strategy (Maxi-Maxi)", "Leverage 4:45 AM wake-up and Fajr discipline to dominate 3h Morning Deep Study (6:00–9:00 AM)."),
-        ("WO Strategy (Mini-Maxi)", "Eliminate mindless phone browsing by replacing 4:45–5:15 PM downtime with designated Dhikr/reading."),
-        ("ST Strategy (Maxi-Mini)", "Use strict Screen Curfew (10:00 PM) to neutralize digital insomnia and preserve 10:30 PM sleep."),
-        ("WT Strategy (Mini-Mini)", "Strictly honor Sunnah Qaylulah (1:45–2:30 PM) to prevent afternoon burnout during Study Session 3.")
+        ("SO Strategy (Maxi-Maxi)", "Leverage 4:45 AM wake-up and Fajr discipline to dominate 3h Morning Deep Study | ভোর ৪:৪৫-এ ওঠার আত্মনিয়ন্ত্রণ দিয়ে সকালের ৩ ঘণ্টার ডিপ স্টাডি জয় করা।"),
+        ("WO Strategy (Mini-Maxi)", "Eliminate mindless phone browsing before 5:15 PM Maghrib | মাগরিবের (৫:১৫ PM) আগের সময়কে যিকির ও ফোকাসে রূপান্তর করে ফোনের আসক্তি দূর করা।"),
+        ("ST Strategy (Maxi-Mini)", "Use strict Screen Curfew (10:00 PM) to protect 10:30 PM sleep | রাত ১০:০০ টায় স্ক্রিন কার্ফু দিয়ে অনিদ্রা প্রতিহত করা ও ১০:৩০ টার ঘুম নিশ্চিত করা।"),
+        ("WT Strategy (Mini-Mini)", "Strictly honor Sunnah Qaylulah (1:45–2:30 PM) to defend against burnout | দুপুর ১:৪৫–২:৩০ পর্যন্ত সুন্নতি কায়লুলাহ দিয়ে ক্লান্তি ও বার্নআউট প্রতিরোধ করা।")
     ]
 
     for idx, (stag, sdesc) in enumerate(tows_strategies):

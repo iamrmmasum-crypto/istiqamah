@@ -1468,3 +1468,13 @@ body {
   color: #475569;
   line-height: 1.45;
 }
+
+.strategy-bn {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed #E2E8F0;
+  font-size: 11.5px;
+  color: #065F46;
+  font-weight: 600;
+  line-height: 1.5;
+}
